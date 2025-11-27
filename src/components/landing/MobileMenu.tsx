@@ -100,22 +100,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           {navFeatures
             .filter((feature) => feature.name !== "Lovable")
             .map((feature) => {
-              const sectionId =
-                feature.name === "Accounts"
-                  ? "accounts"
-                  : feature.name === "Budget"
-                    ? "budget"
-                    : feature.name === "Journal"
-                      ? "journal"
-                      : feature.name === "Notes"
-                        ? "notes"
-                        : feature.name === "Pomodoro"
-                          ? "pomodoro"
-                          : feature.name === "Tasks"
-                            ? "tasks"
-                            : feature.name === "Time"
-                              ? "time"
-                              : "features";
+              const sectionId = "features-in-action";
 
               return (
                 <a

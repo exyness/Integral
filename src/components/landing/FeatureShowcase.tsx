@@ -212,7 +212,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
   useOutsideClick(ref, () => setActive(null));
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+    <section id="features-in-action" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -399,9 +399,9 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
                 onClick={() => setActive(showcase)}
                 className={`rounded-3xl cursor-pointer overflow-hidden group ${
                   isDark
-                    ? "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.08)]"
-                    : "bg-gray-50 hover:bg-gray-100"
-                } transition-colors duration-300 ${
+                    ? "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.08)] border-transparent"
+                    : "bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 shadow-sm hover:shadow-md"
+                } transition-all duration-300 ${
                   isLarge ? "md:col-span-2" : "md:col-span-1"
                 }`}
               >
