@@ -2,7 +2,7 @@
 
 # Integral
 
-<img src="src/assets/showcase/banner.webp" alt="Integral Banner" width="100%" />
+<img src="public/showcase/banner.webp" alt="Integral Banner" width="100%" />
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React 19.2" />
@@ -20,6 +20,12 @@
   <strong>A comprehensive productivity suite for modern professionals</strong>
 </p>
 
+<div align="center">
+  <a href="https://integral-productivity.vercel.app/">View Demo (Vercel)</a>
+  <span> • </span>
+  <a href="https://integral-productivity.netlify.app/">View Demo (Netlify)</a>
+</div>
+
 </div>
 
 ---
@@ -27,6 +33,12 @@
 ## Overview
 
 **Integral** is a comprehensive personal productivity suite that brings together task management, note-taking, time tracking, journaling, and budgeting in one unified platform. Built with a modern glass morphism design, real-time sync, and multiple themed modes for a personalized experience.
+
+## Live Demo
+
+Check out the live application:
+- [**Vercel Deployment**](https://integral-productivity.vercel.app/)
+- [**Netlify Deployment**](https://integral-productivity.netlify.app/)
 
 ## Demo Account
 
