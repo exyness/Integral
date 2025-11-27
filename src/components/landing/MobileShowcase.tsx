@@ -28,39 +28,39 @@ export const MobileShowcase: React.FC<MobileShowcaseProps> = ({ isDark }) => {
 
   const images = [
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/dashboard.webp`,
+      src: `showcase/mobile/${themeFolder}/dashboard.webp`,
       alt: "Mobile Dashboard",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/tasks.webp`,
+      src: `showcase/mobile/${themeFolder}/tasks.webp`,
       alt: "Task Management",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/journal.webp`,
+      src: `showcase/mobile/${themeFolder}/journal.webp`,
       alt: "Journal & Notes",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/notes.webp`,
+      src: `showcase/mobile/${themeFolder}/notes.webp`,
       alt: "Rich Text Notes",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/budgets.webp`,
+      src: `showcase/mobile/${themeFolder}/budgets.webp`,
       alt: "Budget Tracking",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/budgets-analytics.webp`,
+      src: `showcase/mobile/${themeFolder}/budgets-analytics.webp`,
       alt: "Budget Analytics",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/accounts.webp`,
+      src: `showcase/mobile/${themeFolder}/accounts.webp`,
       alt: "Account Management",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/time.webp`,
+      src: `showcase/mobile/${themeFolder}/time.webp`,
       alt: "Time Tracking",
     },
     {
-      src: `src/assets/showcase/mobile/${themeFolder}/pomodoro.webp`,
+      src: `showcase/mobile/${themeFolder}/pomodoro.webp`,
       alt: "Pomodoro Timer",
     },
   ];
