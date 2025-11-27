@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Create Test File for New Component",
+  "description": "Automatically prompts to create a test file template when a new component is created in src/components/**/*.tsx",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "src/components/**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new React component has been created. Please remind the user to create a corresponding test file with the following guidance:\n\n1. Create a test file at the same location with .test.tsx extension\n2. Add unit tests for component behavior including:\n   - Component rendering\n   - Props validation\n   - State changes\n   - User interactions (clicks, inputs, etc.)\n3. Test accessibility features:\n   - ARIA labels\n   - Keyboard navigation\n   - Screen reader compatibility\n4. Follow the project structure defined in .kiro/steering/structure.md\n\nProvide a helpful message encouraging test-driven development practices."
+  }
+}

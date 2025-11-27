@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "Accessibility Compliance Checker",
+  "description": "Automatically reviews edited UI components and pages for accessibility compliance including keyboard navigation, screen reader support, WCAG color contrast, and interactive element standards. Provides actionable feedback based on the comprehensive accessibility checklist.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/components/**/*.tsx",
+      "src/pages/**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the edited file for accessibility compliance. Check for:\n\n## Keyboard Navigation\n- Are all interactive elements (buttons, links, inputs, modals) keyboard accessible?\n- Is the tab order logical and intuitive?\n- Are focus indicators visible and clear?\n- Do modals close with the Escape key?\n\n## Screen Readers\n- Do all images have descriptive alt text?\n- Do all buttons have aria-labels or accessible text?\n- Do form inputs have associated labels?\n- Are error messages announced to screen readers?\n\n## Visual Accessibility\n- Does color contrast meet WCAG AA standards (4.5:1 for text)?\n- Will text remain readable at 200% zoom?\n- Is information conveyed through means other than color alone?\n\n## Interactive Elements\n- Are touch targets at least 44x44px?\n- Do hover states have keyboard equivalents (focus states)?\n- Are loading states announced to assistive technologies?\n\nProvide specific line numbers and actionable recommendations for any accessibility issues found. If the component is fully accessible, confirm compliance."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Check Bundle Size After Build",
+  "description": "Analyze bundle size and warn if chunks exceed limits after production build",
+  "version": "1",
+  "when": {
+    "type": "agentEnd"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "if [ -d 'dist' ]; then echo '\\nBundle Analysis:'; du -sh dist/assets/*.js | sort -h | tail -5; echo '\\nChunk size limit: 600KB (see vite.config.ts)'; fi"
+  }
+}

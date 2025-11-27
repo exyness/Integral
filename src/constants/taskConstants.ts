@@ -1,0 +1,19 @@
+export type PriorityType = "low" | "medium" | "high";
+export type FilterType = "all" | "completed" | "pending";
+export type SortType = "created" | "dueDate" | "priority";
+
+export interface TaskFormData {
+  title: string;
+  description: string;
+  priority: PriorityType;
+  due_date: string;
+  assignee: string;
+  project: string;
+  labels: string[];
+}
+
+export const PRIORITY_COLORS = {
+  high: "#EF4444",
+  medium: "#F59E0B",
+  low: "#10B981",
+} as const;

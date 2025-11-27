@@ -1,0 +1,123 @@
+/* Custom Toast Styles for Mobile Optimization */
+
+/* Toast type colors for borders and icons */
+[data-sonner-toast][data-type="success"] {
+  border-color: #8b5cf6 !important;
+}
+
+[data-sonner-toast][data-type="success"] [data-icon] {
+  color: #8b5cf6 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  border-color: #ef4444 !important;
+}
+
+[data-sonner-toast][data-type="error"] [data-icon] {
+  color: #ef4444 !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  border-color: #f59e0b !important;
+}
+
+[data-sonner-toast][data-type="warning"] [data-icon] {
+  color: #f59e0b !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  border-color: #3b82f6 !important;
+}
+
+[data-sonner-toast][data-type="info"] [data-icon] {
+  color: #3b82f6 !important;
+}
+
+/* Mobile-specific toast styling */
+@media (max-width: 767px) {
+  /* Center the toaster container - slightly left adjusted */
+  [data-sonner-toaster][data-position="top-center"] {
+    left: 20% !important;
+    right: auto !important;
+    transform: translateX(-52%) !important;
+    width: fit-content !important;
+    max-width: 50vw !important;
+  }
+
+  [data-sonner-toast] {
+    max-width: 70vw !important;
+    width: fit-content !important;
+    min-width: 200px !important;
+    min-height: 44px !important;
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    margin: 0 auto !important;
+  }
+
+  /* Hide description on mobile */
+  [data-sonner-toast] [data-description] {
+    display: none !important;
+  }
+
+  /* Smaller icon on mobile */
+  [data-sonner-toast] [data-icon] {
+    width: 14px !important;
+    height: 14px !important;
+    min-width: 14px !important;
+    margin-right: 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Smaller buttons on mobile */
+  [data-sonner-toast] button {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    margin-left: 6px !important;
+  }
+
+  /* Adjust toast title */
+  [data-sonner-toast] [data-title] {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    flex: 1 !important;
+  }
+}
+
+/* Desktop styling - fit content, no fixed width */
+@media (min-width: 768px) {
+  [data-sonner-toast] {
+    width: fit-content !important;
+    min-width: 280px !important;
+    max-width: 420px !important;
+    padding: 16px !important;
+  }
+
+  [data-sonner-toast] [data-icon] {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 12px !important;
+  }
+
+  [data-sonner-toast] button {
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+    margin-left: 12px !important;
+  }
+
+  [data-sonner-toast] [data-title] {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+  }
+
+  [data-sonner-toast] [data-description] {
+    font-size: 13px !important;
+    margin-top: 4px !important;
+    line-height: 1.4 !important;
+  }
+}

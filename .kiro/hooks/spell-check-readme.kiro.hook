@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Spell Check README",
+  "description": "Manual hook to check spelling and grammar in README.md",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Please review README.md for:\n\n- Spelling errors\n- Grammar issues\n- Broken links\n- Outdated information\n- Missing sections\n\nCurrent sections should include:\n- Project overview\n- Features list\n- Tech stack\n- Setup instructions\n- Development commands\n- Environment variables\n- Deployment info"
+  }
+}

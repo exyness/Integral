@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Lint and Fix on Save",
+  "description": "Automatically run Biome lint and fix when source files are saved",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.js",
+      "src/**/*.jsx"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "bun lint:fix"
+  }
+}

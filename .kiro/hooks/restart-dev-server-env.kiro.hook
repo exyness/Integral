@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Restart Dev Server on .env Change",
+  "description": "Reminds the user to restart the development server when environment variables are updated in the .env file, and provides a checklist of required variables to verify",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".env"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Environment variables updated!\n\nRequired actions:\n1. Restart the dev server for changes to take effect\n2. Verify all required variables are set:\n   - VITE_SUPABASE_URL\n   - VITE_SUPABASE_ANON_KEY\n   - VITE_GEMINI_API_KEY (for AI features)\n\nTip: Never commit .env file to git!"
+  }
+}

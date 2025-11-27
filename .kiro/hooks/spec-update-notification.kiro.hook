@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Spec Update Notification",
+  "description": "Notifies when spec files are updated to remind about reviewing design, updating tasks, implementing features, and running tests",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/requirements.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Requirements updated! Remember to:\n1. Review the design.md file\n2. Update tasks.md if needed\n3. Implement or update the corresponding feature\n4. Run tests to verify implementation"
+  }
+}

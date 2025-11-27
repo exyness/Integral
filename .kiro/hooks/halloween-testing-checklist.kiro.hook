@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Halloween Mode Testing Checklist",
+  "description": "Manual hook to verify Halloween theme implementation across all pages",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Halloween Mode Testing Checklist:\n\n## Theme Colors\n- [ ] All accent colors use teal (#60c9b6)\n- [ ] Buttons and links use teal\n- [ ] Progress bars use teal\n- [ ] Active states use teal\n\n## Decorations\n- [ ] Flying bat animation (15s loop)\n- [ ] Peeking pumpkin (4s bob)\n- [ ] Hanging spider with web (2s descend + sway)\n- [ ] Ghost on hover (fade-in)\n- [ ] Witch background\n- [ ] Background overlay\n\n## Typography\n- [ ] Section titles use Creepster font\n- [ ] Text has drop shadow glow effects\n\n## Pages to Test\n- [ ] Dashboard\n- [ ] Tasks\n- [ ] Notes\n- [ ] Journal\n- [ ] Pomodoro\n- [ ] Time Tracking\n- [ ] Budget\n- [ ] Accounts\n\n## Empty States\n- [ ] All empty states show Halloween-themed illustrations\n\n## Toggle\n- [ ] Theme toggle works smoothly\n- [ ] Decorations appear/disappear correctly\n- [ ] Colors transition smoothly\n- [ ] No layout shifts when toggling\n\nTest by toggling Halloween mode in theme settings!"
+  }
+}
