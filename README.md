@@ -19,11 +19,6 @@
 <p align="center">
   <strong>A comprehensive productivity suite for modern professionals</strong>
 </p>
-
-<div align="center">
-  <a href="https://integral-productivity.vercel.app/"><img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Demo" /></a> <a href="https://integral-productivity.netlify.app/"><img src="https://img.shields.io/badge/Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify Demo" /></a>
-</div>
-
 </div>
 
 ---
