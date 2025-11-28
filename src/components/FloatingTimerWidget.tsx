@@ -10,19 +10,73 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { batGlide, ghostScare, pumpkinScary } from "@/assets";
+import { batGlide, pumpkinScary } from "@/assets";
 import { GlassCard } from "@/components/GlassCard";
 import { useFloatingWidget } from "@/contexts/FloatingWidgetContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTasks } from "@/hooks/tasks/useTasks";
 import { useTimeTracking } from "@/hooks/tasks/useTimeTracking";
 import { formatDurationForTimer, getCurrentDuration } from "@/lib/timeUtils";
+import Counter from "@/components/ui/Counter";
+
+const TimerCounter = ({ 
+  duration, 
+  isHalloweenMode, 
+  isDark, 
+  fontSize = 16 
+}: { 
+  duration: number; 
+  isHalloweenMode: boolean; 
+  isDark: boolean; 
+  fontSize?: number;
+}) => {
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const seconds = duration % 60;
+
+  const textColor = isHalloweenMode 
+    ? "#60c9b6" 
+    : isDark 
+      ? "#ffffff" 
+      : "#0f172a";
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <Counter 
+        value={hours} 
+        places={[10, 1]} 
+        fontSize={fontSize} 
+        padding={2} 
+        gap={0} 
+        textColor={textColor}
+      />
+      <span className={`font-bold ${isHalloweenMode ? "text-[#60c9b6]" : "text-foreground"}`} style={{ fontSize }}>:</span>
+      <Counter 
+        value={minutes} 
+        places={[10, 1]} 
+        fontSize={fontSize} 
+        padding={2} 
+        gap={0} 
+        textColor={textColor}
+      />
+      <span className={`font-bold ${isHalloweenMode ? "text-[#60c9b6]" : "text-foreground"}`} style={{ fontSize }}>:</span>
+      <Counter 
+        value={seconds} 
+        places={[10, 1]} 
+        fontSize={fontSize} 
+        padding={2} 
+        gap={0} 
+        textColor={textColor}
+      />
+    </div>
+  );
+};
 
 export const FloatingTimerWidget: React.FC = () => {
   const { timeEntries, stopTimer, pauseTimer, resumeTimer } = useTimeTracking();
   const { tasks } = useTasks();
   const { isWidgetVisible, setWidgetVisible } = useFloatingWidget();
-  const { isHalloweenMode } = useTheme();
+  const { isHalloweenMode, isDark } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [, forceUpdate] = useState({});
 
@@ -253,15 +307,12 @@ export const FloatingTimerWidget: React.FC = () => {
                           <Clock
                             className={`w-3 h-3 ${isHalloweenMode ? "text-[#60c9b6]" : "text-emerald-500"}`}
                           />
-                          <span
-                            className={`font-mono text-base font-bold ${
-                              isHalloweenMode
-                                ? "text-[#60c9b6]"
-                                : "text-foreground"
-                            }`}
-                          >
-                            {formatDurationForTimer(duration)}
-                          </span>
+                          <TimerCounter 
+                            duration={duration} 
+                            isHalloweenMode={isHalloweenMode} 
+                            isDark={isDark} 
+                            fontSize={16} 
+                          />
                         </div>
 
                         <div className="flex items-center gap-1">
@@ -325,15 +376,12 @@ export const FloatingTimerWidget: React.FC = () => {
                           <Clock
                             className={`w-3 h-3 ${isHalloweenMode ? "text-[#60c9b6]" : "text-emerald-500"}`}
                           />
-                          <span
-                            className={`font-mono text-lg font-bold ${
-                              isHalloweenMode
-                                ? "text-[#60c9b6]"
-                                : "text-foreground"
-                            }`}
-                          >
-                            {formatDurationForTimer(duration)}
-                          </span>
+                          <TimerCounter 
+                            duration={duration} 
+                            isHalloweenMode={isHalloweenMode} 
+                            isDark={isDark} 
+                            fontSize={18} 
+                          />
                           {entry.is_paused && (
                             <span className="px-2 py-1 bg-[rgba(245,158,11,0.2)] text-amber-500 text-xs rounded border border-[rgba(245,158,11,0.3)]">
                               PAUSED
@@ -411,15 +459,12 @@ export const FloatingTimerWidget: React.FC = () => {
                         )}
                       </div>
                       <div className="flex items-center justify-between">
-                        <span
-                          className={`font-mono text-base font-bold ${
-                            isHalloweenMode
-                              ? "text-[#60c9b6]"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {formatDurationForTimer(duration)}
-                        </span>
+                        <TimerCounter 
+                          duration={duration} 
+                          isHalloweenMode={isHalloweenMode} 
+                          isDark={isDark} 
+                          fontSize={16} 
+                        />
                         <div className="flex items-center gap-1">
                           {entry.is_paused ? (
                             <button
