@@ -4,7 +4,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { batSwoop, ghostScare } from "@/assets";
 import { useTheme } from "@/contexts/ThemeContext";
-import { ParticleBackground } from "./ParticleBackground";
+import LiquidEther from "../LiquidEther";
 
 interface HeroSectionProps {
   isDark: boolean;
@@ -14,11 +14,33 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
   const navigate = useNavigate();
   const { isHalloweenMode } = useTheme();
 
+  const liquidColors = isHalloweenMode
+    ? ["#2DD4BF", "#14B8A6", "#0F766E"] // Brighter Teal/Cyan for better visibility
+    : isDark
+      ? ["#A855F7", "#D946EF", "#8B5CF6"] // More visible Purple/Fuchsia/Violet for Dark Mode
+      : ["#F472B6", "#9333EA", "#6366F1"]; // Pink/Purple/Indigo for Light Mode
+
   return (
     <section className="relative pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      {/* Particle Background */}
-      <div className="absolute inset-0">
-        <ParticleBackground isDark={isDark} />
+      {/* Liquid Ether Background */}
+      <div className="absolute inset-0 opacity-60">
+        <LiquidEther
+          colors={liquidColors}
+          mouseForce={20}
+          cursorSize={100}
+          isViscous={false}
+          viscous={30}
+          iterationsViscous={32}
+          iterationsPoisson={32}
+          resolution={0.5}
+          isBounce={false}
+          autoDemo={true}
+          autoSpeed={0.5}
+          autoIntensity={2.2}
+          takeoverDuration={0.25}
+          autoResumeDelay={3000}
+          autoRampDuration={0.6}
+        />
       </div>
 
       {/* Halloween Decorations */}
@@ -82,12 +104,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
                 <Sparkles className="w-3.5 h-3.5" />
                 {isHalloweenMode
                   ? "Spooky Season is Here!"
-                  : "All-in-One Productivity Platform"}
+                  : "AI-Powered Productivity Platform"}
               </span>
             </div>
           </motion.div>
           <h1
-            className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight px-2 ${
+            className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 leading-tight px-2 ${
               isHalloweenMode
                 ? "font-creepster tracking-wider text-[#F59E0B] drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)]"
                 : isDark
@@ -95,22 +117,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
                   : "text-gray-900"
             }`}
           >
-            {isHalloweenMode ? "Haunt Your Habits" : "Organize Your Life"}
-            <br />
-            <span
-              className={
-                isHalloweenMode
-                  ? "text-[#60c9b6] drop-shadow-[0_2px_10px_rgba(96,201,182,0.3)]"
-                  : "bg-[linear-gradient(to_right,#10B981,#3B82F6,#8B5CF6,#7C3AED,#EC4899,#F59E0B,#EF4444)] bg-clip-text text-transparent"
-              }
-            >
-              {isHalloweenMode
-                ? "Resurrect Productivity"
-                : "Boost Your Productivity"}
-            </span>
+            {isHalloweenMode ? "Haunt Your Habits" : "Organize Your Life with AI"}
           </h1>
           <p
-            className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-3 sm:mb-4 max-w-3xl mx-auto leading-relaxed px-4 ${
+            className={`text-sm sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-4 max-w-3xl mx-auto leading-relaxed px-4 ${
               isHalloweenMode
                 ? "text-gray-300"
                 : isDark

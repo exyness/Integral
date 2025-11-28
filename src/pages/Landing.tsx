@@ -55,39 +55,39 @@ export const Landing: React.FC = () => {
   const features = [
     {
       icon: CheckCircle2,
-      title: "Task Management",
+      title: "AI Task Management",
       description:
-        "Organize tasks with projects, priorities, and deadlines. Track progress with Kanban boards, list views, and calendar integration.",
+        "Organize tasks with AI-assisted prioritization. Let our RAG engine suggest relevant tasks based on your current context.",
       color: "#10B981",
       features: [
-        "Kanban Boards",
+        "Smart Prioritization",
         "Zombie Task Resurrection",
-        "Project Organization",
-        "Priority Levels",
+        "Contextual Suggestions",
+        "Kanban Boards",
       ],
     },
     {
       icon: Clock,
-      title: "Time & Focus",
+      title: "Smart Time & Focus",
       description:
-        "Monitor time spent on tasks with built-in timers and Pomodoro technique. Boost productivity with focus sessions.",
+        "Optimize your schedule with AI insights. Our smart timers adapt to your workflow for maximum deep work efficiency.",
       color: "#3B82F6",
       features: [
-        "Task Timers",
-        "Pomodoro Sessions",
-        "Time Analytics",
-        "Focus Mode",
+        "AI Focus Insights",
+        "Smart Pomodoro",
+        "Productivity Analytics",
+        "Flow State Mode",
       ],
     },
     {
       icon: BookOpen,
       title: "Journal",
       description:
-        "Document your daily progress and reflections. Organize entries by projects with calendar views and powerful search.",
+        "Document your daily progress. Use RAG-powered Vector Search to find connections between your entries and past reflections.",
       color: "#8B5CF6",
       features: [
         "Ghost Writer AI",
-        "Daily Entries",
+        "RAG Vector Search",
         "Project Tagging",
         "Calendar View",
       ],
@@ -96,10 +96,10 @@ export const Landing: React.FC = () => {
       icon: Wallet,
       title: "Budget Tracker",
       description:
-        "Track expenses, set budgets, and analyze spending patterns with detailed analytics, charts, and multi-currency support.",
+        "Track expenses and chat with your financial data using RAG technology. Get AI-powered insights on your spending habits.",
       color: "#F59E0B",
       features: [
-        "AI Financial Insights",
+        "RAG Financial Chat",
         "Expense Tracking",
         "Budget Goals",
         "Multi-Currency",
@@ -107,21 +107,21 @@ export const Landing: React.FC = () => {
     },
     {
       icon: FileText,
-      title: "Notes",
+      title: "Notes & Knowledge",
       description:
-        "Create and organize notes with folders, tags, and powerful search. Perfect for ideas and documentation.",
+        "Create and organize notes with folders, tags, and powerful AI Semantic Search. Chat with your second brain.",
       color: "#EC4899",
-      features: ["Folder Organization", "Tags", "Search", "Rich Formatting"],
+      features: ["Folder Organization", "Tags", "AI Semantic Search", "Rich Formatting"],
     },
     {
       icon: KeyRound,
-      title: "Accounts",
+      title: "Secure AI Vault",
       description:
-        "Securely manage all your accounts in one place. Track usage, monitor activity, and keep your credentials safe.",
+        "Securely manage credentials with intelligent monitoring. AI detects unusual activity to keep your digital life safe.",
       color: "#6366F1",
       features: [
-        "Secure Storage",
-        "Usage Tracking",
+        "Smart Security",
+        "Usage Analytics",
         "Activity Monitor",
         "Quick Access",
       ],

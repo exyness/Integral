@@ -74,15 +74,17 @@ export const Footer: React.FC<FooterProps> = ({ isDark }) => {
             : "bg-white border-gray-200"
       }`}
     >
-      <div
-        className="absolute inset-0 pointer-events-none opacity-10 z-0"
-        style={{
-          backgroundImage: `url(${cardBlueCemetary})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          filter: "grayscale(100%)",
-        }}
-      />
+      {isHalloweenMode && (
+        <div
+          className="absolute inset-0 pointer-events-none opacity-10 z-0"
+          style={{
+            backgroundImage: `url(${cardBlueCemetary})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "grayscale(100%)",
+          }}
+        />
+      )}
 
       {/* Halloween Decorations */}
       {isHalloweenMode && (
