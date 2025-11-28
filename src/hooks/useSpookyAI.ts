@@ -1,6 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "../integrations/supabase/client";
+import { Json } from "../integrations/supabase/types";
+import { generateEmbedding } from "../lib/gemini";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -181,5 +184,137 @@ Prompt: "${text}"`;
     }
   };
 
-  return { consultSpirits, isGhostWriting, completion };
+  const addToGrimoire = async (content: string, metadata: Json = {}) => {
+    try {
+      const embedding = await generateEmbedding(content);
+      if (!embedding) throw new Error("Failed to generate embedding");
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const { error } = await supabase.from("search_index").insert({
+        content,
+        metadata,
+        embedding,
+        user_id: user.id,
+      });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Grimoire error:", error);
+      // Silent failure - don't show error toast since creation succeeded
+      return false;
+    }
+  };
+
+  const askTheGrimoire = async (query: string, isHalloweenMode = false) => {
+    try {
+      setIsGhostWriting(true);
+      setCompletion("");
+
+      const embedding = await generateEmbedding(query);
+      if (!embedding) {
+        toast.error(
+          isHalloweenMode
+            ? "The spirits are confused..."
+            : "Failed to process search query",
+        );
+        return null;
+      }
+
+      const { data: documents, error } = await supabase.rpc("match_documents", {
+        query_embedding: embedding,
+        match_threshold: 0.5,
+        match_count: 5,
+      });
+
+      if (error) throw error;
+
+      const context = documents?.map((doc) => doc.content).join("\n\n") || "";
+
+      const prompt = isHalloweenMode
+        ? `You are a Keeper of the Grimoire (a mystical knowledge base).
+User Question: "${query}"
+
+Relevant Knowledge from the Grimoire:
+${context || "No specific records found."}
+
+Answer the user's question based ONLY on the knowledge above. 
+If the answer is not in the knowledge, say "The Grimoire is silent on this matter..." in a spooky way.
+Keep the answer concise and slightly mysterious.`
+        : `You are an AI assistant helping to search through the user's journal entries and personal knowledge base.
+User Question: "${query}"
+
+Relevant Information:
+${context || "No relevant information found."}
+
+Answer the user's question based ONLY on the information above.
+If the answer is not available, politely say you don't have that information.
+Keep the answer concise and helpful.`;
+
+      const ai = new GoogleGenAI({ apiKey: API_KEY });
+      const model = "gemini-flash-lite-latest";
+
+      const response = await ai.models.generateContentStream({
+        model,
+        contents: prompt,
+      });
+
+      let fullText = "";
+      for await (const chunk of response) {
+        const chunkText = chunk.text || "";
+        fullText += chunkText;
+        setCompletion(fullText);
+      }
+
+      return fullText;
+    } catch (error) {
+      console.error("Grimoire search error:", error);
+      toast.error(
+        isHalloweenMode
+          ? "The spirits cannot find what you seek..."
+          : "Search failed. Please try again.",
+      );
+      return null;
+    } finally {
+      setIsGhostWriting(false);
+    }
+  };
+
+  const removeFromGrimoire = async (
+    contentType: string,
+    originalId: string,
+  ) => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      // Delete entries matching the content type and original ID
+      const { error } = await supabase
+        .from("search_index")
+        .delete()
+        .eq("user_id", user.id)
+        .contains("metadata", { type: contentType, original_id: originalId });
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      console.error("Failed to remove from search index:", error);
+      return false;
+    }
+  };
+
+  return {
+    consultSpirits,
+    addToGrimoire,
+    askTheGrimoire,
+    removeFromGrimoire,
+    isGhostWriting,
+    completion,
+  };
 };

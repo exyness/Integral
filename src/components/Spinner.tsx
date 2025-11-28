@@ -9,21 +9,32 @@ const colors = [
   "rgba(236, 72, 153, 1)",
 ];
 
-export const Spinner = () => {
+export const Spinner = ({
+  className,
+  singleColor,
+}: {
+  className?: string;
+  singleColor?: boolean;
+}) => {
   const [colorIndex, setColorIndex] = useState(() =>
     Math.floor(Math.random() * colors.length),
   );
 
   useEffect(() => {
+    if (singleColor) return;
     const interval = setInterval(() => {
       setColorIndex((prev) => (prev + 1) % colors.length);
     }, 2700);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [singleColor]);
+
+  const activeColor = singleColor ? "#60c9b6" : colors[colorIndex];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0B] flex flex-col items-center justify-center gap-4">
+    <div
+      className={`flex flex-col items-center justify-center gap-4 ${className || "min-h-screen bg-[#0A0A0B]"}`}
+    >
       <motion.div
         className="relative flex items-center justify-start h-10 w-10"
         animate={{ rotate: 360 }}
@@ -49,13 +60,12 @@ export const Spinner = () => {
             >
               <div
                 className="h-[6.8px] w-[6.8px] rounded-full transition-colors duration-700"
-                style={{ backgroundColor: colors[colorIndex] }}
+                style={{ backgroundColor: activeColor }}
               />
             </motion.div>
           );
         })}
       </motion.div>
-      <p className="text-white/60 text-sm">Loading...</p>
     </div>
   );
 };

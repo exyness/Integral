@@ -40,6 +40,7 @@ import { ScrollArea } from "../components/ui/ScrollArea";
 import { useTheme } from "../contexts/ThemeContext";
 import { Folder, useFolders } from "../hooks/useFolders";
 import { Note, useNotes } from "../hooks/useNotes";
+import { useSpookyAI } from "../hooks/useSpookyAI";
 
 type ViewMode = "grid" | "list";
 
@@ -86,6 +87,7 @@ export const Notes: React.FC = () => {
     deleteNote,
     loading: notesLoading,
   } = useNotes();
+  const { addToGrimoire } = useSpookyAI();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -228,6 +230,13 @@ export const Notes: React.FC = () => {
       await createNote({
         ...noteData,
         folder_id: selectedFolder || undefined,
+      });
+
+      // Auto-index for search (note: createNote doesn't return the ID, but indexing will still work)
+      await addToGrimoire(`${noteData.title}\n\n${noteData.content}`, {
+        type: "note",
+        category: noteData.category,
+        tags: noteData.tags,
       });
     } catch (error) {
       console.error("Failed to create note:", error);

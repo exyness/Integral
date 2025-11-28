@@ -336,60 +336,6 @@ export type Database = {
           },
         ];
       };
-      lovable_accounts: {
-        Row: {
-          account_name: string;
-          account_type: string;
-          card_type: string;
-          created_at: string | null;
-          current_usage: number | null;
-          daily_limit: number;
-          daily_usage: number | null;
-          email: string;
-          id: string;
-          is_active: boolean | null;
-          monthly_limit: number;
-          password: string;
-          reset_date: string;
-          updated_at: string | null;
-          user_id: string;
-        };
-        Insert: {
-          account_name: string;
-          account_type: string;
-          card_type?: string;
-          created_at?: string | null;
-          current_usage?: number | null;
-          daily_limit?: number;
-          daily_usage?: number | null;
-          email: string;
-          id?: string;
-          is_active?: boolean | null;
-          monthly_limit?: number;
-          password: string;
-          reset_date?: string;
-          updated_at?: string | null;
-          user_id: string;
-        };
-        Update: {
-          account_name?: string;
-          account_type?: string;
-          card_type?: string;
-          created_at?: string | null;
-          current_usage?: number | null;
-          daily_limit?: number;
-          daily_usage?: number | null;
-          email?: string;
-          id?: string;
-          is_active?: boolean | null;
-          monthly_limit?: number;
-          password?: string;
-          reset_date?: string;
-          updated_at?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
       notes: {
         Row: {
           category: string | null;
@@ -613,6 +559,33 @@ export type Database = {
         };
         Relationships: [];
       };
+      search_index: {
+        Row: {
+          content: string | null;
+          created_at: string | null;
+          embedding: string | null;
+          id: string;
+          metadata: Json | null;
+          user_id: string;
+        };
+        Insert: {
+          content?: string | null;
+          created_at?: string | null;
+          embedding?: string | null;
+          id?: string;
+          metadata?: Json | null;
+          user_id: string;
+        };
+        Update: {
+          content?: string | null;
+          created_at?: string | null;
+          embedding?: string | null;
+          id?: string;
+          metadata?: Json | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       task_projects: {
         Row: {
           archived: boolean;
@@ -752,44 +725,6 @@ export type Database = {
             columns: ["task_id"];
             isOneToOne: false;
             referencedRelation: "tasks";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      usage_logs: {
-        Row: {
-          account_id: string;
-          amount: number;
-          description: string | null;
-          id: string;
-          timestamp: string | null;
-          usage_type: string;
-          user_id: string;
-        };
-        Insert: {
-          account_id: string;
-          amount: number;
-          description?: string | null;
-          id?: string;
-          timestamp?: string | null;
-          usage_type: string;
-          user_id: string;
-        };
-        Update: {
-          account_id?: string;
-          amount?: number;
-          description?: string | null;
-          id?: string;
-          timestamp?: string | null;
-          usage_type?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "usage_logs_account_id_fkey";
-            columns: ["account_id"];
-            isOneToOne: false;
-            referencedRelation: "lovable_accounts";
             referencedColumns: ["id"];
           },
         ];
@@ -992,6 +927,19 @@ export type Database = {
           target_date: string;
           updated_at: string;
           user_id: string;
+        }[];
+      };
+      match_documents: {
+        Args: {
+          match_count: number;
+          match_threshold: number;
+          query_embedding: string;
+        };
+        Returns: {
+          content: string;
+          id: string;
+          metadata: Json;
+          similarity: number;
         }[];
       };
       update_budget_spent: {

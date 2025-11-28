@@ -1,37 +1,75 @@
+"use client";
+
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import * as React from "react";
-
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
-const TooltipProvider = TooltipPrimitive.Provider;
-
-const Tooltip = TooltipPrimitive.Root;
-
-const TooltipTrigger = TooltipPrimitive.Trigger;
-
-import { useTheme } from "@/contexts/ThemeContext";
-
-const TooltipContent = React.forwardRef<
-  React.ComponentRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => {
-  const { isHalloweenMode } = useTheme();
-
+function TooltipProvider({
+  delayDuration = 0,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   return (
-    <TooltipPrimitive.Content
-      ref={ref}
-      sideOffset={sideOffset}
-      className={cn(
-        "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        "dark:bg-gray-900 dark:text-gray-100 dark:border-gray-800",
-        isHalloweenMode &&
-          "bg-[rgba(96,201,182,0.15)] backdrop-blur-md border-[#60c9b6]/30 text-[#60c9b6] shadow-[0_0_10px_rgba(96,201,182,0.2)]",
-        className,
-      )}
+    <TooltipPrimitive.Provider
+      data-slot="tooltip-provider"
+      delayDuration={delayDuration}
       {...props}
     />
   );
-});
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+}
+
+function Tooltip({
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+  return (
+    <TooltipProvider>
+      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+    </TooltipProvider>
+  );
+}
+
+function TooltipTrigger({
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
+}
+
+function TooltipContent({
+  className,
+  sideOffset = 4,
+  children,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+  const { isDark, isHalloweenMode } = useTheme();
+
+  return (
+    <TooltipPrimitive.Portal>
+      <TooltipPrimitive.Content
+        data-slot="tooltip-content"
+        sideOffset={sideOffset}
+        className={cn(
+          "z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance",
+          "animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+          "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          // Light mode
+          !isDark &&
+            !isHalloweenMode &&
+            "bg-gray-900 text-white border border-gray-800",
+          // Dark mode
+          isDark &&
+            !isHalloweenMode &&
+            "bg-gray-800 text-gray-100 border border-gray-700",
+          // Halloween mode
+          isHalloweenMode &&
+            "bg-[rgba(96,201,182,0.15)] backdrop-blur-md border border-[#60c9b6]/30 text-[#60c9b6] shadow-[0_0_10px_rgba(96,201,182,0.2)]",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+      </TooltipPrimitive.Content>
+    </TooltipPrimitive.Portal>
+  );
+}
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

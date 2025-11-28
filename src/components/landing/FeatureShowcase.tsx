@@ -212,7 +212,10 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
   useOutsideClick(ref, () => setActive(null));
 
   return (
-    <section id="features-in-action" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
+    <section
+      id="features-in-action"
+      className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8"
+    >
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div

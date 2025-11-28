@@ -810,8 +810,6 @@ ALTER TABLE ONLY "public"."daily_entries"
     ADD CONSTRAINT "daily_entries_pkey" PRIMARY KEY ("id")
 ALTER TABLE ONLY "public"."folders"
     ADD CONSTRAINT "folders_pkey" PRIMARY KEY ("id")
-ALTER TABLE ONLY "public"."lovable_accounts"
-    ADD CONSTRAINT "lovable_accounts_pkey" PRIMARY KEY ("id")
 ALTER TABLE ONLY "public"."notes"
     ADD CONSTRAINT "notes_pkey" PRIMARY KEY ("id")
 ALTER TABLE ONLY "public"."pomodoro_sessions"
@@ -859,7 +857,6 @@ CREATE INDEX "idx_daily_entries_created_at" ON "public"."daily_entries" USING "b
 CREATE INDEX "idx_daily_entries_project" ON "public"."daily_entries" USING "btree" ("project_id")
 CREATE INDEX "idx_daily_entries_user_date" ON "public"."daily_entries" USING "btree" ("user_id", "entry_date" DESC)
 CREATE INDEX "idx_folders_parent_id" ON "public"."folders" USING "btree" ("parent_id")
-CREATE INDEX "idx_lovable_accounts_user_id" ON "public"."lovable_accounts" USING "btree" ("user_id")
 CREATE INDEX "idx_notes_content_type" ON "public"."notes" USING "btree" ("content_type")
 CREATE INDEX "idx_notes_is_favorite" ON "public"."notes" USING "btree" ("user_id", "is_favorite") WHERE ("is_favorite" = true)
 CREATE INDEX "idx_notes_is_pinned" ON "public"."notes" USING "btree" ("user_id", "is_pinned") WHERE ("is_pinned" = true)
@@ -915,8 +912,6 @@ ALTER TABLE ONLY "public"."daily_entries"
     ADD CONSTRAINT "daily_entries_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
 ALTER TABLE ONLY "public"."folders"
     ADD CONSTRAINT "folders_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "public"."folders"("id") ON DELETE CASCADE
-ALTER TABLE ONLY "public"."lovable_accounts"
-    ADD CONSTRAINT "lovable_accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
 ALTER TABLE ONLY "public"."notes"
     ADD CONSTRAINT "notes_folder_id_fkey" FOREIGN KEY ("folder_id") REFERENCES "public"."folders"("id") ON DELETE SET NULL
 ALTER TABLE ONLY "public"."pomodoro_sessions"
@@ -938,8 +933,6 @@ ALTER TABLE ONLY "public"."time_entries"
 ALTER TABLE ONLY "public"."time_entries"
     ADD CONSTRAINT "time_entries_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
 ALTER TABLE ONLY "public"."usage_logs"
-    ADD CONSTRAINT "usage_logs_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "public"."lovable_accounts"("id") ON DELETE CASCADE
-ALTER TABLE ONLY "public"."usage_logs"
     ADD CONSTRAINT "usage_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE
 CREATE POLICY "Users can create their own account usage logs" ON "public"."account_usage_logs" FOR INSERT WITH CHECK (("user_id" = "auth"."uid"()))
 CREATE POLICY "Users can create their own accounts" ON "public"."accounts" FOR INSERT WITH CHECK (("user_id" = "auth"."uid"()))
@@ -952,7 +945,6 @@ CREATE POLICY "Users can delete their own achievements" ON "public"."achievement
 CREATE POLICY "Users can delete their own budgets" ON "public"."budgets" FOR DELETE USING (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can delete their own daily_entries" ON "public"."daily_entries" FOR DELETE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can delete their own folders" ON "public"."folders" FOR DELETE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
-CREATE POLICY "Users can delete their own lovable_accounts" ON "public"."lovable_accounts" FOR DELETE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can delete their own notes" ON "public"."notes" FOR DELETE USING (("user_id" = "auth"."uid"()))
 CREATE POLICY "Users can delete their own pomodoro sessions" ON "public"."pomodoro_sessions" FOR DELETE TO "authenticated" USING (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can delete their own pomodoro settings" ON "public"."pomodoro_settings" FOR DELETE TO "authenticated" USING (("auth"."uid"() = "user_id"))
@@ -966,7 +958,6 @@ CREATE POLICY "Users can delete their own usage_logs" ON "public"."usage_logs" F
 CREATE POLICY "Users can insert their own achievements" ON "public"."achievements" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can insert their own daily_entries" ON "public"."daily_entries" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can insert their own folders" ON "public"."folders" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
-CREATE POLICY "Users can insert their own lovable_accounts" ON "public"."lovable_accounts" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can insert their own pomodoro sessions" ON "public"."pomodoro_sessions" FOR INSERT TO "authenticated" WITH CHECK (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can insert their own pomodoro settings" ON "public"."pomodoro_settings" FOR INSERT TO "authenticated" WITH CHECK (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can insert their own profiles" ON "public"."profiles" FOR INSERT TO "authenticated" WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
@@ -983,7 +974,6 @@ CREATE POLICY "Users can update their own achievements" ON "public"."achievement
 CREATE POLICY "Users can update their own budgets" ON "public"."budgets" FOR UPDATE USING (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can update their own daily_entries" ON "public"."daily_entries" FOR UPDATE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id")) WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can update their own folders" ON "public"."folders" FOR UPDATE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id")) WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
-CREATE POLICY "Users can update their own lovable_accounts" ON "public"."lovable_accounts" FOR UPDATE TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id")) WITH CHECK ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can update their own notes" ON "public"."notes" FOR UPDATE USING (("user_id" = "auth"."uid"()))
 CREATE POLICY "Users can update their own pomodoro sessions" ON "public"."pomodoro_sessions" FOR UPDATE TO "authenticated" USING (("auth"."uid"() = "user_id")) WITH CHECK (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can update their own pomodoro settings" ON "public"."pomodoro_settings" FOR UPDATE TO "authenticated" USING (("auth"."uid"() = "user_id")) WITH CHECK (("auth"."uid"() = "user_id"))
@@ -1000,7 +990,6 @@ CREATE POLICY "Users can view their own achievements" ON "public"."achievements"
 CREATE POLICY "Users can view their own budgets" ON "public"."budgets" FOR SELECT USING (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can view their own daily_entries" ON "public"."daily_entries" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can view their own folders" ON "public"."folders" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
-CREATE POLICY "Users can view their own lovable_accounts" ON "public"."lovable_accounts" FOR SELECT TO "authenticated" USING ((( SELECT "auth"."uid"() AS "uid") = "user_id"))
 CREATE POLICY "Users can view their own notes" ON "public"."notes" FOR SELECT USING (("user_id" = "auth"."uid"()))
 CREATE POLICY "Users can view their own pomodoro sessions" ON "public"."pomodoro_sessions" FOR SELECT TO "authenticated" USING (("auth"."uid"() = "user_id"))
 CREATE POLICY "Users can view their own pomodoro settings" ON "public"."pomodoro_settings" FOR SELECT TO "authenticated" USING (("auth"."uid"() = "user_id"))
@@ -1018,7 +1007,6 @@ ALTER TABLE "public"."budget_transactions" ENABLE ROW LEVEL SECURITY
 ALTER TABLE "public"."budgets" ENABLE ROW LEVEL SECURITY
 ALTER TABLE "public"."daily_entries" ENABLE ROW LEVEL SECURITY
 ALTER TABLE "public"."folders" ENABLE ROW LEVEL SECURITY
-ALTER TABLE "public"."lovable_accounts" ENABLE ROW LEVEL SECURITY
 ALTER TABLE "public"."notes" ENABLE ROW LEVEL SECURITY
 ALTER TABLE "public"."pomodoro_sessions" ENABLE ROW LEVEL SECURITY
 ALTER TABLE "public"."pomodoro_settings" ENABLE ROW LEVEL SECURITY
@@ -1031,7 +1019,6 @@ ALTER TABLE "public"."usage_logs" ENABLE ROW LEVEL SECURITY
 ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres"
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."budgets"
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."folders"
-ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."lovable_accounts"
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."notes"
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."pomodoro_sessions"
 ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."pomodoro_settings"
@@ -1140,9 +1127,6 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public".
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."folders" TO "anon"
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."folders" TO "authenticated"
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."folders" TO "service_role"
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lovable_accounts" TO "anon"
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lovable_accounts" TO "authenticated"
-GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."lovable_accounts" TO "service_role"
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."notes" TO "anon"
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."notes" TO "authenticated"
 GRANT SELECT,INSERT,REFERENCES,DELETE,TRIGGER,TRUNCATE,UPDATE ON TABLE "public"."notes" TO "service_role"

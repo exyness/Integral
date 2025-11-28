@@ -49,6 +49,7 @@ import {
   SortType,
   useJournalFiltering,
 } from "@/hooks/useJournalFiltering";
+import { useSpookyAI } from "@/hooks/useSpookyAI";
 import {
   Journal as JournalEntry,
   JournalFormData,
@@ -62,6 +63,7 @@ export const Journal: React.FC = () => {
   const { data: entries = [], isLoading: entriesLoading } = useJournalQuery();
   const { data: projects = [], isLoading: projectsLoading } =
     useProjectsQuery();
+  const { addToGrimoire } = useSpookyAI();
 
   const createEntryMutation = useCreateJournal();
   const updateEntryMutation = useUpdateJournal();
@@ -192,6 +194,14 @@ export const Journal: React.FC = () => {
 
       try {
         await createEntryMutation.mutateAsync(entryData);
+
+        // Add to Grimoire for RAG
+        await addToGrimoire(`${entryData.title}\n\n${entryData.content}`, {
+          type: "journal",
+          date: new Date().toISOString(),
+          title: entryData.title,
+        });
+
         setShowEntryForm(false);
       } catch (error) {
         console.error("Failed to create daily entry:", error);
@@ -199,7 +209,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [createEntryMutation],
+    [createEntryMutation, addToGrimoire],
   );
 
   const handleUpdateEntry = useCallback(

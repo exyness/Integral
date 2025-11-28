@@ -40,6 +40,7 @@ import { useTasks } from "@/hooks/tasks/useTasks";
 import { useZombieTasks } from "@/hooks/tasks/useZombieTasks";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
 import { useProjects } from "@/hooks/useProjects";
+import { useSpookyAI } from "@/hooks/useSpookyAI";
 import { Task } from "@/types/task";
 
 type TabType = "tasks" | "calendar" | "projects" | "kanban";
@@ -56,6 +57,7 @@ export const Tasks: React.FC = () => {
     isCreating,
     resurrectTask,
   } = useTasks();
+  const { addToGrimoire } = useSpookyAI();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = (searchParams.get("tab") as TabType) || "tasks";
@@ -236,6 +238,19 @@ export const Tasks: React.FC = () => {
           ...taskData,
           due_date: taskData.due_date || undefined,
         });
+
+        // Auto-index for search
+        const content = taskData.description
+          ? `${taskData.title}\n\n${taskData.description}`
+          : taskData.title;
+        await addToGrimoire(content, {
+          type: "task",
+          priority: taskData.priority || "medium",
+          status: "pending",
+          due_date: taskData.due_date,
+          project: taskData.project,
+        });
+
         setShowTaskForm(false);
         toast.success("Task created successfully!");
       } catch (error) {
@@ -245,7 +260,7 @@ export const Tasks: React.FC = () => {
         throw error;
       }
     },
-    [createTask],
+    [createTask, addToGrimoire],
   );
 
   const handleBulkComplete = useCallback(async () => {

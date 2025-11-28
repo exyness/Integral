@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/Tooltip.tsx";
 import { Toaster } from "@/components/ui/toast/Sonner.tsx";
 import { FloatingTimerWidget } from "./components/FloatingTimerWidget";
 import { Layout } from "./components/Layout";
+import { SearchModal } from "./components/SearchModal";
 import { Spinner } from "./components/Spinner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
@@ -263,6 +264,7 @@ const App = () => (
                     />
                   </Routes>
                 </BrowserRouter>
+                <SearchModal />
               </TooltipProvider>
             </FloatingWidgetProvider>
           </AuthProvider>

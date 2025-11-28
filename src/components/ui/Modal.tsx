@@ -13,6 +13,7 @@ interface ModalProps {
   showCloseButton?: boolean;
   className?: string;
   hideDecorations?: boolean;
+  layoutId?: string;
 }
 
 const sizeClasses = {
@@ -31,6 +32,7 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   className = "",
   hideDecorations = false,
+  layoutId,
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
   const mouseDownTargetRef = React.useRef<EventTarget | null>(null);
@@ -59,6 +61,7 @@ export const Modal: React.FC<ModalProps> = ({
           onMouseUp={handleMouseUp}
         >
           <motion.div
+            layoutId={layoutId}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
