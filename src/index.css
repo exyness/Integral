@@ -309,12 +309,21 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgb(17, 17, 19);
+    background: rgba(167, 139, 250, 0.15);
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: rgba(167, 139, 250, 0.15);
   }
 
   /* Light mode scrollbar */
   :root:not(.dark) ::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: rgba(167, 139, 250, 0.1);
+  }
+
+  /* Halloween mode scrollbar track - Teal theme */
+  html.halloween ::-webkit-scrollbar-track {
+    background: rgba(96, 201, 182, 0.15);
   }
 
   :root:not(.dark) ::-webkit-scrollbar-thumb {
