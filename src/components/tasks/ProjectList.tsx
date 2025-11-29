@@ -35,6 +35,9 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [showArchived, setShowArchived] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "tasks" | "completion">("name");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "completed" | "in-progress" | "not-started"
+  >("all");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const filteredProjects = useMemo(() => {
@@ -45,7 +48,18 @@ export const ProjectList: React.FC<ProjectListProps> = ({
       const matchesArchive = showArchived
         ? isArchived(project.name)
         : !isArchived(project.name);
-      return matchesSearch && matchesArchive;
+
+      let matchesStatus = true;
+      if (statusFilter === "completed") {
+        matchesStatus = project.completionRate === 100;
+      } else if (statusFilter === "in-progress") {
+        matchesStatus =
+          project.completionRate > 0 && project.completionRate < 100;
+      } else if (statusFilter === "not-started") {
+        matchesStatus = project.completionRate === 0;
+      }
+
+      return matchesSearch && matchesArchive && matchesStatus;
     });
 
     filtered.sort((a, b) => {
@@ -62,7 +76,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
     });
 
     return filtered;
-  }, [projects, searchTerm, showArchived, sortBy, isArchived]);
+  }, [projects, searchTerm, showArchived, sortBy, isArchived, statusFilter]);
 
   if (projects.length === 0) {
     return (
@@ -205,8 +219,31 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 
           {/* Filters and Sort Controls - Side by Side on Mobile, Separate on Desktop */}
           <div className="flex gap-3 lg:gap-3 lg:shrink-0">
-            {/* Sort Dropdown - Takes 2/3 on mobile */}
-            <div className="flex-2 lg:w-48 lg:flex-none">
+            {/* Status Filter - Takes 1/3 on mobile */}
+            <div className="flex-1 lg:w-40 lg:flex-none">
+              <Dropdown
+                value={statusFilter}
+                onValueChange={(value) =>
+                  setStatusFilter(
+                    value as
+                      | "all"
+                      | "completed"
+                      | "in-progress"
+                      | "not-started",
+                  )
+                }
+                placeholder="Status"
+                options={[
+                  { value: "all", label: "All Status" },
+                  { value: "completed", label: "Completed" },
+                  { value: "in-progress", label: "In Progress" },
+                  { value: "not-started", label: "Not Started" },
+                ]}
+              />
+            </div>
+
+            {/* Sort Dropdown - Takes 1/3 on mobile */}
+            <div className="flex-1 lg:w-48 lg:flex-none">
               <Dropdown
                 value={sortBy}
                 onValueChange={(value) =>

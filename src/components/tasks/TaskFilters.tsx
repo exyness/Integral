@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import React from "react";
 import { Dropdown } from "@/components/ui/Dropdown";
+import { Calendar } from "@/components/ui/Calendar";
 import { FilterType, SortType } from "@/constants/taskConstants";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
@@ -15,6 +16,14 @@ interface TaskFiltersProps {
   projectFilter?: string;
   onProjectFilterChange?: (project: string) => void;
   availableProjects?: string[];
+  dateRange?: {
+    start: string | null;
+    end: string | null;
+  };
+  onDateRangeChange?: (range: {
+    start: string | null;
+    end: string | null;
+  }) => void;
 }
 
 export const TaskFilters: React.FC<TaskFiltersProps> = ({
@@ -27,6 +36,8 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   projectFilter = "",
   onProjectFilterChange,
   availableProjects = [],
+  dateRange,
+  onDateRangeChange,
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
   const { isArchived } = useArchivedProjects();
@@ -42,9 +53,12 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   ];
 
   const sortOptions = [
-    { value: "created", label: "Sort by Created" },
-    { value: "dueDate", label: "Sort by Due Date" },
-    { value: "priority", label: "Sort by Priority" },
+    { value: "created-desc", label: "Newest First" },
+    { value: "created-asc", label: "Oldest First" },
+    { value: "dueDate-asc", label: "Due Soonest" },
+    { value: "dueDate-desc", label: "Due Latest" },
+    { value: "priority-desc", label: "Priority (High-Low)" },
+    { value: "priority-asc", label: "Priority (Low-High)" },
   ];
 
   const projectOptions = [
@@ -109,14 +123,27 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
             />
           </div>
 
-          {/* Sort Dropdown - full width on mobile when project filter exists */}
-          <div
-            className={
-              activeProjects.length > 0 && onProjectFilterChange
-                ? "col-span-2"
-                : ""
-            }
-          >
+          {/* Date Range Picker - Full width on mobile */}
+          <div className="col-span-2">
+            <Calendar
+              mode="range"
+              startDate={dateRange?.start || undefined}
+              endDate={dateRange?.end || undefined}
+              onStartDateChange={(date) =>
+                onDateRangeChange?.({ ...dateRange!, start: date })
+              }
+              onEndDateChange={(date) =>
+                onDateRangeChange?.({ ...dateRange!, end: date })
+              }
+              onChange={() => {
+                /* no-op */
+              }}
+              placeholder="Filter by Due Date"
+            />
+          </div>
+
+          {/* Sort Dropdown - full width on mobile */}
+          <div className="col-span-2">
             <Dropdown
               value={sortBy}
               onValueChange={(value) => onSortChange(value as SortType)}
@@ -159,33 +186,52 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
         <div className="flex flex-col sm:flex-row gap-3 lg:shrink-0">
           {/* Project Filter Dropdown */}
           {activeProjects.length > 0 && onProjectFilterChange && (
-            <div className="w-full sm:w-48">
+            <div className="w-full sm:w-40">
               <Dropdown
                 value={projectFilter}
                 onValueChange={onProjectFilterChange}
                 options={projectOptions}
-                placeholder="Filter by project"
+                placeholder="Project"
               />
             </div>
           )}
 
           {/* Status Filter Dropdown */}
-          <div className="w-full sm:w-40">
+          <div className="w-full sm:w-32">
             <Dropdown
               value={filter}
               onValueChange={(value) => onFilterChange(value as FilterType)}
               options={filterOptions}
-              placeholder="Filter tasks"
+              placeholder="Status"
+            />
+          </div>
+
+          {/* Date Range Picker */}
+          <div className="w-full sm:w-48">
+            <Calendar
+              mode="range"
+              startDate={dateRange?.start || undefined}
+              endDate={dateRange?.end || undefined}
+              onStartDateChange={(date) =>
+                onDateRangeChange?.({ ...dateRange!, start: date })
+              }
+              onEndDateChange={(date) =>
+                onDateRangeChange?.({ ...dateRange!, end: date })
+              }
+              onChange={() => {
+                /* no-op */
+              }}
+              placeholder="Due Date"
             />
           </div>
 
           {/* Sort Dropdown */}
-          <div className="w-full sm:w-48">
+          <div className="w-full sm:w-40">
             <Dropdown
               value={sortBy}
               onValueChange={(value) => onSortChange(value as SortType)}
               options={sortOptions}
-              placeholder="Sort tasks"
+              placeholder="Sort"
             />
           </div>
         </div>

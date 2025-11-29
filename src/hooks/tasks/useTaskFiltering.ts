@@ -8,6 +8,10 @@ interface UseTaskFilteringProps {
   sortBy: SortType;
   searchTerm: string;
   projectFilter?: string;
+  dateRange?: {
+    start: string | null;
+    end: string | null;
+  };
 }
 
 export const useTaskFiltering = ({
@@ -16,6 +20,7 @@ export const useTaskFiltering = ({
   sortBy,
   searchTerm,
   projectFilter = "",
+  dateRange,
 }: UseTaskFilteringProps) => {
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
@@ -32,25 +37,60 @@ export const useTaskFiltering = ({
       const matchesProject =
         !projectFilter || (task.project || "Unassigned") === projectFilter;
 
-      return matchesFilter && matchesSearch && matchesProject;
+      let matchesDateRange = true;
+      if (dateRange?.start && dateRange?.end && task.due_date) {
+        const taskDate = new Date(task.due_date).getTime();
+        const startDate = new Date(dateRange.start).getTime();
+        const endDate = new Date(dateRange.end).getTime();
+        // Add one day to end date to make it inclusive
+        const endDateInclusive = endDate + 86400000;
+        matchesDateRange = taskDate >= startDate && taskDate < endDateInclusive;
+      } else if (dateRange?.start && dateRange?.end && !task.due_date) {
+        // If filtering by date range, exclude tasks without due date
+        matchesDateRange = false;
+      }
+
+      return (
+        matchesFilter && matchesSearch && matchesProject && matchesDateRange
+      );
     });
-  }, [tasks, filter, searchTerm, projectFilter]);
+  }, [tasks, filter, searchTerm, projectFilter, dateRange]);
 
   const sortedTasks = useMemo(() => {
     return [...filteredTasks].sort((a, b) => {
-      if (sortBy === "dueDate") {
-        if (!a.due_date && !b.due_date) return 0;
-        if (!a.due_date) return 1;
-        if (!b.due_date) return -1;
-        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
+      switch (sortBy) {
+        case "dueDate-asc":
+          if (!a.due_date && !b.due_date) return 0;
+          if (!a.due_date) return 1;
+          if (!b.due_date) return -1;
+          return (
+            new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+          );
+        case "dueDate-desc":
+          if (!a.due_date && !b.due_date) return 0;
+          if (!a.due_date) return 1;
+          if (!b.due_date) return -1;
+          return (
+            new Date(b.due_date).getTime() - new Date(a.due_date).getTime()
+          );
+        case "priority-desc": {
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          return priorityOrder[b.priority] - priorityOrder[a.priority];
+        }
+        case "priority-asc": {
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
+        case "created-asc":
+          return (
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        case "created-desc":
+        default:
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
       }
-      if (sortBy === "priority") {
-        const priorityOrder = { high: 3, medium: 2, low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      }
-      return (
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
     });
   }, [filteredTasks, sortBy]);
 

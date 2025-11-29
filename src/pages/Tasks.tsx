@@ -97,11 +97,15 @@ export const Tasks: React.FC = () => {
   };
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>("pending");
-  const [sortBy, setSortBy] = useState<SortType>("created");
+  const [sortBy, setSortBy] = useState<SortType>("created-desc");
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [prefilledProject, setPrefilledProject] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
   const [projectFilter, setProjectFilter] = useState("");
+  const [dateRange, setDateRange] = useState<{
+    start: string | null;
+    end: string | null;
+  }>({ start: null, end: null });
   const [formError, setFormError] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
@@ -222,6 +226,7 @@ export const Tasks: React.FC = () => {
     sortBy,
     searchTerm,
     projectFilter,
+    dateRange,
   });
 
   const { projects, getTasksByProject } = useProjects(tasks);
@@ -719,6 +724,8 @@ export const Tasks: React.FC = () => {
               projectFilter={projectFilter}
               onProjectFilterChange={setProjectFilter}
               availableProjects={projects.map((p) => p.name)}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
             />
             <TaskList
               tasks={sortedTasks}

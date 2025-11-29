@@ -13,6 +13,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
 import { Project } from "@/hooks/useProjects";
 
+import { Dropdown } from "@/components/ui/Dropdown";
+
 interface KanbanProjectSelectorProps {
   projects: Project[];
   onProjectSelect: (projectName: string) => void;
@@ -25,15 +27,29 @@ export const KanbanProjectSelector: React.FC<KanbanProjectSelectorProps> = ({
   const { isDark, isHalloweenMode } = useTheme();
   const { isArchived } = useArchivedProjects();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "tasks" | "completion">("name");
 
   const availableProjects = useMemo(() => {
-    return projects.filter(
+    const filtered = projects.filter(
       (project) =>
         project.name !== "Unassigned" &&
         !isArchived(project.name) &&
         project.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
-  }, [projects, isArchived, searchTerm]);
+
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "tasks":
+          return b.taskCount - a.taskCount;
+        case "completion":
+          return b.completionRate - a.completionRate;
+        default:
+          return 0;
+      }
+    });
+  }, [projects, isArchived, searchTerm, sortBy]);
 
   if (projects.length === 0 || availableProjects.length === 0) {
     return (
@@ -196,34 +212,50 @@ export const KanbanProjectSelector: React.FC<KanbanProjectSelectorProps> = ({
           />
         </>
       )}
-      {/* Search Bar */}
-      <div className="p-4 md:p-6 border-b border-[rgba(255,255,255,0.1)]">
-        <div className="relative">
-          <Search
-            className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-              isHalloweenMode
-                ? "text-[#60c9b6]"
-                : isDark
-                  ? "text-[#71717A]"
-                  : "text-gray-500"
-            }`}
-          />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`w-full pl-10 pr-4 py-2.5 rounded-lg focus:outline-none transition-colors text-sm ${
-              isHalloweenMode
-                ? "bg-[#1a1a1f] border border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:ring-1 focus:ring-[#60c9b6]"
-                : isDark
-                  ? "bg-[rgba(40,40,45,0.6)] border border-[rgba(255,255,255,0.1)] text-white placeholder-[#71717A] focus:border-[#EC4899]"
-                  : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:border-[#EC4899]"
-            }`}
-          />
+      {/* Search Bar and Filters */}
+      <div className="p-4 md:p-6 border-b border-[rgba(255,255,255,0.1)] space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search
+              className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
+                isHalloweenMode
+                  ? "text-[#60c9b6]"
+                  : isDark
+                    ? "text-[#71717A]"
+                    : "text-gray-500"
+              }`}
+            />
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`w-full pl-10 pr-4 py-2.5 rounded-lg focus:outline-none transition-colors text-sm ${
+                isHalloweenMode
+                  ? "bg-[#1a1a1f] border border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:ring-1 focus:ring-[#60c9b6]"
+                  : isDark
+                    ? "bg-[rgba(40,40,45,0.6)] border border-[rgba(255,255,255,0.1)] text-white placeholder-[#71717A] focus:border-[#EC4899]"
+                    : "bg-white border border-gray-300 text-gray-900 placeholder-gray-500 focus:border-[#EC4899]"
+              }`}
+            />
+          </div>
+          <div className="w-full md:w-48">
+            <Dropdown
+              value={sortBy}
+              onValueChange={(value) =>
+                setSortBy(value as "name" | "tasks" | "completion")
+              }
+              options={[
+                { value: "name", label: "Sort by Name" },
+                { value: "tasks", label: "Sort by Tasks" },
+                { value: "completion", label: "Sort by Progress" },
+              ]}
+              placeholder="Sort by"
+            />
+          </div>
         </div>
         <div
-          className={`text-xs md:text-sm mt-3 ${
+          className={`text-xs md:text-sm ${
             isHalloweenMode
               ? "text-[#60c9b6]/70"
               : isDark

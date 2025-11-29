@@ -1,6 +1,12 @@
 export type PriorityType = "low" | "medium" | "high";
 export type FilterType = "all" | "completed" | "pending";
-export type SortType = "created" | "dueDate" | "priority";
+export type SortType =
+  | "created-desc"
+  | "created-asc"
+  | "dueDate-asc"
+  | "dueDate-desc"
+  | "priority-desc"
+  | "priority-asc";
 
 export interface TaskFormData {
   title: string;
