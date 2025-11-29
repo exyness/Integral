@@ -1,5 +1,5 @@
-import { MotionValue, motion, useSpring, useTransform } from 'framer-motion';
-import React, { useEffect } from 'react';
+import { MotionValue, motion, useSpring, useTransform } from "framer-motion";
+import React, { useEffect } from "react";
 
 interface CounterNumberProps {
   mv: MotionValue<number>;
@@ -19,14 +19,14 @@ function CounterNumber({ mv, number, height }: CounterNumberProps) {
   });
 
   const style: React.CSSProperties = {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   };
 
   return <motion.span style={{ ...style, y }}>{number}</motion.span>;
@@ -49,9 +49,9 @@ function Digit({ place, value, height, digitStyle }: DigitProps) {
 
   const defaultStyle: React.CSSProperties = {
     height,
-    position: 'relative',
-    width: '1ch',
-    fontVariantNumeric: 'tabular-nums',
+    position: "relative",
+    width: "1ch",
+    fontVariantNumeric: "tabular-nums",
   };
 
   return (
@@ -72,7 +72,7 @@ interface CounterProps {
   borderRadius?: number;
   horizontalPadding?: number;
   textColor?: string;
-  fontWeight?: React.CSSProperties['fontWeight'];
+  fontWeight?: React.CSSProperties["fontWeight"];
   containerStyle?: React.CSSProperties;
   counterStyle?: React.CSSProperties;
   digitStyle?: React.CSSProperties;
@@ -86,8 +86,8 @@ export default function Counter({
   gap = 8,
   borderRadius = 4,
   horizontalPadding = 8,
-  textColor = 'white',
-  fontWeight = 'bold',
+  textColor = "white",
+  fontWeight = "bold",
   containerStyle,
   counterStyle,
   digitStyle,
@@ -95,17 +95,19 @@ export default function Counter({
   const height = fontSize + padding;
 
   const defaultContainerStyle: React.CSSProperties = {
-    position: 'relative',
-    display: 'inline-block',
-    maskImage: 'linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)',
-    WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)',
+    position: "relative",
+    display: "inline-block",
+    maskImage:
+      "linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)",
+    WebkitMaskImage:
+      "linear-gradient(to bottom, transparent 0%, black 25%, black 75%, transparent 100%)",
   };
 
   const defaultCounterStyle: React.CSSProperties = {
     fontSize,
-    display: 'flex',
+    display: "flex",
     gap: gap,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderRadius: borderRadius,
     paddingLeft: horizontalPadding,
     paddingRight: horizontalPadding,
@@ -118,7 +120,13 @@ export default function Counter({
     <div style={{ ...defaultContainerStyle, ...containerStyle }}>
       <div style={{ ...defaultCounterStyle, ...counterStyle }}>
         {places.map((place) => (
-          <Digit key={place} place={place} value={value} height={height} digitStyle={digitStyle} />
+          <Digit
+            key={place}
+            place={place}
+            value={value}
+            height={height}
+            digitStyle={digitStyle}
+          />
         ))}
       </div>
     </div>

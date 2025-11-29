@@ -111,7 +111,12 @@ export const Landing: React.FC = () => {
       description:
         "Create and organize notes with folders, tags, and powerful AI Semantic Search. Chat with your second brain.",
       color: "#EC4899",
-      features: ["Folder Organization", "Tags", "AI Semantic Search", "Rich Formatting"],
+      features: [
+        "Folder Organization",
+        "Tags",
+        "AI Semantic Search",
+        "Rich Formatting",
+      ],
     },
     {
       icon: KeyRound,

@@ -144,7 +144,7 @@ export const Navbar: React.FC = () => {
     const currentPath = location.pathname;
 
     const exactMatch = navigationItems.find(
-      (item) => currentPath === item.path
+      (item) => currentPath === item.path,
     );
     if (exactMatch) return exactMatch.id;
 
@@ -212,7 +212,7 @@ export const Navbar: React.FC = () => {
 
   const getThemeClasses = (
     darkClass: string,
-    lightClass: string = darkClass
+    lightClass: string = darkClass,
   ) => (isDark ? darkClass : lightClass);
 
   const handleLogout = React.useCallback(async () => {
@@ -240,14 +240,14 @@ export const Navbar: React.FC = () => {
       email: user?.email,
       avatarUrl: user?.user_metadata?.avatar_url,
     }),
-    [user]
+    [user],
   );
 
   return (
     <motion.nav
       className={`relative inset-0 h-14 sm:h-16 top-0 left-0 border ${getThemeClasses(
         "bg-[rgba(20,20,25,0.7)] border-[rgba(255,255,255,0.1)]",
-        "bg-white/90 border-slate-200"
+        "bg-white/90 border-slate-200",
       )} flex items-center justify-between px-2 sm:px-4 md:px-6 shadow-xs rounded-lg mx-2 sm:mx-4 md:mx-6 mt-2 sm:mt-3 backdrop-blur-md`}
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
@@ -388,7 +388,7 @@ export const Navbar: React.FC = () => {
                         : "text-[#B4B4B8] hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]",
                       isHalloweenMode
                         ? "text-slate-600 hover:text-[#60c9b6] hover:bg-[rgba(96,201,182,0.1)]"
-                        : "text-slate-600 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]"
+                        : "text-slate-600 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]",
                     )
               }`}
               aria-current={activeNavId === item.id ? "page" : undefined}
@@ -519,7 +519,7 @@ export const Navbar: React.FC = () => {
           <DropdownMenuContent
             className={`w-56 mt-2 ${getThemeClasses(
               THEME_STYLES.dropdown.dark,
-              THEME_STYLES.dropdown.light
+              THEME_STYLES.dropdown.light,
             )} backdrop-blur-md`}
             align="end"
             forceMount
@@ -572,7 +572,7 @@ export const Navbar: React.FC = () => {
               hideClose
               className={`w-[260px] p-3 flex flex-col ${getThemeClasses(
                 THEME_STYLES.mobileSheet.dark,
-                THEME_STYLES.mobileSheet.light
+                THEME_STYLES.mobileSheet.light,
               )} backdrop-blur-xl rounded-l-2xl`}
             >
               <SheetHeader

@@ -29,7 +29,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 
   const handleScrollToSection = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    sectionId: string
+    sectionId: string,
   ) => {
     e.preventDefault();
     setMobileMenuOpen(false);

@@ -117,7 +117,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
                   : "text-gray-900"
             }`}
           >
-            {isHalloweenMode ? "Haunt Your Habits" : "Organize Your Life with AI"}
+            {isHalloweenMode
+              ? "Haunt Your Habits"
+              : "Organize Your Life with AI"}
           </h1>
           <p
             className={`text-sm sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-4 max-w-3xl mx-auto leading-relaxed px-4 ${

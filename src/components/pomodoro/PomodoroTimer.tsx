@@ -52,7 +52,7 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
   const isMobile = useMediaQuery("(max-width: 640px)");
   const isTablet = useMediaQuery("(max-width: 1024px)");
   const timerFontSize = isMobile ? 70 : isTablet ? 90 : 120;
-  
+
   const {
     settings,
     createSession,
@@ -1030,21 +1030,25 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
                   <div
                     className={`flex items-center justify-center space-x-1 md:space-x-2 text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold ${config.text}`}
                   >
-                    <Counter 
-                      value={parseInt(time.minutes)} 
-                      places={[10, 1]} 
-                      fontSize={timerFontSize} 
-                      padding={0} 
-                      gap={isMobile ? 2 : 4} 
+                    <Counter
+                      value={parseInt(time.minutes)}
+                      places={[10, 1]}
+                      fontSize={timerFontSize}
+                      padding={0}
+                      gap={isMobile ? 2 : 4}
                       textColor={isHalloweenMode ? "#60c9b6" : config.from}
                     />
-                    <span className={`pb-2 md:pb-4 ${isMobile ? "text-5xl" : ""}`}>:</span>
-                    <Counter 
-                      value={parseInt(time.seconds)} 
-                      places={[10, 1]} 
-                      fontSize={timerFontSize} 
-                      padding={0} 
-                      gap={isMobile ? 2 : 4} 
+                    <span
+                      className={`pb-2 md:pb-4 ${isMobile ? "text-5xl" : ""}`}
+                    >
+                      :
+                    </span>
+                    <Counter
+                      value={parseInt(time.seconds)}
+                      places={[10, 1]}
+                      fontSize={timerFontSize}
+                      padding={0}
+                      gap={isMobile ? 2 : 4}
                       textColor={isHalloweenMode ? "#60c9b6" : config.from}
                     />
                   </div>
