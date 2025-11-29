@@ -384,7 +384,13 @@ export const Budget: React.FC = () => {
       >
         {/* Header Section Skeleton */}
         <div className="mb-6 pt-4 md:pt-0">
-          <div className="md:p-6 md:rounded-xl md:backdrop-blur-xl md:bg-[rgba(26,26,31,0.6)] md:border md:border-[rgba(255,255,255,0.1)]">
+          <div
+            className={`md:p-6 md:rounded-xl md:backdrop-blur-xl md:border ${
+              isDark
+                ? "md:bg-[rgba(26,26,31,0.6)] md:border-[rgba(255,255,255,0.1)]"
+                : "md:border-gray-200/60"
+            }`}
+          >
             <div className="flex items-start justify-between gap-3 mb-1.5">
               <Skeleton className="h-6 md:h-7 w-32 md:w-40" />
               <Skeleton className="h-6 md:h-7 w-20 md:w-24 rounded-lg" />
@@ -466,7 +472,7 @@ export const Budget: React.FC = () => {
             className={`relative overflow-hidden md:p-6 md:rounded-xl md:backdrop-blur-xl md:border ${
               isDark
                 ? "md:bg-[rgba(26,26,31,0.6)] md:border-[rgba(255,255,255,0.1)]"
-                : "md:bg-white/90 md:border-gray-200/60 md:shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
+                : "md:border-gray-200/60"
             } ${
               isHalloweenMode
                 ? "md:border-[rgba(96,201,182,0.2)] md:shadow-[0_0_20px_rgba(96,201,182,0.15)]"
