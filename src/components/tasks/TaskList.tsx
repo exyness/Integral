@@ -22,6 +22,8 @@ interface TaskListProps {
   onToggleTask: (taskId: string) => void;
   onDeleteTask: (taskId: string) => Promise<void>;
   onTaskClick: (taskId: string) => void;
+  isCompact?: boolean;
+  isManageMode?: boolean;
 }
 
 export const TaskList: React.FC<TaskListProps> = ({
@@ -31,6 +33,8 @@ export const TaskList: React.FC<TaskListProps> = ({
   onToggleTask,
   onDeleteTask,
   onTaskClick,
+  isCompact = false,
+  isManageMode = false,
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
@@ -248,6 +252,8 @@ export const TaskList: React.FC<TaskListProps> = ({
                 onToggle={() => onToggleTask(task.id)}
                 onDelete={() => handleDeleteClick(task)}
                 onClick={() => onTaskClick(task.id)}
+                isCompact={isCompact}
+                isManageMode={isManageMode}
               />
             </motion.div>
           )}

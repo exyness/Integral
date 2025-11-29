@@ -12,12 +12,12 @@ import {
 import React, { useEffect, useState } from "react";
 import { batGlide, pumpkinScary } from "@/assets";
 import { GlassCard } from "@/components/GlassCard";
+import Counter from "@/components/ui/Counter";
 import { useFloatingWidget } from "@/contexts/FloatingWidgetContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTasks } from "@/hooks/tasks/useTasks";
 import { useTimeTracking } from "@/hooks/tasks/useTimeTracking";
 import { formatDurationForTimer, getCurrentDuration } from "@/lib/timeUtils";
-import Counter from "@/components/ui/Counter";
 
 const TimerCounter = ({
   duration,

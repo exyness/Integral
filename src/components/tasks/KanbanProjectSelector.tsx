@@ -9,11 +9,10 @@ import {
   spiderCuteHanging,
 } from "@/assets";
 import { GlassCard } from "@/components/GlassCard";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
 import { Project } from "@/hooks/useProjects";
-
-import { Dropdown } from "@/components/ui/Dropdown";
 
 interface KanbanProjectSelectorProps {
   projects: Project[];

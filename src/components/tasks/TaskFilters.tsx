@@ -1,7 +1,8 @@
-import { Search } from "lucide-react";
+import { ListChecks, Search } from "lucide-react";
 import React from "react";
-import { Dropdown } from "@/components/ui/Dropdown";
 import { Calendar } from "@/components/ui/Calendar";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Dropdown } from "@/components/ui/Dropdown";
 import { FilterType, SortType } from "@/constants/taskConstants";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useArchivedProjects } from "@/hooks/useArchivedProjects";
@@ -24,6 +25,11 @@ interface TaskFiltersProps {
     start: string | null;
     end: string | null;
   }) => void;
+  isCompact?: boolean;
+  onCompactChange?: (isCompact: boolean) => void;
+  showCompactToggle?: boolean;
+  isManageMode?: boolean;
+  onManageModeChange?: (isManageMode: boolean) => void;
 }
 
 export const TaskFilters: React.FC<TaskFiltersProps> = ({
@@ -38,6 +44,11 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   availableProjects = [],
   dateRange,
   onDateRangeChange,
+  isCompact = false,
+  onCompactChange,
+  showCompactToggle = false,
+  isManageMode = false,
+  onManageModeChange,
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
   const { isArchived } = useArchivedProjects();
@@ -151,6 +162,37 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
               placeholder="Sort"
             />
           </div>
+
+          {/* Compact View Toggle - Mobile */}
+          {showCompactToggle && onCompactChange && (
+            <div className="col-span-2 flex items-center justify-between mt-1 mx-1">
+              <Checkbox
+                checked={isCompact}
+                onChange={onCompactChange}
+                label="Compact View"
+                className="[&_label]:text-[10px] [&_div]:w-3.5 [&_div]:h-3.5"
+              />
+              {onManageModeChange && (
+                <button
+                  onClick={() => onManageModeChange(!isManageMode)}
+                  className={`flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-md transition-colors ${
+                    isManageMode
+                      ? isHalloweenMode
+                        ? "bg-[#60c9b6] text-[#0f0f13]"
+                        : "bg-[#8B5CF6] text-white"
+                      : isHalloweenMode
+                        ? "bg-[#60c9b6]/20 text-[#60c9b6] border border-[#60c9b6]/30"
+                        : isDark
+                          ? "bg-[rgba(255,255,255,0.05)] text-gray-300 border border-[rgba(255,255,255,0.1)]"
+                          : "bg-gray-100 text-gray-700 border border-gray-200"
+                  }`}
+                >
+                  <ListChecks className="w-3 h-3" />
+                  <span>Manage</span>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -183,7 +225,17 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
         </div>
 
         {/* Filters and Sort Controls (fixed size, on the right) */}
-        <div className="flex flex-col sm:flex-row gap-3 lg:shrink-0">
+        <div className="flex flex-col sm:flex-row gap-3 lg:shrink-0 items-center">
+          {/* Compact View Toggle - Desktop */}
+          {showCompactToggle && onCompactChange && (
+            <Checkbox
+              checked={isCompact}
+              onChange={onCompactChange}
+              label="Compact View"
+              className="mr-2"
+            />
+          )}
+
           {/* Project Filter Dropdown */}
           {activeProjects.length > 0 && onProjectFilterChange && (
             <div className="w-full sm:w-40">

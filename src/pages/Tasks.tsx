@@ -106,6 +106,11 @@ export const Tasks: React.FC = () => {
     start: string | null;
     end: string | null;
   }>({ start: null, end: null });
+  const [isCompact, setIsCompact] = useState(() => {
+    // Enable compact view by default on mobile devices
+    return typeof window !== "undefined" && window.innerWidth < 768;
+  });
+  const [isManageMode, setIsManageMode] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
@@ -726,6 +731,11 @@ export const Tasks: React.FC = () => {
               availableProjects={projects.map((p) => p.name)}
               dateRange={dateRange}
               onDateRangeChange={setDateRange}
+              isCompact={isCompact}
+              onCompactChange={setIsCompact}
+              showCompactToggle={true}
+              isManageMode={isManageMode}
+              onManageModeChange={setIsManageMode}
             />
             <TaskList
               tasks={sortedTasks}
@@ -738,6 +748,8 @@ export const Tasks: React.FC = () => {
                 setTaskToDelete(taskId);
               }}
               onTaskClick={setSelectedTask}
+              isCompact={isCompact}
+              isManageMode={isManageMode}
             />
           </GlassCard>
         </div>

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Calendar,
   CheckCircle,
@@ -23,10 +24,21 @@ interface TaskItemProps {
   onToggle: () => void;
   onDelete: () => void;
   onClick: () => void;
+  isCompact?: boolean;
+  isManageMode?: boolean;
 }
 
 export const TaskItem: React.FC<TaskItemProps> = memo(
-  ({ task, isSelected, onSelect, onToggle, onDelete, onClick }) => {
+  ({
+    task,
+    isSelected,
+    onSelect,
+    onToggle,
+    onDelete,
+    onClick,
+    isCompact = false,
+    isManageMode = false,
+  }) => {
     const { isDark, isHalloweenMode } = useTheme();
     const { getTaskTimeStats, formatDuration } = useTimeCalculations([task]);
 
@@ -52,7 +64,9 @@ export const TaskItem: React.FC<TaskItemProps> = memo(
 
     return (
       <div
-        className={`p-3 md:p-4 transition-colors rounded-lg ${
+        className={`transition-colors rounded-lg ${
+          isCompact ? "p-2 md:p-3" : "p-3 md:p-4"
+        } ${
           isHalloweenMode
             ? "hover:bg-[#60c9b6]/10 border border-transparent hover:border-[#60c9b6]/30"
             : isDark
@@ -60,10 +74,16 @@ export const TaskItem: React.FC<TaskItemProps> = memo(
               : "hover:bg-gray-50"
         }`}
       >
-        <div className="flex items-start md:items-center rounded-md space-x-2 md:space-x-4">
+        <div
+          className={`flex items-start md:items-center rounded-md ${
+            isCompact ? "space-x-1.5 md:space-x-3" : "space-x-2 md:space-x-4"
+          }`}
+        >
           <button
             onClick={onSelect}
-            className="shrink-0 cursor-pointer mt-0.5 md:mt-0"
+            className={`shrink-0 cursor-pointer mt-0.5 md:mt-0 ${
+              isManageMode ? "block" : "hidden md:block"
+            }`}
           >
             {isSelected ? (
               <CheckSquare
@@ -109,7 +129,9 @@ export const TaskItem: React.FC<TaskItemProps> = memo(
           <div className="flex-1 min-w-0 cursor-pointer" onClick={onClick}>
             <div className="flex flex-col md:flex-row md:items-center md:space-x-3 mb-1 gap-1 md:gap-0">
               <h3
-                className={`font-medium transition-colors text-sm md:text-base ${
+                className={`font-medium transition-colors ${
+                  isCompact ? "text-xs md:text-sm" : "text-sm md:text-base"
+                } ${
                   isHalloweenMode
                     ? task.completed
                       ? "text-[#60c9b6]/50 line-through font-creepster tracking-wide"
@@ -126,7 +148,7 @@ export const TaskItem: React.FC<TaskItemProps> = memo(
                 {task.title}
               </h3>
               <div className="flex items-center gap-2">
-                {isOverdue && (
+                {!isCompact && isOverdue && (
                   <span
                     className={`flex items-center gap-x-1.5 px-2 py-0.5 text-xs rounded w-fit ${
                       isHalloweenMode
@@ -140,7 +162,9 @@ export const TaskItem: React.FC<TaskItemProps> = memo(
                 )}
                 {task.project && (
                   <span
-                    className={`flex items-center gap-x-1.5 px-2 py-0.5 text-xs rounded w-fit ${
+                    className={`${
+                      isCompact ? "hidden md:flex" : "flex"
+                    } items-center gap-x-1.5 px-2 py-0.5 text-xs rounded w-fit ${
                       isHalloweenMode
                         ? "bg-[#60c9b6]/10 text-[#60c9b6]"
                         : "bg-[rgba(139,92,246,0.2)] text-[#A855F7]"
@@ -153,83 +177,104 @@ export const TaskItem: React.FC<TaskItemProps> = memo(
               </div>
             </div>
 
-            {task.description && (
-              <p
-                className={`text-xs md:text-sm mb-2 line-clamp-2 md:line-clamp-none ${
-                  isDark ? "text-[#B4B4B8]" : "text-gray-600"
-                }`}
-              >
-                {task.description}
-              </p>
-            )}
-
-            <div
-              className={`flex flex-wrap items-center gap-2 md:gap-4 text-xs ${
-                isDark ? "text-[#71717A]" : "text-gray-500"
-              }`}
-            >
-              {task.due_date && (
-                <div className="hidden md:flex items-center space-x-1">
-                  <Calendar className="w-3 h-3" />
-                  <span>Due {task.due_date}</span>
-                </div>
-              )}
-              {task.assignee && (
-                <div className="hidden md:flex items-center space-x-1">
-                  <User className="w-3 h-3" />
-                  <span>{task.assignee}</span>
-                </div>
-              )}
-              <div className="hidden md:flex items-center space-x-1">
-                <Flag className="w-3 h-3" style={{ color: priorityColor }} />
-                <span className="capitalize">{task.priority}</span>
-              </div>
-              {timeStats.totalTime > 0 && (
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3 text-[#8B5CF6]" />
-                  <span className="text-[#8B5CF6]">
-                    {formatDuration(timeStats.totalTime)}
-                  </span>
-                  {timeStats.isActive && (
-                    <span className="text-[#10B981]">●</span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {task.labels.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {task.labels.map((label, index) => {
-                  if (label.toLowerCase() === "resurrected") {
-                    return (
-                      <span
-                        key={index}
-                        className={`flex items-center gap-1 px-2 py-1 text-xs rounded font-medium border ${
-                          isHalloweenMode
-                            ? "bg-[#60c9b6]/20 text-[#60c9b6] border-[#60c9b6]/30"
-                            : "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800"
-                        }`}
-                      >
-                        <Skull className="w-3 h-3" />
-                        Resurrected
-                      </span>
-                    );
-                  }
-                  return (
-                    <span
-                      key={index}
-                      className={`px-2 py-1 text-xs rounded ${
-                        isDark
-                          ? "bg-[rgba(255,255,255,0.05)] text-[#B4B4B8]"
-                          : "bg-gray-100 text-gray-600"
+            <AnimatePresence initial={false}>
+              {!isCompact && (
+                <motion.div
+                  initial="collapsed"
+                  animate="open"
+                  exit="collapsed"
+                  variants={{
+                    open: { opacity: 1, height: "auto", marginTop: 8 },
+                    collapsed: { opacity: 0, height: 0, marginTop: 0 },
+                  }}
+                  transition={{
+                    duration: 0.4,
+                    ease: [0.04, 0.62, 0.23, 0.98],
+                  }}
+                >
+                  {task.description && (
+                    <p
+                      className={`text-xs md:text-sm mb-2 line-clamp-2 md:line-clamp-none ${
+                        isDark ? "text-[#B4B4B8]" : "text-gray-600"
                       }`}
                     >
-                      {label}
-                    </span>
-                  );
-                })}
-              </div>
-            )}
+                      {task.description}
+                    </p>
+                  )}
+
+                  <div
+                    className={`flex flex-wrap items-center gap-2 md:gap-4 text-xs ${
+                      isDark ? "text-[#71717A]" : "text-gray-500"
+                    }`}
+                  >
+                    {task.due_date && (
+                      <div className="hidden md:flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Due {task.due_date}</span>
+                      </div>
+                    )}
+                    {task.assignee && (
+                      <div className="hidden md:flex items-center space-x-1">
+                        <User className="w-3 h-3" />
+                        <span>{task.assignee}</span>
+                      </div>
+                    )}
+                    <div className="hidden md:flex items-center space-x-1">
+                      <Flag
+                        className="w-3 h-3"
+                        style={{ color: priorityColor }}
+                      />
+                      <span className="capitalize">{task.priority}</span>
+                    </div>
+                    {timeStats.totalTime > 0 && (
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-3 h-3 text-[#8B5CF6]" />
+                        <span className="text-[#8B5CF6]">
+                          {formatDuration(timeStats.totalTime)}
+                        </span>
+                        {timeStats.isActive && (
+                          <span className="text-[#10B981]">●</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {task.labels.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {task.labels.map((label, index) => {
+                        if (label.toLowerCase() === "resurrected") {
+                          return (
+                            <span
+                              key={index}
+                              className={`flex items-center gap-1 px-2 py-1 text-xs rounded font-medium border ${
+                                isHalloweenMode
+                                  ? "bg-[#60c9b6]/20 text-[#60c9b6] border-[#60c9b6]/30"
+                                  : "bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800"
+                              }`}
+                            >
+                              <Skull className="w-3 h-3" />
+                              Resurrected
+                            </span>
+                          );
+                        }
+                        return (
+                          <span
+                            key={index}
+                            className={`px-2 py-1 text-xs rounded ${
+                              isDark
+                                ? "bg-[rgba(255,255,255,0.05)] text-[#B4B4B8]"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <button
