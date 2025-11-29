@@ -96,6 +96,10 @@ export const Journal: React.FC = () => {
   const [filter, setFilter] = useState<FilterType>("all");
   const [sortBy, setSortBy] = useState<SortType>("newest");
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [dateRange, setDateRange] = useState<{
+    start: string | null;
+    end: string | null;
+  }>({ start: null, end: null });
 
   const tabsRef = useRef<HTMLDivElement>(null);
   const entriesTabRef = useRef<HTMLButtonElement>(null);
@@ -170,12 +174,20 @@ export const Journal: React.FC = () => {
     };
   }, [activeTab]);
 
+  // Extract available tags from all entries
+  const availableTags = React.useMemo(() => {
+    const tags = new Set<string>();
+    entries.forEach((entry) => entry.tags.forEach((tag) => tags.add(tag)));
+    return Array.from(tags).sort();
+  }, [entries]);
+
   const { sortedEntries } = useJournalFiltering({
     entries,
     filter,
     sortBy,
     searchTerm,
     selectedProjectId,
+    dateRange,
   });
 
   const getTodayDate = () => {
@@ -818,6 +830,8 @@ export const Journal: React.FC = () => {
                 selectedProjectId={selectedProjectId}
                 onProjectChange={setSelectedProjectId}
                 projects={projects}
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
               />
               <JournalEntryList
                 entries={sortedEntries}
