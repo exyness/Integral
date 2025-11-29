@@ -465,8 +465,7 @@ export const Navbar: React.FC = () => {
                   : "bg-gray-100 border-gray-200 text-gray-500"
             }`}
           >
-            <span className="text-sm">⌘</span>
-            <span className="text-base">K</span>
+            <span className="text-xs">Ctrl+K</span>
           </kbd>
         </motion.div>
 
