@@ -10,6 +10,7 @@ import { Spinner } from "./components/Spinner";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { FloatingWidgetProvider } from "./contexts/FloatingWidgetContext";
+import { IconPickerProvider } from "./contexts/IconPickerContext";
 import { NetworkProvider } from "./contexts/NetworkContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useDocumentTitle } from "./hooks/useDocumentTitle";
@@ -56,6 +57,9 @@ const HalloweenAssets = lazy(() =>
   import("./pages/HalloweenAssets").then((m) => ({
     default: m.HalloweenAssets,
   })),
+);
+const Test = lazy(() =>
+  import("./pages/Test").then((m) => ({ default: m.Test })),
 );
 
 const queryClient = new QueryClient({
@@ -113,160 +117,173 @@ const App = () => (
       <ThemeProvider>
         <CurrencyProvider>
           <AuthProvider>
-            <FloatingWidgetProvider>
-              <TooltipProvider>
-                <Toaster />
-                <BrowserRouter>
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <PublicRoute>
-                          <Landing />
-                        </PublicRoute>
-                      }
-                    />
-                    <Route
-                      path="/privacy"
-                      element={
-                        <Suspense fallback={<Spinner />}>
-                          <Privacy />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/terms"
-                      element={
-                        <Suspense fallback={<Spinner />}>
-                          <Terms />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/cookies"
-                      element={
-                        <Suspense fallback={<Spinner />}>
-                          <Cookies />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/assets"
-                      element={
-                        <Suspense fallback={<Spinner />}>
-                          <HalloweenAssets />
-                        </Suspense>
-                      }
-                    />
-                    <Route
-                      path="/auth"
-                      element={
-                        <AuthRoute>
-                          <AuthPage />
-                        </AuthRoute>
-                      }
-                    />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Dashboard />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/notes"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Notes />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/accounts"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Accounts />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/tasks"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Tasks />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/time"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Time />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/journal"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Journal />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/pomodoro"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Pomodoro />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/budget"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Budget />
-                            <FloatingTimerWidget />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="*"
-                      element={
-                        <PublicRoute>
-                          <NotFound />
-                        </PublicRoute>
-                      }
-                    />
-                  </Routes>
-                </BrowserRouter>
-                <SearchModal />
-              </TooltipProvider>
-            </FloatingWidgetProvider>
+            <IconPickerProvider>
+              <FloatingWidgetProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <BrowserRouter>
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <PublicRoute>
+                            <Landing />
+                          </PublicRoute>
+                        }
+                      />
+                      <Route
+                        path="/privacy"
+                        element={
+                          <Suspense fallback={<Spinner />}>
+                            <Privacy />
+                          </Suspense>
+                        }
+                      />
+                      <Route
+                        path="/terms"
+                        element={
+                          <Suspense fallback={<Spinner />}>
+                            <Terms />
+                          </Suspense>
+                        }
+                      />
+                      <Route
+                        path="/cookies"
+                        element={
+                          <Suspense fallback={<Spinner />}>
+                            <Cookies />
+                          </Suspense>
+                        }
+                      />
+                      <Route
+                        path="/assets"
+                        element={
+                          <Suspense fallback={<Spinner />}>
+                            <HalloweenAssets />
+                          </Suspense>
+                        }
+                      />
+                      <Route
+                        path="/auth"
+                        element={
+                          <AuthRoute>
+                            <AuthPage />
+                          </AuthRoute>
+                        }
+                      />
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Dashboard />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/notes"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Notes />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/accounts"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Accounts />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/tasks"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Tasks />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/time"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Time />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/journal"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Journal />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/pomodoro"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Pomodoro />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/budget"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Budget />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="/test"
+                        element={
+                          <ProtectedRoute>
+                            <Layout>
+                              <Test />
+                              <FloatingTimerWidget />
+                            </Layout>
+                          </ProtectedRoute>
+                        }
+                      />
+                      <Route
+                        path="*"
+                        element={
+                          <PublicRoute>
+                            <NotFound />
+                          </PublicRoute>
+                        }
+                      />
+                    </Routes>
+                  </BrowserRouter>
+                  <SearchModal />
+                </TooltipProvider>
+              </FloatingWidgetProvider>
+            </IconPickerProvider>
           </AuthProvider>
         </CurrencyProvider>
       </ThemeProvider>

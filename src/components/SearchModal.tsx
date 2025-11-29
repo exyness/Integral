@@ -1,3 +1,8 @@
+import {
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@radix-ui/react-tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowDown,
@@ -12,19 +17,15 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { Tooltip } from "recharts";
 import { toast } from "sonner";
 import { spiderSharpHanging, witchBrew } from "@/assets";
 import { Spinner } from "@/components/Spinner";
 import { Button } from "@/components/ui/Button";
+import { PortalTooltip } from "@/components/ui/PortalTooltip";
 import { Progress } from "@/components/ui/Progress";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { TextShimmer } from "@/components/ui/TextShimmer";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/Tooltip";
 import { useFloatingWidget } from "@/contexts/FloatingWidgetContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useSpookyAI } from "@/hooks/useSpookyAI";
@@ -425,122 +426,110 @@ export const SearchModal: React.FC = () => {
                 )}
 
                 {/* Import Buttons */}
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleImportNotes}
-                        disabled={
-                          isImportingJournal ||
-                          isImportingNotes ||
-                          isImportingTasks ||
-                          isGhostWriting
-                        }
-                        className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
-                          isHalloweenMode
-                            ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-                            : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                        }`}
-                      >
-                        <FileText
-                          className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                            isImportingNotes ? "hidden" : ""
-                          }`}
-                        />
-                        {isImportingNotes && (
-                          <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {isHalloweenMode
-                          ? "Summon notes from the void"
-                          : "Index all notes for AI search"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <PortalTooltip
+                  content={
+                    isHalloweenMode
+                      ? "Summon notes from the void"
+                      : "Index all notes for AI search"
+                  }
+                  side="top"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleImportNotes}
+                    disabled={
+                      isImportingJournal ||
+                      isImportingNotes ||
+                      isImportingTasks ||
+                      isGhostWriting
+                    }
+                    className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
+                      isHalloweenMode
+                        ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                        : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                    }`}
+                  >
+                    <FileText
+                      className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
+                        isImportingNotes ? "hidden" : ""
+                      }`}
+                    />
+                    {isImportingNotes && (
+                      <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    )}
+                  </Button>
+                </PortalTooltip>
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleImportTasks}
-                        disabled={
-                          isImportingJournal ||
-                          isImportingNotes ||
-                          isImportingTasks ||
-                          isGhostWriting
-                        }
-                        className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
-                          isHalloweenMode
-                            ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-                            : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                        }`}
-                      >
-                        <List
-                          className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                            isImportingTasks ? "hidden" : ""
-                          }`}
-                        />
-                        {isImportingTasks && (
-                          <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {isHalloweenMode
-                          ? "Summon tasks from the shadows"
-                          : "Index all tasks for AI search"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <PortalTooltip
+                  content={
+                    isHalloweenMode
+                      ? "Summon tasks from the shadows"
+                      : "Index all tasks for AI search"
+                  }
+                  side="top"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleImportTasks}
+                    disabled={
+                      isImportingJournal ||
+                      isImportingNotes ||
+                      isImportingTasks ||
+                      isGhostWriting
+                    }
+                    className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
+                      isHalloweenMode
+                        ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                        : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                    }`}
+                  >
+                    <List
+                      className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
+                        isImportingTasks ? "hidden" : ""
+                      }`}
+                    />
+                    {isImportingTasks && (
+                      <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    )}
+                  </Button>
+                </PortalTooltip>
 
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={handleImportJournal}
-                        disabled={
-                          isImportingJournal ||
-                          isImportingNotes ||
-                          isImportingTasks ||
-                          isGhostWriting
-                        }
-                        className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
-                          isHalloweenMode
-                            ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-                            : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                        }`}
-                      >
-                        <BookOpen
-                          className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                            isImportingJournal ? "hidden" : ""
-                          }`}
-                        />
-                        {isImportingJournal && (
-                          <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        )}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>
-                        {isHalloweenMode
-                          ? "Summon journal entries from the past"
-                          : "Index all journal entries for AI search"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <PortalTooltip
+                  content={
+                    isHalloweenMode
+                      ? "Summon journal entries from the past"
+                      : "Index all journal entries for AI search"
+                  }
+                  side="top"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleImportJournal}
+                    disabled={
+                      isImportingJournal ||
+                      isImportingNotes ||
+                      isImportingTasks ||
+                      isGhostWriting
+                    }
+                    className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
+                      isHalloweenMode
+                        ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                        : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                    }`}
+                  >
+                    <BookOpen
+                      className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
+                        isImportingJournal ? "hidden" : ""
+                      }`}
+                    />
+                    {isImportingJournal && (
+                      <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    )}
+                  </Button>
+                </PortalTooltip>
 
                 <div
                   className={`hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium ${
