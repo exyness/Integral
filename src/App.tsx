@@ -39,8 +39,8 @@ const Journal = lazy(() =>
 const Pomodoro = lazy(() =>
   import("./pages/Pomodoro").then((m) => ({ default: m.Pomodoro })),
 );
-const Budget = lazy(() =>
-  import("./pages/Budget").then((m) => ({ default: m.Budget })),
+const Finances = lazy(() =>
+  import("./pages/Budget").then((m) => ({ default: m.Finances })),
 );
 const AuthPage = lazy(() =>
   import("./pages/Auth").then((m) => ({ default: m.Auth })),
@@ -57,9 +57,6 @@ const HalloweenAssets = lazy(() =>
   import("./pages/HalloweenAssets").then((m) => ({
     default: m.HalloweenAssets,
   })),
-);
-const Test = lazy(() =>
-  import("./pages/Test").then((m) => ({ default: m.Test })),
 );
 
 const queryClient = new QueryClient({
@@ -253,18 +250,7 @@ const App = () => (
                         element={
                           <ProtectedRoute>
                             <Layout>
-                              <Budget />
-                              <FloatingTimerWidget />
-                            </Layout>
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route
-                        path="/test"
-                        element={
-                          <ProtectedRoute>
-                            <Layout>
-                              <Test />
+                              <Finances />
                               <FloatingTimerWidget />
                             </Layout>
                           </ProtectedRoute>

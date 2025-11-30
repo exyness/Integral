@@ -45,11 +45,11 @@ export const MobileShowcase: React.FC<MobileShowcaseProps> = ({ isDark }) => {
     },
     {
       src: `showcase/mobile/${themeFolder}/budgets.webp`,
-      alt: "Budget Tracking",
+      alt: "Financial Tracking",
     },
     {
       src: `showcase/mobile/${themeFolder}/budgets-analytics.webp`,
-      alt: "Budget Analytics",
+      alt: "Financial Analytics",
     },
     {
       src: `showcase/mobile/${themeFolder}/accounts.webp`,

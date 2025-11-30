@@ -92,7 +92,7 @@ const navigationItems: NavigationItem[] = [
   {
     id: "budget",
     icon: Wallet,
-    label: "Budget",
+    label: "Finances",
     path: "/budget",
     color: "#10B981",
   },
@@ -275,9 +275,7 @@ export const Navbar: React.FC = () => {
               style={{ filter: "brightness(1.2)" }}
             />
           ) : (
-            <span className="text-gray-300 font-bold text-base sm:text-lg font-['Outfit']">
-              IG
-            </span>
+            <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
           )}
         </motion.div>
         <h1
@@ -586,9 +584,7 @@ export const Navbar: React.FC = () => {
                     <motion.div
                       className={`${THEME_STYLES.logo} h-8 w-8 rounded-lg flex items-center justify-center`}
                     >
-                      <span className="text-white font-bold text-base font-['Outfit']">
-                        IG
-                      </span>
+                      <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
                     </motion.div>
                     <h1 className="text-xl font-semibold tracking-tight font-['Outfit'] text-purple-600">
                       Integral

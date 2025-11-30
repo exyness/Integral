@@ -46,7 +46,7 @@ export const Landing: React.FC = () => {
     { name: "Tasks", icon: List, color: "#10B981" },
     { name: "Time", icon: Timer, color: "#3B82F6" },
     { name: "Journal", icon: BookOpen, color: "#8B5CF6" },
-    { name: "Budget", icon: Wallet, color: "#F59E0B" },
+    { name: "Finances", icon: Wallet, color: "#F59E0B" },
     { name: "Notes", icon: FileText, color: "#EC4899" },
     { name: "Accounts", icon: KeyRound, color: "#6366F1" },
     { name: "Pomodoro", icon: Clock, color: "#EF4444" },
@@ -94,14 +94,14 @@ export const Landing: React.FC = () => {
     },
     {
       icon: Wallet,
-      title: "Budget Tracker",
+      title: "Financial Management",
       description:
-        "Track expenses and chat with your financial data using RAG technology. Get AI-powered insights on your spending habits.",
+        "Track assets, liabilities, and net worth. Chat with your financial data using RAG technology for AI-powered insights.",
       color: "#F59E0B",
       features: [
+        "Net Worth Tracking",
+        "Asset & Liability Management",
         "RAG Financial Chat",
-        "Expense Tracking",
-        "Budget Goals",
         "Multi-Currency",
       ],
     },

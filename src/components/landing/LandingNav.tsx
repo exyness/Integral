@@ -88,9 +88,7 @@ export const LandingNav: React.FC<LandingNavProps> = ({
               style={{ filter: "brightness(1.2)" }}
             />
           ) : (
-            <span className="text-gray-300 font-bold text-base sm:text-lg font-['Outfit']">
-              IG
-            </span>
+            <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
           )}
         </motion.div>
         <h1

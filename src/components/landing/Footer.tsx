@@ -141,13 +141,7 @@ export const Footer: React.FC<FooterProps> = ({ isDark }) => {
                     : "bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]"
                 } h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10 rounded-lg flex items-center justify-center`}
               >
-                <span
-                  className={`${
-                    isHalloweenMode ? "text-[#60c9b6]" : "text-white"
-                  } font-bold text-base sm:text-lg font-['Outfit']`}
-                >
-                  IG
-                </span>
+                <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
               </div>
               <span
                 className={`text-lg sm:text-xl font-bold font-['Outfit'] ${
@@ -169,8 +163,8 @@ export const Footer: React.FC<FooterProps> = ({ isDark }) => {
               }`}
             >
               {isHalloweenMode
-                ? "Your haunted hub for tasks, time, budget, and more."
-                : "Your all-in-one productivity platform for tasks, time, budget, and more."}
+                ? "Your haunted hub for tasks, time, finances, and more."
+                : "Your all-in-one productivity platform for tasks, time, finances, and more."}
             </p>
           </div>
 
@@ -191,7 +185,7 @@ export const Footer: React.FC<FooterProps> = ({ isDark }) => {
               {[
                 "Tasks",
                 "Journal",
-                "Budget",
+                "Finances",
                 "Time Tracking",
                 "Notes",
                 "Pomodoro",

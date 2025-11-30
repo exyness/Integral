@@ -110,16 +110,16 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
     {
       id: "budget",
       icon: Wallet,
-      title: "Budget Tracking",
+      title: "Financial Management",
       description:
-        "Take control of your finances. Track expenses, set budget goals, analyze spending patterns, and get insights with detailed analytics.",
+        "Take control of your finances. Track assets, liabilities, and net worth. Get insights with AI-powered analytics.",
       color: "#F59E0B",
       imagePosition: "left",
       features: [
-        "Expense Tracking",
-        "Budget Goals",
+        "Net Worth Tracking",
+        "Asset & Liability Management",
         "Analytics Dashboard",
-        "Multi-Currency",
+        "Multi-Currency Support",
       ],
       coverImage: `showcase/${themeFolder}/budgets/budgets-cover.webp`,
       galleryImages: [

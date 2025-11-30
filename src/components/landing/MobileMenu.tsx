@@ -84,11 +84,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             onClick={() => navigate("/")}
             className="flex items-center space-x-2 cursor-pointer"
           >
-            <motion.div className="bg-linear-to-br from-[#8B5CF6] to-[#7C3AED] h-8 w-8 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-base font-['Outfit']">
-                IG
-              </span>
-            </motion.div>
+            <motion.div className="bg-linear-to-br from-[#8B5CF6] to-[#7C3AED] h-8 w-8 rounded-lg flex items-center justify-center" />
             <h1 className="text-xl font-semibold tracking-tight font-['Outfit'] text-purple-600">
               Integral
             </h1>
