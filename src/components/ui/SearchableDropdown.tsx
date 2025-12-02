@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, stagger } from "framer-motion";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import * as React from "react";
 import {
   createContext,
@@ -95,13 +95,6 @@ const Select = ({
         case "Enter":
         case " ":
           e.preventDefault();
-          // We need a way to select the item at highlightedIndex.
-          // Since we don't have the values here easily, we'll rely on the Item to check if it's highlighted and select itself?
-          // Or better, we trigger an event or state that Items listen to?
-          // Actually, simpler: SelectContent can handle the selection if it knows the values.
-          // But SelectContent is just rendering children.
-          // Let's use a trigger ref in context?
-          // Alternative: Pass a "selectHighlighted" flag to context?
           break;
         case "Escape":
           e.preventDefault();
@@ -346,8 +339,9 @@ const SelectContent = React.forwardRef<
   {
     className?: string;
     children: React.ReactNode;
+    searchBar?: React.ReactNode;
   }
->(({ className, children }, ref) => {
+>(({ className, children, searchBar }, ref) => {
   const {
     isOpen,
     contentPosition,
@@ -433,7 +427,7 @@ const SelectContent = React.forwardRef<
           }}
           style={getPortalStyles}
           className={cn(
-            "max-h-60 min-w-32 overflow-auto scrollbar-hide rounded-lg shadow-xl backdrop-blur-md p-2",
+            "flex flex-col min-w-32 rounded-lg shadow-xl backdrop-blur-md overflow-hidden",
             isHalloweenMode
               ? "border border-[rgba(96,201,182,0.3)] bg-[rgba(26,26,31,0.95)] text-[#60c9b6] shadow-[0_0_15px_rgba(96,201,182,0.2)]"
               : isDark
@@ -442,24 +436,36 @@ const SelectContent = React.forwardRef<
             className,
           )}
         >
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  delayChildren: stagger(0.05, { startDelay: 0.08 }),
+          {searchBar && (
+            <div
+              className={cn(
+                "flex-none px-2 pt-2 pb-2 border-b z-10",
+                isHalloweenMode
+                  ? "bg-[#1a1a1f] border-[#60c9b6]/20"
+                  : isDark
+                    ? "bg-[#1a1a1f] border-white/10"
+                    : "bg-white border-gray-100",
+              )}
+            >
+              {searchBar}
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto scrollbar-hide p-2 max-h-60">
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    duration: 0.15,
+                  },
                 },
-              },
-            }}
-          >
-            {React.Children.map(children, (child, index) => {
-              if (React.isValidElement(child)) {
-                // Only pass isHighlighted and index to SelectItem components
-                // We check if the child type matches SelectItem
-                if (child.type === SelectItem) {
+              }}
+            >
+              {React.Children.map(children, (child, index) => {
+                if (React.isValidElement(child)) {
                   return React.cloneElement(
                     child as React.ReactElement<{
                       index?: number;
@@ -472,10 +478,9 @@ const SelectContent = React.forwardRef<
                   );
                 }
                 return child;
-              }
-              return child;
-            })}
-          </motion.div>
+              })}
+            </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -486,6 +491,30 @@ const SelectContent = React.forwardRef<
     : null;
 });
 SelectContent.displayName = "SelectContent";
+
+// Create a wrapper to track open/close state
+const SelectContentWithOpenTracking = React.forwardRef<
+  HTMLDivElement,
+  {
+    className?: string;
+    children: React.ReactNode;
+    searchBar?: React.ReactNode;
+    onOpenChange?: (open: boolean) => void;
+  }
+>(({ onOpenChange, ...props }, ref) => {
+  const { isOpen } = useSelectContext();
+  const prevOpenRef = useRef(isOpen);
+
+  useEffect(() => {
+    if (prevOpenRef.current !== isOpen) {
+      onOpenChange?.(isOpen);
+      prevOpenRef.current = isOpen;
+    }
+  }, [isOpen, onOpenChange]);
+
+  return <SelectContent ref={ref} {...props} />;
+});
+SelectContentWithOpenTracking.displayName = "SelectContentWithOpenTracking";
 
 const SelectItem = React.forwardRef<
   HTMLDivElement,
@@ -560,22 +589,14 @@ const SelectItem = React.forwardRef<
       ref={combinedRef}
       role="option"
       aria-selected={isSelected}
-      variants={{
-        hidden: { opacity: 0, y: -4 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: {
-            duration: 0.3,
-            ease: [0.25, 0.46, 0.45, 0.94],
-          },
-        },
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.1 }}
       whileHover={!disabled ? hoverStyles : undefined}
       whileTap={!disabled ? tapStyles : undefined}
       onClick={() => !disabled && setSelectedValue(value, children)}
       className={cn(
-        "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg py-2.5 px-3 mb-1 text-xs md:text-sm outline-hidden border border-transparent transition-colors duration-200 ease-out",
+        "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg py-2.5 px-3 mb-1 text-[10px] md:text-xs outline-hidden border border-transparent transition-colors duration-200 ease-out",
         isHalloweenMode
           ? "text-[#60c9b6]"
           : isDark
@@ -620,8 +641,6 @@ const SelectItem = React.forwardRef<
 });
 SelectItem.displayName = "SelectItem";
 
-export { Select, SelectValue, SelectTrigger, SelectContent, SelectItem };
-
 export interface DropdownOption {
   value: string;
   label: string;
@@ -629,7 +648,7 @@ export interface DropdownOption {
   icon?: React.ReactNode;
 }
 
-interface DropdownProps {
+interface SearchableDropdownProps {
   value?: string;
   onValueChange?: (value: string) => void;
   placeholder?: string;
@@ -639,7 +658,7 @@ interface DropdownProps {
   disabled?: boolean;
 }
 
-export const Dropdown = React.memo(
+export const SearchableDropdown = React.memo(
   ({
     value,
     onValueChange,
@@ -648,8 +667,45 @@ export const Dropdown = React.memo(
     options,
     title,
     disabled = false,
-  }: DropdownProps) => {
+  }: SearchableDropdownProps) => {
     const { isDark, isHalloweenMode } = useTheme();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setDebouncedSearchTerm(searchTerm);
+      }, 150);
+      return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const filteredOptions = useMemo(() => {
+      if (!debouncedSearchTerm) return options;
+      return options.filter((option) =>
+        option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase()),
+      );
+    }, [options, debouncedSearchTerm]);
+
+    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      // Handle navigation keys
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault(); // Prevent cursor movement in input
+        // Allow event to bubble to Select's handleKeyDown for navigation
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Escape" || e.key === "Tab") {
+        // Allow these to bubble to Select
+        return;
+      }
+      // Stop propagation for typing to prevent triggering Select's keyboard handlers
+      e.stopPropagation();
+    };
+
+    const handleValueChange = (newValue: string) => {
+      onValueChange?.(newValue);
+      setSearchTerm(""); // Clear search on selection
+    };
 
     return (
       <div className={cn("", className)}>
@@ -668,7 +724,7 @@ export const Dropdown = React.memo(
         )}
         <Select
           value={value}
-          onValueChange={onValueChange}
+          onValueChange={handleValueChange}
           placeholder={placeholder}
         >
           <SelectTrigger
@@ -676,24 +732,73 @@ export const Dropdown = React.memo(
           >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
+          <SelectContentWithOpenTracking
+            onOpenChange={(open) => {
+              if (open) {
+                setTimeout(() => searchInputRef.current?.focus(), 100);
+              } else {
+                setSearchTerm("");
+              }
+            }}
+            searchBar={
+              <div className="relative">
+                <Search
+                  className={`absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${
+                    isHalloweenMode
+                      ? "text-[#60c9b6]/50"
+                      : isDark
+                        ? "text-gray-500"
+                        : "text-gray-400"
+                  }`}
+                />
+                <input
+                  ref={searchInputRef}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder="Search..."
+                  className={`w-full pl-8 pr-3 py-1.5 text-[10px] md:text-xs rounded-md outline-none transition-colors ${
+                    isHalloweenMode
+                      ? "bg-[#60c9b6]/10 text-[#60c9b6] placeholder-[#60c9b6]/40 focus:bg-[#60c9b6]/20"
+                      : isDark
+                        ? "bg-white/5 text-gray-200 placeholder-gray-500 focus:bg-white/10"
+                        : "bg-gray-100 text-gray-900 placeholder-gray-500 focus:bg-gray-200"
+                  }`}
+                />
+              </div>
+            }
+          >
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  disabled={option.disabled}
+                >
+                  <div className="flex items-center space-x-2">
+                    {option.icon && <span>{option.icon}</span>}
+                    <span>{option.label}</span>
+                  </div>
+                </SelectItem>
+              ))
+            ) : (
+              <div
+                className={`px-3 py-2 text-xs text-center ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6]/50"
+                    : isDark
+                      ? "text-gray-500"
+                      : "text-gray-400"
+                }`}
               >
-                <div className="flex items-center space-x-2">
-                  {option.icon && <span>{option.icon}</span>}
-                  <span>{option.label}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
+                No results found
+              </div>
+            )}
+          </SelectContentWithOpenTracking>
         </Select>
       </div>
     );
   },
 );
 
-Dropdown.displayName = "Dropdown";
+SearchableDropdown.displayName = "SearchableDropdown";

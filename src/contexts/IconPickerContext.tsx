@@ -83,9 +83,28 @@ export const IconRenderer = ({
   icon: string;
   className?: string;
 }) => {
-  const IconComponent = FA6Icons[
+  if (!icon) {
+    return null;
+  }
+
+  let IconComponent = FA6Icons[
     icon as keyof typeof FA6Icons
   ] as React.ComponentType<{ className?: string }>;
+
+  // Fallback: Try prepending "Fa" if not found and doesn't start with "Fa"
+  if (!IconComponent && !icon.startsWith("Fa")) {
+    IconComponent = FA6Icons[
+      `Fa${icon}` as keyof typeof FA6Icons
+    ] as React.ComponentType<{ className?: string }>;
+  }
+
+  if (!IconComponent) {
+    // console.warn(`Icon not found: ${icon}`);
+    // Final fallback to FaTag
+    IconComponent = FA6Icons["FaTag"] as React.ComponentType<{
+      className?: string;
+    }>;
+  }
 
   if (!IconComponent) {
     return null;

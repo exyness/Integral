@@ -1,8 +1,9 @@
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { VirtuosoGrid } from "react-virtuoso";
+
 import {
   Sheet,
   SheetContent,
@@ -32,6 +33,26 @@ export const IconPicker: React.FC<IconPickerProps> = ({
   const { icons, searchTerm, setSearchTerm } = useIconPicker();
   const pickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // Responsive columns: 5 on mobile, 6 on desktop
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const columnsPerRow = isMobile ? 5 : 6;
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const rowVirtualizer = useVirtualizer({
+    count: Math.ceil(icons.length / columnsPerRow),
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => (isMobile ? 40 : 50),
+    overscan: 5,
+  });
 
   // Local search state for debouncing
   const [localSearch, setLocalSearch] = useState(searchTerm);
@@ -61,10 +82,9 @@ export const IconPicker: React.FC<IconPickerProps> = ({
     showAbove: false,
   });
 
-  // State for compact view (mobile)
-  const [compactView, setCompactView] = useState(() => {
-    return typeof window !== "undefined" && window.innerWidth < 768;
-  });
+  // State for compact view - false uses dropdown, true uses bottom sheet
+  // We use dropdown (false) but render it compactly
+  const [compactView] = useState(false);
 
   // State for tooltip
   const [hoveredIcon, setHoveredIcon] = useState<{
@@ -78,7 +98,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
     setIsOpen(true);
     if (inputRef.current) {
       const rect = inputRef.current.getBoundingClientRect();
-      const dropdownHeight = compactView ? 300 : 400;
+      const dropdownHeight = window.innerWidth < 768 ? 300 : 280; // Match Calendar: 300px mobile, 280px desktop
       const spaceBelow = window.innerHeight - rect.bottom;
       const spaceAbove = rect.top;
       const showAbove = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
@@ -100,7 +120,12 @@ export const IconPicker: React.FC<IconPickerProps> = ({
 
   const handleSelect = (iconName: string) => {
     onChange(iconName);
-    handleClose();
+    // Small delay to ensure state update propagates before closing
+    setTimeout(() => {
+      setIsOpen(false);
+      setLocalSearch("");
+      setHoveredIcon(null);
+    }, 0);
   };
 
   const handleIconHover = (
@@ -128,7 +153,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
     const updatePosition = () => {
       if (inputRef.current) {
         const rect = inputRef.current.getBoundingClientRect();
-        const dropdownHeight = compactView ? 300 : 400;
+        const dropdownHeight = window.innerWidth < 768 ? 300 : 280; // Match Calendar: 300px mobile, 280px desktop
         const spaceBelow = window.innerHeight - rect.bottom;
         const spaceAbove = rect.top;
         const showAbove =
@@ -152,37 +177,14 @@ export const IconPicker: React.FC<IconPickerProps> = ({
     };
   }, [isOpen, compactView]);
 
-  // Virtuoso Grid Components
-  const GridList = forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
-  >((props, ref) => (
-    <div
-      ref={ref}
-      {...props}
-      className={`grid gap-${compactView ? "1.5" : "2"} ${compactView ? "grid-cols-6" : "grid-cols-6"} ${compactView ? "p-2" : "p-3"}`}
-    />
-  ));
-  GridList.displayName = "GridList";
-
-  const GridItem = forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
-  >((props, ref) => (
-    <div ref={ref} {...props} className="aspect-square overflow-visible" />
-  ));
-  GridItem.displayName = "GridItem";
-
   // Render content for both Sheet and Dropdown
   const renderPickerContent = () => (
     <div className="flex flex-col h-full">
       {/* Search Input */}
-      <div
-        className={`border-b border-gray-700/50 ${compactView ? "px-3 pb-2" : "p-3"} shrink-0`}
-      >
+      <div className="border-b border-gray-700/50 mt-2 px-3 pb-2 shrink-0">
         <div className="relative">
           <Search
-            className={`absolute left-3 top-1/2 -translate-y-1/2 ${compactView ? "w-3 h-3" : "w-4 h-4"} ${
+            className={`absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 ${
               isHalloweenMode
                 ? "text-[#60c9b6]/50"
                 : isDark
@@ -196,7 +198,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
             onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search icons..."
             autoFocus
-            className={`w-full ${compactView ? "pl-8 pr-3 py-1.5 text-xs" : "pl-10 pr-4 py-2"} rounded-lg border transition-colors focus:outline-none focus:ring-2 ${
+            className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border transition-colors focus:outline-none focus:ring-2 ${
               isHalloweenMode
                 ? "bg-[#0f0f13] border-[#60c9b6]/20 text-[#60c9b6] placeholder-[#60c9b6]/40 focus:border-[#60c9b6] focus:ring-[#60c9b6]/50"
                 : isDark
@@ -219,57 +221,88 @@ export const IconPicker: React.FC<IconPickerProps> = ({
             <p className="text-sm">No icons found</p>
           </div>
         ) : (
-          <VirtuosoGrid
-            style={{ height: "100%" }}
-            totalCount={icons.length}
-            components={{
-              List: GridList,
-              Item: GridItem,
-            }}
-            itemContent={(index) => {
-              const icon = icons[index];
-              return (
-                <button
-                  key={icon.name}
-                  onClick={() => handleSelect(icon.name)}
-                  onMouseEnter={(e) => handleIconHover(e, icon)}
-                  onMouseLeave={handleIconLeave}
-                  className={`group w-full h-full flex items-center justify-center rounded-lg border transition-transform transition-colors duration-200 hover:scale-110 hover:z-10 relative cursor-pointer focus:outline-none focus:ring-2 ${
-                    value === icon.name
-                      ? isHalloweenMode
-                        ? "bg-[#60c9b6]/20 border-[#60c9b6]/50 focus:ring-[#60c9b6]/50"
-                        : isDark
-                          ? "bg-[#8B5CF6]/20 border-[#8B5CF6]/50 focus:ring-[#8B5CF6]/50"
-                          : "bg-[#8B5CF6]/10 border-[#8B5CF6]/50 focus:ring-[#8B5CF6]/50"
-                      : isHalloweenMode
-                        ? "border-[#60c9b6]/10 hover:bg-[#60c9b6]/10 hover:border-[#60c9b6]/30 focus:ring-[#60c9b6]/50"
-                        : isDark
-                          ? "border-[rgba(255,255,255,0.05)] hover:bg-white/10 hover:border-[rgba(255,255,255,0.1)] focus:ring-white/20"
-                          : "border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-[#8B5CF6]/50"
-                  }`}
-                >
-                  {React.createElement(
-                    icon.Component as React.ComponentType<{
-                      className?: string;
-                    }>,
-                    {
-                      className: `${compactView ? "w-4 h-4" : "w-5 h-5"} ${
-                        value === icon.name
-                          ? isHalloweenMode
-                            ? "text-[#60c9b6]"
-                            : "text-[#8B5CF6]"
-                          : isHalloweenMode
-                            ? "text-[#60c9b6]/70 group-hover:text-[#60c9b6]"
-                            : isDark
-                              ? "text-gray-400 group-hover:text-white"
-                              : "text-gray-600 group-hover:text-gray-900"
-                      }`,
-                    },
-                  )}
-                </button>
-              );
-            }}
-          />
+          <div
+            ref={parentRef}
+            className="h-full overflow-y-auto p-2 mobile-scrollbar-hide"
+          >
+            <div
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                width: "100%",
+                position: "relative",
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const rowStartIndex = virtualRow.index * columnsPerRow;
+                const rowIcons = icons.slice(
+                  rowStartIndex,
+                  rowStartIndex + columnsPerRow,
+                );
+
+                return (
+                  <div
+                    key={virtualRow.index}
+                    data-index={virtualRow.index}
+                    ref={rowVirtualizer.measureElement}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                    className={`grid pb-1.5 ${isMobile ? "grid-cols-5 gap-1" : "grid-cols-6 gap-1.5"}`}
+                  >
+                    {rowIcons.map((icon) => (
+                      <div key={icon.name} className="aspect-square">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelect(icon.name);
+                          }}
+                          onMouseEnter={(e) => handleIconHover(e, icon)}
+                          onMouseLeave={handleIconLeave}
+                          className={`group w-full h-full flex items-center justify-center rounded-md md:rounded-lg border transition-transform transition-colors duration-200 hover:scale-110 hover:z-10 relative cursor-pointer focus:outline-none focus:ring-2 pointer-events-auto ${
+                            value === icon.name
+                              ? isHalloweenMode
+                                ? "bg-[#60c9b6]/20 border-[#60c9b6]/50 focus:ring-[#60c9b6]/50"
+                                : isDark
+                                  ? "bg-[#8B5CF6]/20 border-[#8B5CF6]/50 focus:ring-[#8B5CF6]/50"
+                                  : "bg-[#8B5CF6]/10 border-[#8B5CF6]/50 focus:ring-[#8B5CF6]/50"
+                              : isHalloweenMode
+                                ? "border-[#60c9b6]/10 hover:bg-[#60c9b6]/10 hover:border-[#60c9b6]/30 focus:ring-[#60c9b6]/50"
+                                : isDark
+                                  ? "border-[rgba(255,255,255,0.05)] hover:bg-white/10 hover:border-[rgba(255,255,255,0.1)] focus:ring-white/20"
+                                  : "border-gray-200 hover:bg-gray-50 hover:border-gray-300 focus:ring-[#8B5CF6]/50"
+                          }`}
+                        >
+                          {React.createElement(
+                            icon.Component as React.ComponentType<{
+                              className?: string;
+                            }>,
+                            {
+                              className: `w-3 h-3 md:w-4 md:h-4 ${
+                                value === icon.name
+                                  ? isHalloweenMode
+                                    ? "text-[#60c9b6]"
+                                    : "text-[#8B5CF6]"
+                                  : isHalloweenMode
+                                    ? "text-[#60c9b6]/70 group-hover:text-[#60c9b6]"
+                                    : isDark
+                                      ? "text-gray-400 group-hover:text-white"
+                                      : "text-gray-600 group-hover:text-gray-900"
+                              }`,
+                            },
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -279,11 +312,11 @@ export const IconPicker: React.FC<IconPickerProps> = ({
     <div className="w-full">
       {label && (
         <label
-          className={`block text-sm font-medium mb-1.5 ${
+          className={`block text-xs md:text-sm font-medium mb-1.5 md:mb-2 ${
             isHalloweenMode
               ? "text-[#60c9b6]"
               : isDark
-                ? "text-gray-300"
+                ? "text-white"
                 : "text-gray-700"
           }`}
         >
@@ -397,7 +430,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50"
+              className="fixed inset-0 z-[9999] pointer-events-auto"
               onClick={handleClose}
             >
               <motion.div
@@ -412,8 +445,10 @@ export const IconPicker: React.FC<IconPickerProps> = ({
                   position: "absolute",
                   top: `${dropdownPosition.top}px`,
                   left: `${dropdownPosition.left}px`,
-                  width: `${Math.max(dropdownPosition.width, 320)}px`,
-                  height: "400px",
+                  width: `${Math.max(dropdownPosition.width, isMobile ? 260 : 320)}px`,
+                  height: isMobile ? "300px" : "280px",
+                  zIndex: 10000,
+                  pointerEvents: "auto",
                 }}
                 onClick={(e) => e.stopPropagation()}
                 className={`rounded-lg border shadow-xl overflow-hidden flex flex-col ${
@@ -436,7 +471,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
         isOpen &&
         createPortal(
           <div
-            className={`fixed z-[100] px-2 py-1 rounded ${compactView ? "text-[10px]" : "text-xs"} whitespace-nowrap pointer-events-none transition-opacity shadow-lg animate-in fade-in-0 zoom-in-95 duration-200 ${
+            className={`fixed z-[100] px-2 py-1 rounded text-[10px] whitespace-nowrap pointer-events-none transition-opacity shadow-lg animate-in fade-in-0 zoom-in-95 duration-200 ${
               isDark ? "bg-white text-gray-900" : "bg-gray-900 text-white"
             }`}
             style={{

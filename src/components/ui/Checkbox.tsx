@@ -22,39 +22,39 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   const { isDark, isHalloweenMode } = useTheme();
 
   return (
-    <div className={`flex items-center space-x-3 ${className}`}>
+    <label
+      className={`group flex items-center space-x-3 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+    >
       <div className="relative">
         <input
           type="checkbox"
           id={id}
           checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
+          onChange={(e) => !disabled && onChange(e.target.checked)}
           disabled={disabled}
           className="sr-only"
         />
         <div
-          onClick={() => !disabled && onChange(!checked)}
           className={`
-            w-5 h-5 rounded border-2 cursor-pointer transition-all duration-200 flex items-center justify-center
+            w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center
             ${
               checked
                 ? isHalloweenMode
                   ? "bg-[#60c9b6] border-[#60c9b6]"
                   : "bg-[#8B5CF6] border-[#8B5CF6]"
                 : isHalloweenMode
-                  ? "bg-transparent border-[#60c9b6]/30 hover:border-[#60c9b6]/50"
+                  ? "bg-transparent border-[#60c9b6]/30 group-hover:border-[#60c9b6]/50"
                   : isDark
-                    ? "bg-transparent border-[rgba(255,255,255,0.2)] hover:border-[rgba(255,255,255,0.3)]"
-                    : "bg-white border-gray-300 hover:border-gray-400"
+                    ? "bg-transparent border-[rgba(255,255,255,0.2)] group-hover:border-[rgba(255,255,255,0.3)]"
+                    : "bg-white border-gray-300 group-hover:border-gray-400"
             }
-            ${disabled ? "opacity-50 cursor-not-allowed" : ""}
             ${
               !disabled
                 ? isHalloweenMode
-                  ? "hover:bg-[#60c9b6]/10"
+                  ? "group-hover:bg-[#60c9b6]/10"
                   : isDark
-                    ? "hover:bg-[rgba(139,92,246,0.1)]"
-                    : "hover:bg-[rgba(139,92,246,0.05)]"
+                    ? "group-hover:bg-[rgba(139,92,246,0.1)]"
+                    : "group-hover:bg-[rgba(139,92,246,0.05)]"
                 : ""
             }
           `}
@@ -69,11 +69,9 @@ export const Checkbox: React.FC<CheckboxProps> = ({
         </div>
       </div>
       {label && (
-        <label
-          htmlFor={id}
+        <span
           className={`
-            text-sm font-medium cursor-pointer select-none
-            ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+            text-sm font-medium select-none
             ${
               isHalloweenMode
                 ? "text-[#60c9b6]"
@@ -82,11 +80,10 @@ export const Checkbox: React.FC<CheckboxProps> = ({
                   : "text-gray-700"
             }
           `}
-          onClick={() => !disabled && onChange(!checked)}
         >
           {label}
-        </label>
+        </span>
       )}
-    </div>
+    </label>
   );
 };
