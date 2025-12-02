@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import path from "path";
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/Tooltip.tsx";
@@ -40,7 +41,7 @@ const Pomodoro = lazy(() =>
   import("./pages/Pomodoro").then((m) => ({ default: m.Pomodoro })),
 );
 const Finances = lazy(() =>
-  import("./pages/Budget").then((m) => ({ default: m.Finances })),
+  import("./pages/Finances").then((m) => ({ default: m.Finances })),
 );
 const AuthPage = lazy(() =>
   import("./pages/Auth").then((m) => ({ default: m.Auth })),
@@ -246,7 +247,7 @@ const App = () => (
                         }
                       />
                       <Route
-                        path="/budget"
+                        path="/finances"
                         element={
                           <ProtectedRoute>
                             <Layout>

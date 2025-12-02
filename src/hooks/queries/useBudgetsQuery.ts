@@ -4,17 +4,22 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  Account,
   AnalyticsSummary,
   Budget,
   BudgetTransaction,
   CategorySpending,
   DailySpending,
+  RecurringTransaction,
 } from "@/types/budget";
 
 export const QUERY_KEYS = {
   BUDGETS: "budgets",
   BUDGET_TRANSACTIONS: "budget-transactions",
   ANALYTICS: "analytics",
+  ACCOUNTS: "accounts",
+  RECURRING_TRANSACTIONS: "recurring-transactions",
+  CATEGORIES: "categories",
 } as const;
 
 const QUERY_CONFIG = {
@@ -208,12 +213,27 @@ export const useCreateTransaction = () => {
     ): Promise<BudgetTransaction> => {
       if (!user) throw new Error("User not authenticated");
 
+      // Only include valid fields for budget_transactions table
+      const transactionData = {
+        budget_id: transaction.budget_id,
+        amount: transaction.amount,
+        description: transaction.description,
+        category: transaction.category,
+        transaction_date: transaction.transaction_date,
+        account_id: transaction.account_id || null,
+        category_id: transaction.category_id || null,
+        type: transaction.type || null,
+        to_account_id: transaction.to_account_id || null,
+        tags: transaction.tags || null,
+        is_recurring: transaction.is_recurring || null,
+        recurring_id: transaction.recurring_id || null,
+        balance: transaction.balance || null,
+        user_id: user.id,
+      };
+
       const { data, error } = await supabase
         .from("budget_transactions")
-        .insert({
-          ...transaction,
-          user_id: user.id,
-        })
+        .insert(transactionData)
         .select()
         .single();
 
@@ -251,6 +271,10 @@ export const useCreateTransaction = () => {
         queryKey: [QUERY_KEYS.ANALYTICS, user?.id],
       });
 
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
+      });
+
       toast.success(
         newTransaction.budget_id
           ? "Transaction added successfully!"
@@ -281,9 +305,36 @@ export const useUpdateTransaction = () => {
     }): Promise<BudgetTransaction> => {
       if (!user) throw new Error("User not authenticated");
 
+      // Only include valid fields for budget_transactions table
+      const transactionUpdates: any = {};
+      if (updates.budget_id !== undefined)
+        transactionUpdates.budget_id = updates.budget_id;
+      if (updates.amount !== undefined)
+        transactionUpdates.amount = updates.amount;
+      if (updates.description !== undefined)
+        transactionUpdates.description = updates.description;
+      if (updates.category !== undefined)
+        transactionUpdates.category = updates.category;
+      if (updates.transaction_date !== undefined)
+        transactionUpdates.transaction_date = updates.transaction_date;
+      if (updates.account_id !== undefined)
+        transactionUpdates.account_id = updates.account_id;
+      if (updates.category_id !== undefined)
+        transactionUpdates.category_id = updates.category_id;
+      if (updates.type !== undefined) transactionUpdates.type = updates.type;
+      if (updates.to_account_id !== undefined)
+        transactionUpdates.to_account_id = updates.to_account_id;
+      if (updates.tags !== undefined) transactionUpdates.tags = updates.tags;
+      if (updates.is_recurring !== undefined)
+        transactionUpdates.is_recurring = updates.is_recurring;
+      if (updates.recurring_id !== undefined)
+        transactionUpdates.recurring_id = updates.recurring_id;
+      if (updates.balance !== undefined)
+        transactionUpdates.balance = updates.balance;
+
       const { data, error } = await supabase
         .from("budget_transactions")
-        .update(updates)
+        .update(transactionUpdates)
         .eq("id", id)
         .eq("user_id", user.id)
         .select()
@@ -341,6 +392,10 @@ export const useUpdateTransaction = () => {
 
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.ANALYTICS, user?.id],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
       });
 
       toast.success("Transaction updated successfully!");
@@ -402,6 +457,10 @@ export const useDeleteTransaction = () => {
         queryKey: [QUERY_KEYS.ANALYTICS, user?.id],
       });
 
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
+      });
+
       toast.success("Transaction deleted successfully!");
     },
     onError: (error: PostgrestError) => {
@@ -418,6 +477,7 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
     queryFn: async (): Promise<AnalyticsSummary> => {
       if (!user) throw new Error("User not authenticated");
 
+      // Fetch transactions
       const { data: transactions, error } = await supabase
         .from("budget_transactions")
         .select("*")
@@ -430,6 +490,7 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
 
       const allTransactions = (transactions || []) as BudgetTransaction[];
 
+      // Fetch budgets
       const { data: budgets, error: budgetsError } = await supabase
         .from("budgets")
         .select("*")
@@ -439,33 +500,74 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
 
       const allBudgets = (budgets || []) as Budget[];
 
-      const totalSpent = allTransactions.reduce((sum, t) => sum + t.amount, 0);
-      const transactionCount = allTransactions.length;
+      // Fetch categories for mapping
+      const { data: categories, error: categoriesError } = await supabase
+        .from("finance_categories")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (categoriesError) throw categoriesError;
+
+      const categoriesMap = new Map((categories || []).map((c) => [c.id, c]));
+
+      // Filter for expenses only for spending analysis
+      const expenseTransactions = allTransactions.filter(
+        (t) => t.type === "expense",
+      );
+
+      const totalSpent = expenseTransactions.reduce(
+        (sum, t) => sum + t.amount,
+        0,
+      );
+      const transactionCount = expenseTransactions.length;
       const averageTransaction =
         transactionCount > 0 ? totalSpent / transactionCount : 0;
 
-      const categoryMap = new Map<string, { amount: number; count: number }>();
-      allTransactions.forEach((t) => {
-        const existing = categoryMap.get(t.category) || { amount: 0, count: 0 };
-        categoryMap.set(t.category, {
+      // Category Breakdown using category_id
+      const categoryStatsMap = new Map<
+        string,
+        { amount: number; count: number; name: string; color: string }
+      >();
+
+      expenseTransactions.forEach((t) => {
+        // Use category_id if available, otherwise fallback to category string (legacy)
+        const categoryId = t.category_id;
+        const categoryData = categoryId ? categoriesMap.get(categoryId) : null;
+
+        // Key for grouping: category ID or name
+        const key = categoryId || t.category;
+        const name = categoryData?.name || t.category;
+        const color = categoryData?.color || "#6B7280"; // Default gray
+
+        const existing = categoryStatsMap.get(key) || {
+          amount: 0,
+          count: 0,
+          name,
+          color,
+        };
+        categoryStatsMap.set(key, {
           amount: existing.amount + t.amount,
           count: existing.count + 1,
+          name,
+          color,
         });
       });
 
       const categoryBreakdown: CategorySpending[] = Array.from(
-        categoryMap.entries(),
+        categoryStatsMap.values(),
       )
-        .map(([category, data]) => ({
-          category,
+        .map((data) => ({
+          category: data.name, // Use the resolved name
           amount: data.amount,
           count: data.count,
           percentage: totalSpent > 0 ? (data.amount / totalSpent) * 100 : 0,
+          color: data.color, // Pass color to frontend
         }))
         .sort((a, b) => b.amount - a.amount);
 
+      // Daily Spending (Expenses only)
       const dailyMap = new Map<string, { amount: number; count: number }>();
-      allTransactions.forEach((t) => {
+      expenseTransactions.forEach((t) => {
         const existing = dailyMap.get(t.transaction_date) || {
           amount: 0,
           count: 0,
@@ -484,15 +586,17 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
         }))
         .sort((a, b) => a.date.localeCompare(b.date));
 
-      const topExpenses = [...allTransactions]
+      const topExpenses = [...expenseTransactions]
         .sort((a, b) => b.amount - a.amount)
         .slice(0, 10);
 
       const totalBudgeted = allBudgets.reduce((sum, b) => sum + b.amount, 0);
-      const budgetedTransactions = allTransactions.filter(
+
+      // Budgeted vs Actual (Expenses only)
+      const budgetedTransactions = expenseTransactions.filter(
         (t) => t.budget_id !== null,
       );
-      const standaloneTransactions = allTransactions.filter(
+      const standaloneTransactions = expenseTransactions.filter(
         (t) => t.budget_id === null,
       );
 
@@ -523,5 +627,383 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
     staleTime: QUERY_CONFIG.STALE_TIME,
     gcTime: QUERY_CONFIG.GC_TIME,
     placeholderData: (previousData) => previousData,
+  });
+};
+
+// ============================================
+// Account Management Hooks
+// ============================================
+
+export const useAccountsQuery = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
+    queryFn: async (): Promise<Account[]> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("finance_accounts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as Account[];
+    },
+    enabled: !!user?.id,
+    staleTime: QUERY_CONFIG.STALE_TIME,
+    gcTime: QUERY_CONFIG.GC_TIME,
+  });
+};
+
+export const useCreateAccount = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      accountData: Omit<
+        Account,
+        "id" | "user_id" | "created_at" | "updated_at"
+      >,
+    ): Promise<Account> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("finance_accounts")
+        .insert({
+          ...accountData,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Account;
+    },
+    onSuccess: (newAccount) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.ACCOUNTS, user?.id],
+        (oldData: Account[] = []) => [newAccount, ...oldData],
+      );
+      toast.success("Account created successfully!");
+    },
+    onError: (error: PostgrestError) => {
+      handleSupabaseError(error, "create account");
+    },
+  });
+};
+
+export const useUpdateAccount = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<Account>;
+    }): Promise<Account> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("finance_accounts")
+        .update(updates)
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Account;
+    },
+    onSuccess: (updatedAccount) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.ACCOUNTS, user?.id],
+        (oldData: Account[] = []) =>
+          oldData.map((account) =>
+            account.id === updatedAccount.id ? updatedAccount : account,
+          ),
+      );
+      toast.success("Account updated successfully!");
+    },
+    onError: (error: PostgrestError) => {
+      handleSupabaseError(error, "update account");
+    },
+  });
+};
+
+export const useDeleteAccount = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { error } = await supabase
+        .from("finance_accounts")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.ACCOUNTS, user?.id],
+        (oldData: Account[] = []) =>
+          oldData.filter((account) => account.id !== deletedId),
+      );
+      toast.success("Account deleted successfully!");
+    },
+    onError: (error: PostgrestError) => {
+      handleSupabaseError(error, "delete account");
+    },
+  });
+};
+
+export const useRecurringTransactionsQuery = () => {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: [QUERY_KEYS.RECURRING_TRANSACTIONS, user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("recurring_transactions" as any)
+        .select("*")
+        .eq("user_id", user.id)
+        .order("next_run_date", { ascending: true });
+
+      if (error) throw error;
+      return (data || []) as RecurringTransaction[];
+    },
+    enabled: !!user,
+  });
+};
+
+export const useCreateRecurringTransaction = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      newTransaction: Omit<
+        RecurringTransaction,
+        "id" | "user_id" | "created_at" | "updated_at" | "last_run_date"
+      >,
+    ): Promise<RecurringTransaction> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("recurring_transactions" as any)
+        .insert({
+          ...newTransaction,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as RecurringTransaction;
+    },
+    onSuccess: (newTransaction) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.RECURRING_TRANSACTIONS, user?.id],
+        (oldData: RecurringTransaction[] = []) => [newTransaction, ...oldData],
+      );
+      toast.success("Recurring transaction created successfully!");
+    },
+    onError: (error: PostgrestError) => {
+      handleSupabaseError(error, "create recurring transaction");
+    },
+  });
+};
+
+export const useUpdateRecurringTransaction = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<RecurringTransaction>;
+    }): Promise<RecurringTransaction> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("recurring_transactions" as any)
+        .update(updates)
+        .eq("id", id)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as RecurringTransaction;
+    },
+    onSuccess: (updatedTransaction) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.RECURRING_TRANSACTIONS, user?.id],
+        (oldData: RecurringTransaction[] = []) =>
+          oldData.map((t) =>
+            t.id === updatedTransaction.id ? updatedTransaction : t,
+          ),
+      );
+      toast.success("Recurring transaction updated successfully!");
+    },
+    onError: (error: PostgrestError) => {
+      handleSupabaseError(error, "update recurring transaction");
+    },
+  });
+};
+
+export const useDeleteRecurringTransaction = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string): Promise<void> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { error } = await supabase
+        .from("recurring_transactions" as any)
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData(
+        [QUERY_KEYS.RECURRING_TRANSACTIONS, user?.id],
+        (oldData: RecurringTransaction[] = []) =>
+          oldData.filter((t) => t.id !== deletedId),
+      );
+      toast.success("Recurring transaction deleted successfully!");
+    },
+    onError: (error: PostgrestError) => {
+      handleSupabaseError(error, "delete recurring transaction");
+    },
+  });
+};
+
+export const useProcessRecurringTransactions = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const createTransactionMutation = useCreateTransaction();
+  const updateRecurringMutation = useUpdateRecurringTransaction();
+
+  const processDueTransactions = async () => {
+    if (!user) return;
+
+    const { data: dueTransactions, error } = await supabase
+      .from("recurring_transactions")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("active", true)
+      .lte("next_run_date", new Date().toISOString().split("T")[0]);
+
+    if (error) {
+      console.error("Error fetching due recurring transactions:", error);
+      return;
+    }
+
+    if (!dueTransactions || dueTransactions.length === 0) return;
+
+    let processedCount = 0;
+
+    for (const recurring of dueTransactions) {
+      try {
+        // Create the actual transaction
+        await createTransactionMutation.mutateAsync({
+          amount: recurring.amount,
+          description: recurring.description,
+          category: "bills", // Default or fetch category name if needed
+          category_id: recurring.category_id,
+          transaction_date: recurring.next_run_date,
+          type: recurring.type as "expense" | "income" | "transfer",
+          account_id: recurring.account_id,
+          to_account_id: recurring.to_account_id,
+          is_recurring: true,
+          recurring_id: recurring.id,
+          budget_id: null, // Optional: could link to a budget if we had that info
+        });
+
+        // Calculate next run date
+        const nextDate = new Date(recurring.next_run_date);
+        switch (recurring.interval) {
+          case "daily":
+            nextDate.setDate(nextDate.getDate() + 1);
+            break;
+          case "weekly":
+            nextDate.setDate(nextDate.getDate() + 7);
+            break;
+          case "monthly":
+            nextDate.setMonth(nextDate.getMonth() + 1);
+            break;
+          case "yearly":
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+            break;
+        }
+
+        // Update the recurring rule
+        await updateRecurringMutation.mutateAsync({
+          id: recurring.id,
+          updates: {
+            last_run_date: recurring.next_run_date,
+            next_run_date: nextDate.toISOString().split("T")[0],
+          },
+        });
+
+        processedCount++;
+      } catch (err) {
+        console.error(
+          `Failed to process recurring transaction ${recurring.id}:`,
+          err,
+        );
+      }
+    }
+
+    if (processedCount > 0) {
+      toast.success(`Processed ${processedCount} recurring transactions.`);
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.RECURRING_TRANSACTIONS, user.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.BUDGET_TRANSACTIONS, user.id],
+      });
+    }
+  };
+
+  return { processDueTransactions };
+};
+
+export const useCategoriesQuery = () => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.CATEGORIES, user?.id],
+    queryFn: async (): Promise<CategorySpending[]> => {
+      if (!user) throw new Error("User not authenticated");
+
+      const { data, error } = await supabase
+        .from("finance_categories")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("name");
+
+      if (error) throw error;
+      return (data || []) as CategorySpending[];
+    },
+    enabled: !!user?.id,
+    staleTime: QUERY_CONFIG.STALE_TIME,
+    gcTime: QUERY_CONFIG.GC_TIME,
   });
 };

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import {
   AlertCircle,
+  ArrowLeft,
   ArrowUpDown,
   Award,
   Calendar,
@@ -55,6 +56,7 @@ import {
 import { GlassCard } from "@/components/GlassCard";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAnalyticsQuery } from "@/hooks/queries/useBudgetsQuery";
+import { useCategoriesQuery } from "@/hooks/queries/useCategories";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Budget, DateRangeFilter } from "@/types/budget";
 
@@ -126,7 +128,13 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
   const { formatAmount, currency } = useCurrency();
   const [dateRange, setDateRange] = useState<DateRangeFilter>("month");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedParentCategory, setSelectedParentCategory] = useState<
+    string | null
+  >(null);
   const [sortBy, setSortBy] = useState<"amount" | "date">("amount");
+
+  // Fetch categories for subcategory drill-down
+  const { data: categories = [] } = useCategoriesQuery();
 
   const { startDate, endDate } = useMemo(() => {
     const end = new Date();
@@ -163,6 +171,53 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
     isLoading,
     isFetching,
   } = useAnalyticsQuery(startDate, endDate);
+
+  // Helper to check if a category has subcategories
+  const hasSubcategories = (categoryName: string) => {
+    const category = categories.find(
+      (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
+    );
+    return category && categories.some((c) => c.parent_id === category.id);
+  };
+
+  // Handle category click for drill-down
+  const handleCategoryClick = (categoryName: string) => {
+    if (hasSubcategories(categoryName)) {
+      setSelectedParentCategory(categoryName);
+    }
+  };
+
+  // Handle back to overview
+  const handleBackToOverview = () => {
+    setSelectedParentCategory(null);
+  };
+
+  // Filter category breakdown based on drill-down
+  const displayedCategoryBreakdown = useMemo(() => {
+    if (!analytics) return [];
+    if (!selectedParentCategory) return analytics.categoryBreakdown;
+
+    // Find the parent category
+    const parentCategory = categories.find(
+      (c) => c.name.toLowerCase() === selectedParentCategory.toLowerCase(),
+    );
+    if (!parentCategory) return analytics.categoryBreakdown;
+
+    // Get subcategory IDs
+    const subcategoryIds = categories
+      .filter((c) => c.parent_id === parentCategory.id)
+      .map((c) => c.id);
+
+    // Filter breakdown to only show subcategories
+    // Note: This assumes analytics.categoryBreakdown has category IDs or names
+    // You may need to adjust this based on your actual data structure
+    return analytics.categoryBreakdown.filter((item) => {
+      const itemCategory = categories.find(
+        (c) => c.name.toLowerCase() === item.category.toLowerCase(),
+      );
+      return itemCategory && subcategoryIds.includes(itemCategory.id);
+    });
+  }, [analytics, selectedParentCategory, categories]);
 
   const budgetUtilization = useMemo(() => {
     if (!analytics) return 0;
@@ -1325,6 +1380,24 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
             </div>
           )}
           <div className="p-3 sm:p-6">
+            {/* Breadcrumb and Back Button */}
+            {selectedParentCategory && (
+              <div className="mb-4">
+                <button
+                  onClick={handleBackToOverview}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    isHalloweenMode
+                      ? "bg-[#60c9b6]/20 text-[#60c9b6] hover:bg-[#60c9b6]/30"
+                      : isDark
+                        ? "bg-white/10 text-white hover:bg-white/20"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to All Categories
+                </button>
+              </div>
+            )}
             <h3
               className={`text-sm sm:text-lg font-bold mb-2 sm:mb-4 relative z-10 ${
                 isHalloweenMode
@@ -1334,9 +1407,11 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
                     : "text-gray-900"
               }`}
             >
-              Spending by Category
+              {selectedParentCategory
+                ? `${selectedParentCategory.charAt(0).toUpperCase() + selectedParentCategory.slice(1)} Breakdown`
+                : "Spending by Category"}
             </h3>
-            {analytics.categoryBreakdown.length > 0 ? (
+            {displayedCategoryBreakdown.length > 0 ? (
               <ResponsiveContainer
                 width="100%"
                 height={240}
@@ -1344,7 +1419,7 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
               >
                 <PieChart>
                   <Pie
-                    data={analytics.categoryBreakdown}
+                    data={displayedCategoryBreakdown}
                     dataKey="amount"
                     nameKey="category"
                     cx="50%"
@@ -1353,18 +1428,37 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
                     outerRadius={70}
                     paddingAngle={2}
                     className="sm:!innerRadius-[50] sm:!outerRadius-[85]"
+                    onClick={(data) => {
+                      if (!selectedParentCategory && data && data.category) {
+                        handleCategoryClick(data.category);
+                      }
+                    }}
                   >
-                    {analytics.categoryBreakdown.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          isHalloweenMode
-                            ? HALLOWEEN_CATEGORY_COLORS[entry.category] ||
-                              "#60c9b6"
-                            : CATEGORY_COLORS[entry.category] || "#6B7280"
-                        }
-                      />
-                    ))}
+                    {displayedCategoryBreakdown.map((entry, index) => {
+                      const isClickable =
+                        !selectedParentCategory &&
+                        hasSubcategories(entry.category);
+                      return (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            isHalloweenMode
+                              ? HALLOWEEN_CATEGORY_COLORS[
+                                  entry.category.toLowerCase()
+                                ] ||
+                                entry.color ||
+                                "#60c9b6"
+                              : entry.color ||
+                                CATEGORY_COLORS[entry.category.toLowerCase()] ||
+                                "#6B7280"
+                          }
+                          style={{
+                            cursor: isClickable ? "pointer" : "default",
+                            opacity: isClickable ? 1 : 0.95,
+                          }}
+                        />
+                      );
+                    })}
                   </Pie>
                   <Tooltip
                     contentStyle={{
@@ -1409,7 +1503,7 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
                     }}
                     iconSize={10}
                     formatter={(value) => {
-                      const categoryData = analytics.categoryBreakdown.find(
+                      const categoryData = displayedCategoryBreakdown.find(
                         (cat) => cat.category === value,
                       );
                       const percentage = categoryData?.percentage || 0;

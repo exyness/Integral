@@ -163,10 +163,10 @@ export const Dashboard: React.FC = () => {
             : "bg-red-50",
       },
       {
-        title: "Budgets",
+        title: "Finances",
         description: "Track spending",
         icon: DollarSign,
-        href: "/budget",
+        href: "/finances",
         color: isHalloweenMode ? "text-[#60c9b6]" : "text-[#06B6D4]",
         bgColor: isHalloweenMode
           ? "bg-[rgba(96,201,182,0.15)]"

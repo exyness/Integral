@@ -1,9 +1,12 @@
 import { motion } from "framer-motion";
 import {
+  ArrowDownLeft,
+  ArrowRight,
+  ArrowUpRight,
   Calendar,
   DollarSign,
   Edit2,
-  FileText,
+  Repeat,
   Trash2,
   Wallet,
 } from "lucide-react";
@@ -19,7 +22,10 @@ import {
   spiderHairyCrawling,
   witchFly,
 } from "@/assets";
+import { IconRenderer } from "@/contexts/IconPickerContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAccountsQuery } from "@/hooks/queries/useBudgetsQuery";
+import { useCategoriesQuery } from "@/hooks/queries/useCategories";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useTransactionFiltering } from "@/hooks/useTransactionFiltering";
 import { Budget, BudgetTransaction } from "@/types/budget";
@@ -43,6 +49,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
   const { formatAmount } = useCurrency();
+  const { data: accounts = [] } = useAccountsQuery();
+  const { data: categories = [] } = useCategoriesQuery();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [transactionType, setTransactionType] = useState<
     "all" | "budgeted" | "quick"
@@ -53,19 +62,25 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const [selectedBudgets, setSelectedBudgets] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  const getBudgetName = (budgetId: string | null) => {
-    if (!budgetId) return "Quick Expense";
-    const budget = budgets.find((b) => b.id === budgetId);
-    return budget?.name || "Unknown Budget";
+  const getAccountName = (accountId: string | null | undefined) => {
+    if (!accountId) return "Unknown Account";
+    const account = accounts.find((a) => a.id === accountId);
+    return account?.name || "Unknown Account";
   };
 
-  const getBudgetColor = (budgetId: string | null) => {
-    if (!budgetId) return "#10B981";
-    const budget = budgets.find((b) => b.id === budgetId);
-    return budget?.color || "#8B5CF6";
+  const getCategoryDetails = (
+    categoryId: string | null | undefined,
+    categoryName: string,
+  ) => {
+    if (categoryId) {
+      const category = categories.find((c) => c.id === categoryId);
+      if (category) return category;
+    }
+    // Fallback or legacy
+    return { name: categoryName, icon: "Tag", color: "#8B5CF6" };
   };
 
-  const categories = useMemo(() => {
+  const categoryNames = useMemo(() => {
     const cats = new Set(transactions.map((t) => t.category));
     return Array.from(cats).sort();
   }, [transactions]);
@@ -88,6 +103,29 @@ export const TransactionList: React.FC<TransactionListProps> = ({
 
   const handleLoadMore = () => {
     setDisplayLimit((prev) => prev + 50);
+  };
+
+  const getTypeIcon = (type: string | undefined) => {
+    switch (type) {
+      case "income":
+        return ArrowDownLeft;
+      case "transfer":
+        return ArrowRight;
+      default:
+        return ArrowUpRight;
+    }
+  };
+
+  const getTypeColor = (type: string | undefined) => {
+    if (isHalloweenMode) return "#60c9b6";
+    switch (type) {
+      case "income":
+        return "#10B981";
+      case "transfer":
+        return "#3B82F6";
+      default:
+        return "#EF4444";
+    }
   };
 
   if (transactions.length === 0) {
@@ -260,7 +298,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({
               ease: "easeInOut",
             }}
           />
-          {/* Additional floating ghosts */}
           <motion.img
             src={ghostDroopy}
             alt=""
@@ -291,7 +328,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({
           selectedCategories={selectedCategories}
           onCategoriesChange={setSelectedCategories}
           budgets={budgets}
-          categories={categories}
+          categories={categoryNames}
         />
 
         {/* Results Count */}
@@ -318,193 +355,221 @@ export const TransactionList: React.FC<TransactionListProps> = ({
             <Virtuoso
               useWindowScroll
               data={visibleTransactions}
-              itemContent={(index, transaction) => (
-                <motion.div
-                  key={transaction.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ delay: 0.05 }}
-                  onClick={() => onView?.(transaction)}
-                  className={`group flex items-start gap-3 p-3 rounded-xl transition-all duration-200 relative mb-2 ${
-                    onView ? "cursor-pointer" : ""
-                  } ${
-                    isHalloweenMode
-                      ? isDark
-                        ? "bg-[rgba(40,40,45,0.4)] hover:bg-[rgba(96,201,182,0.08)] hover:shadow-[0_0_15px_rgba(96,201,182,0.2)] border border-[rgba(96,201,182,0.1)] hover:border-[rgba(96,201,182,0.3)]"
-                        : "bg-gray-50 hover:bg-[rgba(96,201,182,0.1)] hover:shadow-[0_0_15px_rgba(96,201,182,0.15)] border border-[rgba(96,201,182,0.2)] hover:border-[rgba(96,201,182,0.4)]"
-                      : isDark
-                        ? "bg-[rgba(40,40,45,0.4)] hover:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.05)]"
-                        : "bg-gray-50 hover:bg-gray-100 border border-gray-100"
-                  }`}
-                >
-                  {isHalloweenMode && index % 3 === 0 && (
-                    <motion.img
-                      src={
-                        index % 6 === 0
-                          ? batSwoop
-                          : index % 9 === 0
-                            ? spiderHairyCrawling
-                            : catFluffy
-                      }
-                      alt=""
-                      className="absolute -top-1 -right-1 w-5 md:w-6 opacity-30 pointer-events-none z-10"
-                      animate={{
-                        rotate: [0, 5, -5, 0],
-                        y: [0, -2, 0],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  )}
-                  {/* Icon */}
-                  <div
-                    className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
-                    style={{
-                      backgroundColor: `${getBudgetColor(transaction.budget_id)}20`,
-                    }}
+              itemContent={(index, transaction) => {
+                const categoryDetails = getCategoryDetails(
+                  transaction.category_id,
+                  transaction.category,
+                );
+
+                const TypeIcon = getTypeIcon(transaction.type);
+                const typeColor = getTypeColor(transaction.type);
+
+                return (
+                  <motion.div
+                    key={transaction.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: 0.05 }}
+                    onClick={() => onView?.(transaction)}
+                    className={`group flex items-start gap-3 p-3 rounded-xl transition-all duration-200 relative mb-2 ${
+                      onView ? "cursor-pointer" : ""
+                    } ${
+                      isHalloweenMode
+                        ? isDark
+                          ? "bg-[rgba(40,40,45,0.4)] hover:bg-[rgba(96,201,182,0.08)] hover:shadow-[0_0_15px_rgba(96,201,182,0.2)] border border-[rgba(96,201,182,0.1)] hover:border-[rgba(96,201,182,0.3)]"
+                          : "bg-gray-50 hover:bg-[rgba(96,201,182,0.1)] hover:shadow-[0_0_15px_rgba(96,201,182,0.15)] border border-[rgba(96,201,182,0.2)] hover:border-[rgba(96,201,182,0.4)]"
+                        : isDark
+                          ? "bg-[rgba(40,40,45,0.4)] hover:bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.05)]"
+                          : "bg-gray-50 hover:bg-gray-100 border border-gray-100"
+                    }`}
                   >
-                    {isHalloweenMode ? (
-                      <img
-                        src={pumpkinSneaky}
+                    {isHalloweenMode && index % 3 === 0 && (
+                      <motion.img
+                        src={
+                          index % 6 === 0
+                            ? batSwoop
+                            : index % 9 === 0
+                              ? spiderHairyCrawling
+                              : catFluffy
+                        }
                         alt=""
-                        className="w-5 h-5 md:w-6 md:h-6 drop-shadow-lg"
-                      />
-                    ) : (
-                      <FileText
-                        className="w-4 h-4 md:w-5 md:h-5"
-                        style={{ color: getBudgetColor(transaction.budget_id) }}
+                        className="absolute -top-1 -right-1 w-5 md:w-6 opacity-30 pointer-events-none z-10"
+                        animate={{
+                          rotate: [0, 5, -5, 0],
+                          y: [0, -2, 0],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
                       />
                     )}
-                  </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    {/* Title */}
-                    <h4
-                      className={`font-medium text-sm md:text-base mb-1 md:mb-1.5 truncate ${
-                        isHalloweenMode
-                          ? "text-[#60c9b6]"
-                          : isDark
-                            ? "text-white"
-                            : "text-gray-900"
-                      }`}
+                    {/* Icon */}
+                    <div
+                      className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
+                      style={{
+                        backgroundColor: `${categoryDetails.color}20`,
+                        color: categoryDetails.color,
+                      }}
                     >
-                      {transaction.description}
-                    </h4>
+                      <IconRenderer
+                        icon={categoryDetails.icon}
+                        className="w-5 h-5"
+                      />
+                    </div>
 
-                    {/* Metadata */}
-                    <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
-                      <div className="flex items-center gap-1">
-                        <Calendar
-                          className={`w-3 h-3 md:w-3.5 md:h-3.5 ${
-                            isHalloweenMode
-                              ? "text-[#60c9b6]/70"
-                              : isDark
-                                ? "text-[#B4B4B8]"
-                                : "text-gray-500"
-                          }`}
-                        />
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      {/* Title */}
+                      <h4
+                        className={`font-medium text-sm md:text-base mb-1 md:mb-1.5 truncate ${
+                          isHalloweenMode
+                            ? "text-[#60c9b6]"
+                            : isDark
+                              ? "text-white"
+                              : "text-gray-900"
+                        }`}
+                      >
+                        {transaction.description}
+                      </h4>
+
+                      {/* Metadata */}
+                      <div className="flex items-center flex-wrap gap-1.5 md:gap-2">
+                        <div className="flex items-center gap-1">
+                          <Calendar
+                            className={`w-3 h-3 md:w-3.5 md:h-3.5 ${
+                              isHalloweenMode
+                                ? "text-[#60c9b6]/70"
+                                : isDark
+                                  ? "text-[#B4B4B8]"
+                                  : "text-gray-500"
+                            }`}
+                          />
+                          <span
+                            className={`text-[10px] md:text-xs ${
+                              isHalloweenMode
+                                ? "text-[#60c9b6]/70"
+                                : isDark
+                                  ? "text-[#B4B4B8]"
+                                  : "text-gray-600"
+                            }`}
+                          >
+                            {new Date(
+                              transaction.transaction_date,
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        {/* Recurring Badge */}
+                        {transaction.is_recurring && (
+                          <span
+                            className={`text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-md font-medium flex items-center gap-1 ${
+                              isHalloweenMode
+                                ? "bg-[#60c9b6]/20 text-[#60c9b6] border border-[#60c9b6]/30"
+                                : isDark
+                                  ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                                  : "bg-purple-100 text-purple-700 border border-purple-200"
+                            }`}
+                          >
+                            <Repeat className="w-2.5 h-2.5" />
+                            Recurring
+                          </span>
+                        )}
+
+                        {/* Account Badge */}
                         <span
-                          className={`text-[10px] md:text-xs ${
+                          className={`text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-md font-medium flex items-center gap-1 ${
                             isHalloweenMode
-                              ? "text-[#60c9b6]/70"
+                              ? "bg-[#60c9b6]/10 text-[#60c9b6]/90 border border-[#60c9b6]/20"
                               : isDark
-                                ? "text-[#B4B4B8]"
-                                : "text-gray-600"
+                                ? "bg-white/5 text-gray-300 border border-white/10"
+                                : "bg-gray-100 text-gray-600 border border-gray-200"
                           }`}
                         >
-                          {new Date(
-                            transaction.transaction_date,
-                          ).toLocaleDateString()}
+                          <Wallet className="w-2.5 h-2.5" />
+                          {getAccountName(transaction.account_id)}
+                          {transaction.type === "transfer" && (
+                            <>
+                              <ArrowRight className="w-2.5 h-2.5" />
+                              {getAccountName(transaction.to_account_id)}
+                            </>
+                          )}
+                        </span>
+
+                        {/* Category Badge */}
+                        {transaction.type !== "transfer" && (
+                          <span
+                            className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-md font-medium border"
+                            style={{
+                              backgroundColor: `${categoryDetails.color}20`,
+                              color: categoryDetails.color,
+                              borderColor: `${categoryDetails.color}40`,
+                            }}
+                          >
+                            {categoryDetails.name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Amount and Actions */}
+                    <div className="flex flex-col items-end gap-2 shrink-0">
+                      <div className="flex items-center gap-1">
+                        <TypeIcon
+                          className="w-3 h-3 md:w-4 md:h-4"
+                          style={{ color: typeColor }}
+                        />
+                        <span
+                          className="font-bold text-base md:text-lg whitespace-nowrap"
+                          style={{ color: typeColor }}
+                        >
+                          {formatAmount(transaction.amount, 2)}
                         </span>
                       </div>
 
-                      <span
-                        className={`text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-md font-medium capitalize ${
-                          isHalloweenMode
-                            ? "bg-[#60c9b6]/10 text-[#60c9b6]"
-                            : isDark
-                              ? "bg-[rgba(139,92,246,0.2)] text-[#A78BFA]"
-                              : "bg-purple-100 text-purple-700"
-                        }`}
-                      >
-                        {transaction.category}
-                      </span>
-
-                      <span
-                        className="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-md font-medium hidden sm:flex items-center gap-1"
-                        style={{
-                          backgroundColor: isHalloweenMode
-                            ? "#F9731620"
-                            : isDark
-                              ? `${getBudgetColor(transaction.budget_id)}20`
-                              : `${getBudgetColor(transaction.budget_id)}15`,
-                          color: isHalloweenMode
-                            ? "#F97316"
-                            : getBudgetColor(transaction.budget_id),
-                        }}
-                      >
-                        <Wallet className="w-2.5 h-2.5 md:w-3 md:h-3" />
-                        <span>{getBudgetName(transaction.budget_id)}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Amount and Actions */}
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span
-                      className="font-bold text-base md:text-lg whitespace-nowrap"
-                      style={{
-                        color: isHalloweenMode
-                          ? "#60c9b6"
-                          : getBudgetColor(transaction.budget_id),
-                      }}
-                    >
-                      {formatAmount(transaction.amount, 2)}
-                    </span>
-                    <div className="flex items-center gap-0.5 md:gap-1">
-                      {onEdit && (
+                      <div className="flex items-center gap-0.5 md:gap-1">
+                        {onEdit && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(transaction);
+                            }}
+                            className={`p-1 md:p-1.5 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 cursor-pointer ${
+                              isHalloweenMode
+                                ? "hover:bg-[#60c9b6]/10 text-[#60c9b6] hover:text-[#4db8a5]"
+                                : isDark
+                                  ? "hover:bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] hover:text-[#A78BFA]"
+                                  : "hover:bg-purple-100 text-purple-600 hover:text-purple-700"
+                            }`}
+                          >
+                            <Edit2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                          </button>
+                        )}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            onEdit(transaction);
+                            onDelete(
+                              transaction.id,
+                              transaction.budget_id || "",
+                              transaction.amount,
+                            );
                           }}
                           className={`p-1 md:p-1.5 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 cursor-pointer ${
-                            isHalloweenMode
-                              ? "hover:bg-[#60c9b6]/10 text-[#60c9b6] hover:text-[#4db8a5]"
-                              : isDark
-                                ? "hover:bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] hover:text-[#A78BFA]"
-                                : "hover:bg-purple-100 text-purple-600 hover:text-purple-700"
+                            isDark
+                              ? "hover:bg-[rgba(239,68,68,0.2)] text-red-400 hover:text-red-300"
+                              : "hover:bg-red-100 text-red-600 hover:text-red-700"
                           }`}
                         >
-                          <Edit2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                          <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                         </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(
-                            transaction.id,
-                            transaction.budget_id,
-                            transaction.amount,
-                          );
-                        }}
-                        className={`p-1 md:p-1.5 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100 cursor-pointer ${
-                          isDark
-                            ? "hover:bg-[rgba(239,68,68,0.2)] text-red-400 hover:text-red-300"
-                            : "hover:bg-red-100 text-red-600 hover:text-red-700"
-                        }`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                );
+              }}
             />
             {filteredTransactions.length > displayLimit && (
               <div className="flex justify-center pt-16 pb-2">

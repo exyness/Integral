@@ -34,7 +34,13 @@ export const useFinancialInsights = (
     // Calculate Stats
     const totalBudget = budgets.reduce((sum, b) => sum + b.amount, 0);
     const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
-    const quickExpenses = transactions
+
+    // Filter for expenses only
+    const expenseTransactions = transactions.filter(
+      (t) => t.type === "expense",
+    );
+
+    const quickExpenses = expenseTransactions
       .filter((t) => !t.budget_id)
       .reduce((sum, t) => sum + t.amount, 0);
 
@@ -46,7 +52,7 @@ export const useFinancialInsights = (
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const recentTransactions = transactions.filter(
+    const recentTransactions = expenseTransactions.filter(
       (t) => new Date(t.transaction_date) >= thirtyDaysAgo,
     );
 

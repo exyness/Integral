@@ -1,4 +1,3 @@
-import { error } from "console";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -143,7 +142,24 @@ export const useBudgetTransactions = (budgetId?: string) => {
     try {
       const { data, error } = await supabase
         .from("budget_transactions")
-        .insert([{ ...transaction, user_id: user?.id }])
+        .insert([
+          {
+            budget_id: transaction.budget_id,
+            amount: transaction.amount,
+            description: transaction.description,
+            category: transaction.category,
+            transaction_date: transaction.transaction_date,
+            account_id: transaction.account_id || null,
+            category_id: transaction.category_id || null,
+            type: transaction.type || null,
+            to_account_id: transaction.to_account_id || null,
+            tags: transaction.tags || null,
+            is_recurring: transaction.is_recurring || null,
+            recurring_id: transaction.recurring_id || null,
+            balance: transaction.balance || null,
+            user_id: user?.id,
+          },
+        ])
         .select()
         .single();
 

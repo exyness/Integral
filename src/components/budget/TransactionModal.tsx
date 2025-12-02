@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { batSwoop, spiderHairyCrawling } from "@/assets";
+import { CategoryPicker } from "@/components/budget/CategoryPicker";
 import { Calendar as CalendarPicker } from "@/components/ui/Calendar";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Budget, BudgetTransaction } from "@/types/budget";
+import { useAccountsQuery } from "@/hooks/queries/useBudgetsQuery";
+import { Budget, BudgetTransaction, CategoryType } from "@/types/budget";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -28,27 +30,55 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   isLoading = false,
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
-  const [formData, setFormData] = useState({
-    budget_id: budgetId || "",
+  const { data: accounts = [] } = useAccountsQuery();
+
+  const [formData, setFormData] = useState<{
+    budget_id: string | null;
+    amount: number;
+    description: string;
+    category_id: string;
+    account_id: string;
+    to_account_id: string;
+    type: CategoryType | "transfer";
+    transaction_date: string;
+  }>({
+    budget_id: budgetId || null,
     amount: 0,
     description: "",
-    category: "",
+    category_id: "",
+    account_id: "",
+    to_account_id: "",
+    type: "expense",
     transaction_date: new Date().toISOString().split("T")[0],
   });
 
   useEffect(() => {
     if (transaction) {
       setFormData({
-        budget_id: transaction.budget_id || "",
+        budget_id: transaction.budget_id || null,
         amount: transaction.amount,
         description: transaction.description,
-        category: transaction.category,
+        category_id: transaction.category_id || "",
+        account_id: transaction.account_id || "",
+        to_account_id: transaction.to_account_id || "",
+        type: transaction.type || "expense",
         transaction_date: transaction.transaction_date,
       });
-    } else if (budgetId) {
-      setFormData((prev) => ({ ...prev, budget_id: budgetId }));
+    } else if (isOpen && !transaction) {
+      setFormData((prev) => ({
+        ...prev,
+        budget_id: budgetId || null,
+        amount: 0,
+        description: "",
+        category_id: "",
+        account_id:
+          prev.account_id || (accounts.length > 0 ? accounts[0].id : ""),
+        to_account_id: "",
+        type: "expense",
+        transaction_date: new Date().toISOString().split("T")[0],
+      }));
     }
-  }, [transaction, budgetId]);
+  }, [transaction, budgetId, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,23 +86,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
     try {
       await onSubmit({
-        budget_id: formData.budget_id || null,
+        budget_id: formData.budget_id,
         amount: formData.amount,
         description: formData.description,
-        category: formData.category,
+        category: "", // Deprecated field, kept for backward compatibility
+        category_id: formData.category_id || null,
+        account_id: formData.account_id || null,
+        to_account_id:
+          formData.type === "transfer" ? formData.to_account_id : null,
+        type: formData.type as any,
         transaction_date: formData.transaction_date,
       });
 
-      setFormData({
-        budget_id: budgetId || "",
-        amount: 0,
-        description: "",
-        category: "",
-        transaction_date: new Date().toISOString().split("T")[0],
-      });
       onClose();
     } catch (error) {
-      // Error handled by parent (Don't Remove)
+      // Error handled by parent
     }
   };
 
@@ -110,10 +138,30 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         onSubmit={handleSubmit}
         className="space-y-3 md:space-y-4 relative z-10"
       >
-        {/* Budget Selection - Always show when not tied to specific budget */}
-        {!budgetId && (
+        {/* Type Selection */}
+        <div className="flex p-1 rounded-lg bg-gray-100 dark:bg-white/5 mb-4">
+          {(["expense", "income", "transfer"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setFormData({ ...formData, type: t })}
+              className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-all ${
+                formData.type === t
+                  ? isHalloweenMode
+                    ? "bg-[#60c9b6] text-black shadow-sm"
+                    : "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Budget Selection - Only for Expense */}
+        {formData.type === "expense" && !budgetId && (
           <Dropdown
-            title="Assign to"
+            title="Budget (Optional)"
             value={formData.budget_id || "quick"}
             onValueChange={(value) =>
               setFormData({
@@ -122,15 +170,57 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               })
             }
             options={[
-              { value: "quick", label: "Quick Expense (No Budget)" },
+              { value: "quick", label: "No Budget (Quick Expense)" },
               ...budgets.map((budget) => ({
                 value: budget.id,
                 label: budget.name,
               })),
             ]}
-            placeholder="Select budget or quick expense"
+            placeholder="Select budget"
           />
         )}
+
+        {/* Account Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Dropdown
+            title={formData.type === "transfer" ? "From Account" : "Account"}
+            value={formData.account_id}
+            onValueChange={(value) =>
+              setFormData({ ...formData, account_id: value })
+            }
+            options={
+              accounts.length > 0
+                ? accounts.map((acc) => ({
+                    value: acc.id,
+                    label: acc.name,
+                  }))
+                : [{ value: "", label: "No Accounts available" }]
+            }
+            placeholder="Select account"
+          />
+
+          {formData.type === "transfer" && (
+            <Dropdown
+              title="To Account"
+              value={formData.to_account_id}
+              onValueChange={(value) =>
+                setFormData({ ...formData, to_account_id: value })
+              }
+              options={
+                accounts.filter((acc) => acc.id !== formData.account_id)
+                  .length > 0
+                  ? accounts
+                      .filter((acc) => acc.id !== formData.account_id)
+                      .map((acc) => ({
+                        value: acc.id,
+                        label: acc.name,
+                      }))
+                  : [{ value: "", label: "No Accounts available" }]
+              }
+              placeholder="Select destination"
+            />
+          )}
+        </div>
 
         {/* Amount */}
         <div>
@@ -158,14 +248,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             }
             className={`w-full px-3 md:px-4 py-2 rounded-lg border text-sm md:text-base focus:outline-none ${
               isHalloweenMode
-                ? "bg-[#1a1a1f] border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:shadow-[0_0_10px_rgba(96,201,182,0.2)] focus:ring-2 focus:ring-[#60c9b6]"
+                ? "bg-[#1a1a1f] border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:ring-2 focus:ring-[#60c9b6]"
                 : isDark
                   ? "bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)] text-white placeholder-[#B4B4B8] focus:ring-2 focus:ring-[#8B5CF6]"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#8B5CF6]"
             }`}
             placeholder="0.00"
             required
-            autoFocus
           />
         </div>
 
@@ -190,46 +279,28 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             }
             className={`w-full px-3 md:px-4 py-2 rounded-lg border text-sm md:text-base focus:outline-none ${
               isHalloweenMode
-                ? "bg-[#1a1a1f] border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:shadow-[0_0_10px_rgba(96,201,182,0.2)] focus:ring-2 focus:ring-[#60c9b6]"
+                ? "bg-[#1a1a1f] border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:ring-2 focus:ring-[#60c9b6]"
                 : isDark
                   ? "bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)] text-white placeholder-[#B4B4B8] focus:ring-2 focus:ring-[#8B5CF6]"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#8B5CF6]"
             }`}
-            placeholder="Enter transaction description"
+            placeholder="Enter description"
             required
           />
         </div>
 
-        {/* Category */}
-        <div>
-          <label
-            className={`block text-xs md:text-sm font-medium mb-1.5 md:mb-2 ${
-              isHalloweenMode
-                ? "text-[#60c9b6]"
-                : isDark
-                  ? "text-white"
-                  : "text-gray-700"
-            }`}
-          >
-            Category
-          </label>
-          <input
-            type="text"
-            value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
+        {/* Category Selection (Not for transfers) */}
+        {formData.type !== "transfer" && (
+          <CategoryPicker
+            label="Category"
+            type={formData.type as CategoryType}
+            value={formData.category_id}
+            onChange={(categoryId) =>
+              setFormData({ ...formData, category_id: categoryId })
             }
-            className={`w-full px-3 md:px-4 py-2 rounded-lg border text-sm md:text-base focus:outline-none ${
-              isHalloweenMode
-                ? "bg-[#1a1a1f] border-[#60c9b6]/30 text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[#60c9b6] focus:shadow-[0_0_10px_rgba(96,201,182,0.2)] focus:ring-2 focus:ring-[#60c9b6]"
-                : isDark
-                  ? "bg-[rgba(255,255,255,0.05)] border-[rgba(255,255,255,0.1)] text-white placeholder-[#B4B4B8] focus:ring-2 focus:ring-[#8B5CF6]"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-[#8B5CF6]"
-            }`}
-            placeholder="e.g., groceries, gas, utilities"
-            required
+            placeholder="Select category"
           />
-        </div>
+        )}
 
         {/* Date */}
         <CalendarPicker
@@ -238,7 +309,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           onChange={(date) =>
             setFormData({ ...formData, transaction_date: date })
           }
-          placeholder="Select transaction date"
+          placeholder="Select date"
         />
 
         {/* Action Buttons */}
@@ -249,7 +320,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               isLoading ||
               formData.amount <= 0 ||
               !formData.description.trim() ||
-              !formData.category.trim()
+              (!formData.category_id && formData.type !== "transfer") ||
+              !formData.account_id ||
+              (formData.type === "transfer" && !formData.to_account_id)
             }
             className={`w-full sm:flex-1 px-4 md:px-6 py-2.5 md:py-3 rounded-lg text-sm md:text-base font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               isHalloweenMode

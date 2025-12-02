@@ -195,25 +195,27 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
             Filter by Category
           </label>
           <div className="flex flex-wrap gap-1.5 md:gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => toggleCategory(category)}
-                className={`px-2 md:px-2.5 py-0.5 md:py-1 rounded-lg text-[10px] md:text-xs font-medium transition-colors capitalize ${
-                  selectedCategories.includes(category)
-                    ? isHalloweenMode
-                      ? "bg-[#60c9b6] text-black"
-                      : "bg-[#8B5CF6] text-white"
-                    : isHalloweenMode
-                      ? "bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20 text-[#60c9b6]"
-                      : isDark
-                        ? "bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] text-[#B4B4B8]"
-                        : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+            {categories
+              .filter((category) => category && category.trim() !== "")
+              .map((category) => (
+                <button
+                  key={category}
+                  onClick={() => toggleCategory(category)}
+                  className={`px-2.5 md:px-3 py-1 md:py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all capitalize cursor-pointer ${
+                    selectedCategories.includes(category)
+                      ? isHalloweenMode
+                        ? "bg-[#60c9b6] text-black shadow-[0_0_10px_rgba(96,201,182,0.3)]"
+                        : "bg-[#8B5CF6] text-white shadow-sm"
+                      : isHalloweenMode
+                        ? "bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20 text-[#60c9b6] border border-[#60c9b6]/20 hover:border-[#60c9b6]/40"
+                        : isDark
+                          ? "bg-[rgba(255,255,255,0.05)] hover:bg-[rgba(255,255,255,0.1)] text-[#B4B4B8] border border-[rgba(255,255,255,0.1)]"
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
           </div>
         </div>
       )}

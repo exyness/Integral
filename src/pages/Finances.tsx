@@ -9,12 +9,15 @@ import {
   FileText,
   List,
   Plus,
+  Repeat,
   Sparkles,
+  Tag,
   Wallet,
   Wallet as WalletIcon,
 } from "lucide-react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import {
   batSwoop,
   bgWitchGraveyard,
@@ -33,6 +36,9 @@ import {
   webCenter,
   witchBrew,
 } from "@/assets";
+import { AccountList } from "@/components/budget/AccountList";
+import { AccountModal } from "@/components/budget/AccountModal";
+import { BalanceSheetTab } from "@/components/budget/BalanceSheet";
 import { BudgetAnalytics } from "@/components/budget/BudgetAnalytics.tsx";
 import { BudgetCalendar } from "@/components/budget/BudgetCalendar";
 import { BudgetCard } from "@/components/budget/BudgetCard";
@@ -43,41 +49,78 @@ import {
 } from "@/components/budget/BudgetFilters";
 import { BudgetModal } from "@/components/budget/BudgetModal";
 import { BudgetStats } from "@/components/budget/BudgetStats";
+import { CategoryManager } from "@/components/budget/CategoryManager";
 import { FinancialInsightsCard } from "@/components/budget/FinancialInsightsCard";
+import { GoalModal } from "@/components/budget/GoalModal";
+import { LiabilityModal } from "@/components/budget/LiabilityModal";
 import { QuickExpenseModal } from "@/components/budget/QuickExpenseModal";
+import { RecurringManager } from "@/components/budget/RecurringManager";
 import { TransactionList } from "@/components/budget/TransactionList";
 import { TransactionModal } from "@/components/budget/TransactionModal";
 import { GlassCard } from "@/components/GlassCard";
+import { BalanceSheetSkeleton } from "@/components/skeletons/BalanceSheetSkeleton";
 import {
   AnalyticsTabSkeleton,
   BudgetsTabSkeleton,
   CalendarTabSkeleton,
+  CategoriesTabSkeleton,
   ExpensesTabSkeleton,
 } from "@/components/skeletons/BudgetSkeletons";
 import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
-import { Dropdown } from "@/components/ui/Dropdown";
 import { Modal } from "@/components/ui/Modal";
+import { SearchableDropdown } from "@/components/ui/SearchableDropdown";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { CURRENCIES } from "@/constants/currencies";
 import { useTheme } from "@/contexts/ThemeContext";
 import {
+  useAccountsQuery,
   useBudgetsQuery,
   useBudgetTransactionsQuery,
+  useCreateAccount,
   useCreateBudget,
   useCreateTransaction,
+  useDeleteAccount,
   useDeleteBudget,
   useDeleteTransaction,
+  useProcessRecurringTransactions,
+  useUpdateAccount,
   useUpdateBudget,
   useUpdateTransaction,
 } from "@/hooks/queries/useBudgetsQuery";
+import {
+  useCreateGoal,
+  useDeleteGoal,
+  useGoalsQuery,
+  useUpdateGoal,
+} from "@/hooks/queries/useGoals";
+import {
+  useCreateLiability,
+  useLiabilitiesQuery,
+  useUpdateLiability,
+} from "@/hooks/queries/useLiabilities";
 import { useBudgetFiltering } from "@/hooks/useBudgetFiltering";
 import { useCurrency } from "@/hooks/useCurrency";
-import { BudgetTransaction, Budget as BudgetType } from "@/types/budget";
+import {
+  Account,
+  BudgetTransaction,
+  Budget as BudgetType,
+  FinancialGoal,
+  Liability,
+} from "@/types/budget";
 
-type TabType = "budgets" | "expenses" | "calendar" | "analytics" | "insights";
+type TabType =
+  | "budgets"
+  | "accounts"
+  | "balance_sheet"
+  | "expenses"
+  | "calendar"
+  | "analytics"
+  | "insights"
+  | "categories"
+  | "recurring";
 type ViewType = "list" | "detail";
 
-export const Budget: React.FC = () => {
+export const Finances: React.FC = () => {
   const { isDark, isHalloweenMode } = useTheme();
   const { currency, setCurrency, formatAmount } = useCurrency();
   const { data: budgets = [], isLoading: loading } = useBudgetsQuery();
@@ -88,6 +131,30 @@ export const Budget: React.FC = () => {
   const createTransactionMutation = useCreateTransaction();
   const updateTransactionMutation = useUpdateTransaction();
   const deleteTransactionMutation = useDeleteTransaction();
+  const { processDueTransactions } = useProcessRecurringTransactions();
+
+  // Process recurring transactions on mount
+  useEffect(() => {
+    processDueTransactions();
+  }, []);
+
+  // Account hooks
+  const { data: accounts = [], isLoading: accountsLoading } =
+    useAccountsQuery();
+  const createAccountMutation = useCreateAccount();
+  const updateAccountMutation = useUpdateAccount();
+  const deleteAccountMutation = useDeleteAccount();
+
+  // Goal hooks
+  const { data: goals = [] } = useGoalsQuery();
+  const createGoalMutation = useCreateGoal();
+  const updateGoalMutation = useUpdateGoal();
+  const deleteGoalMutation = useDeleteGoal();
+
+  // Liability hooks
+  const { isLoading: liabilitiesLoading } = useLiabilitiesQuery();
+  const createLiabilityMutation = useCreateLiability();
+  const updateLiabilityMutation = useUpdateLiability();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = (searchParams.get("tab") as TabType) || "budgets";
@@ -96,6 +163,8 @@ export const Budget: React.FC = () => {
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     setSearchParams({ tab });
+    // Reset category trigger when switching tabs to prevent modal from reopening
+    setTriggerAddCategory(0);
   };
   const [currentView, setCurrentView] = useState<ViewType>("list");
   const [showBudgetForm, setShowBudgetForm] = useState(false);
@@ -106,9 +175,17 @@ export const Budget: React.FC = () => {
     useState<BudgetTransaction | null>(null);
   const [editingTransaction, setEditingTransaction] =
     useState<BudgetTransaction | null>(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | undefined>();
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<FinancialGoal | undefined>();
   const [editingBudget, setEditingBudget] = useState<BudgetType | undefined>();
   const [selectedBudget, setSelectedBudget] = useState<
     BudgetType | undefined
+  >();
+  const [showLiabilityModal, setShowLiabilityModal] = useState(false);
+  const [editingLiability, setEditingLiability] = useState<
+    Liability | undefined
   >();
 
   const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
@@ -122,6 +199,7 @@ export const Budget: React.FC = () => {
   const [filter, setFilter] = useState<BudgetFilterType>("all");
   const [sortBy, setSortBy] = useState<BudgetSortType>("newest");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [triggerAddCategory, setTriggerAddCategory] = useState(0);
 
   const { sortedBudgets } = useBudgetFiltering({
     budgets,
@@ -146,10 +224,14 @@ export const Budget: React.FC = () => {
 
   const tabsRef = useRef<HTMLDivElement>(null);
   const budgetsTabRef = useRef<HTMLButtonElement>(null);
+  const accountsTabRef = useRef<HTMLButtonElement>(null);
+  const balanceSheetTabRef = useRef<HTMLButtonElement>(null);
   const calendarTabRef = useRef<HTMLButtonElement>(null);
   const expensesTabRef = useRef<HTMLButtonElement>(null);
   const analyticsTabRef = useRef<HTMLButtonElement>(null);
   const insightsTabRef = useRef<HTMLButtonElement>(null);
+  const categoriesTabRef = useRef<HTMLButtonElement>(null);
+  const recurringTabRef = useRef<HTMLButtonElement>(null);
   const [tabPosition, setTabPosition] = useState({
     left: 0,
     width: 0,
@@ -183,6 +265,12 @@ export const Budget: React.FC = () => {
         case "budgets":
           currentTab = budgetsTabRef.current;
           break;
+        case "accounts":
+          currentTab = accountsTabRef.current;
+          break;
+        case "balance_sheet":
+          currentTab = balanceSheetTabRef.current;
+          break;
         case "calendar":
           currentTab = calendarTabRef.current;
           break;
@@ -194,6 +282,12 @@ export const Budget: React.FC = () => {
           break;
         case "insights":
           currentTab = insightsTabRef.current;
+          break;
+        case "categories":
+          currentTab = categoriesTabRef.current;
+          break;
+        case "recurring":
+          currentTab = recurringTabRef.current;
           break;
         default:
           currentTab = null;
@@ -241,6 +335,15 @@ export const Budget: React.FC = () => {
         case "budgets":
           currentTab = budgetsTabRef.current;
           break;
+        case "recurring":
+          currentTab = recurringTabRef.current;
+          break;
+        case "accounts":
+          currentTab = accountsTabRef.current;
+          break;
+        case "balance_sheet":
+          currentTab = balanceSheetTabRef.current;
+          break;
         case "calendar":
           currentTab = calendarTabRef.current;
           break;
@@ -252,6 +355,9 @@ export const Budget: React.FC = () => {
           break;
         case "insights":
           currentTab = insightsTabRef.current;
+          break;
+        case "categories":
+          currentTab = categoriesTabRef.current;
           break;
         default:
           currentTab = null;
@@ -313,6 +419,76 @@ export const Budget: React.FC = () => {
     }
   }, [deleteBudgetMutation, budgetToDelete, selectedBudget]);
 
+  const handleAccountSubmit = useCallback(
+    async (
+      data: Omit<Account, "id" | "user_id" | "created_at" | "updated_at">,
+    ) => {
+      if (editingAccount) {
+        await updateAccountMutation.mutateAsync({
+          id: editingAccount.id,
+          updates: data,
+        });
+        setEditingAccount(undefined);
+      } else {
+        await createAccountMutation.mutateAsync(data);
+      }
+      setShowAccountModal(false);
+    },
+    [createAccountMutation, updateAccountMutation, editingAccount],
+  );
+
+  const handleGoalSubmit = async (data: Partial<FinancialGoal>) => {
+    try {
+      if (editingGoal) {
+        await updateGoalMutation.mutateAsync({
+          id: editingGoal.id,
+          updates: data,
+        });
+      } else {
+        // Convert optional fields to null for Supabase
+        const goalData = {
+          name: data.name!,
+          description: data.description || null,
+          target_amount: data.target_amount!,
+          current_amount: data.current_amount ?? 0,
+          target_date: data.target_date || null,
+          linked_account_id: data.linked_account_id || null,
+          icon: data.icon!,
+          color: data.color!,
+          is_active: true,
+        };
+
+        await createGoalMutation.mutateAsync(goalData);
+      }
+      setShowGoalModal(false);
+      setEditingGoal(undefined);
+    } catch (error) {
+      toast.error("Failed to save goal. Please try again.");
+    }
+  };
+
+  const handleEditGoal = (goal: FinancialGoal) => {
+    setEditingGoal(goal);
+    setShowGoalModal(true);
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    deleteGoalMutation.mutateAsync(id);
+  };
+
+  const handleLiabilitySubmit = async (data: Partial<Liability>) => {
+    if (editingLiability) {
+      await updateLiabilityMutation.mutateAsync({
+        id: editingLiability.id,
+        updates: data,
+      });
+    } else {
+      await createLiabilityMutation.mutateAsync(data as Liability);
+    }
+    setShowLiabilityModal(false);
+    setEditingLiability(undefined);
+  };
+
   const handleAddTransaction = useCallback(
     async (data: Omit<BudgetTransaction, "id" | "user_id" | "created_at">) => {
       if (editingTransaction) {
@@ -369,10 +545,21 @@ export const Budget: React.FC = () => {
         return "View and manage all your expenses";
       case "analytics":
         return "Analyze your spending patterns and trends";
+      case "categories":
+        return "Manage your income and expense categories";
+      case "recurring":
+        return "Manage recurring transactions and subscriptions";
+      case "balance_sheet":
+        return "Track your net worth with a complete balance sheet of assets and liabilities";
       default:
         return "Track and manage your budgets and expenses";
     }
   };
+
+  const currencyOptions = CURRENCIES.map((curr) => ({
+    value: curr.code,
+    label: `${curr.name} (${curr.symbol})`,
+  }));
 
   if (loading && budgets.length === 0) {
     return (
@@ -388,7 +575,7 @@ export const Budget: React.FC = () => {
             className={`md:p-6 md:rounded-xl md:backdrop-blur-xl md:border ${
               isDark
                 ? "md:bg-[rgba(26,26,31,0.6)] md:border-[rgba(255,255,255,0.1)]"
-                : "md:border-gray-200/60"
+                : "md:bg-white/90 md:border-gray-200/60 md:shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
             }`}
           >
             <div className="flex items-start justify-between gap-3 mb-1.5">
@@ -401,59 +588,78 @@ export const Budget: React.FC = () => {
 
         {/* Stats Cards Skeleton */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {(isHalloweenMode
-            ? [
-                { color: "96,201,182" },
-                { color: "72,187,168" },
-                { color: "120,215,196" },
-                { color: "64,224,208" },
-              ]
-            : [
-                { color: "139,92,246" },
-                { color: "16,185,129" },
-                { color: "245,158,11" },
-                { color: "239,68,68" },
-              ]
-          ).map((stat, i) => (
+          {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
               className={`p-3 md:p-6 rounded-xl border ${
-                isDark
-                  ? `bg-[rgba(${stat.color},0.1)] border-[rgba(${stat.color},0.2)]`
-                  : `bg-[rgba(${stat.color},0.05)] border-[rgba(${stat.color},0.2)]`
+                isHalloweenMode
+                  ? "bg-[rgba(96,201,182,0.15)] border-[#60c9b6]/30"
+                  : isDark
+                    ? "bg-[rgba(255,255,255,0.03)] border-[rgba(255,255,255,0.1)]"
+                    : "bg-white border-gray-200"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <Skeleton className="h-2.5 md:h-3 w-16 md:w-20 mb-0.5 md:mb-1" />
-                  <Skeleton className="h-5 md:h-8 w-12 md:w-16" />
+                  <Skeleton
+                    className={`h-2.5 md:h-3 w-16 md:w-20 mb-0.5 md:mb-1 ${
+                      isHalloweenMode ? "bg-[rgba(96,201,182,0.2)]" : ""
+                    }`}
+                  />
+                  <Skeleton
+                    className={`h-5 md:h-8 w-12 md:w-16 ${
+                      isHalloweenMode ? "bg-[rgba(96,201,182,0.25)]" : ""
+                    }`}
+                  />
                 </div>
-                <Skeleton className="w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl" />
+                <Skeleton
+                  className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl ${
+                    isHalloweenMode ? "bg-[rgba(96,201,182,0.2)]" : ""
+                  }`}
+                />
               </div>
             </div>
           ))}
         </div>
 
-        {/* Tab Navigation Skeleton */}
+        {/* Tab Navigation Skeleton - Responsive */}
         <div className="mb-6 md:mb-8">
-          <div className="relative flex space-x-1 sm:space-x-2 mb-4">
+          {/* Desktop: Show all 9 tabs */}
+          <div className="hidden lg:flex relative flex-wrap gap-1 sm:gap-2 mb-4">
+            <Skeleton className="h-10 w-20 sm:w-24 rounded-lg" />
             <Skeleton className="h-10 w-24 sm:w-28 rounded-lg" />
+            <Skeleton className="h-10 w-28 sm:w-32 rounded-lg" />
+            <Skeleton className="h-10 w-24 sm:w-28 rounded-lg" />
+            <Skeleton className="h-10 w-28 sm:w-32 rounded-lg" />
             <Skeleton className="h-10 w-32 sm:w-36 rounded-lg" />
             <Skeleton className="h-10 w-24 sm:w-28 rounded-lg" />
             <Skeleton className="h-10 w-24 sm:w-28 rounded-lg" />
+            <Skeleton className="h-10 w-20 sm:w-24 rounded-lg" />
           </div>
+          {/* Mobile/Tablet: Show 4 visible tabs */}
+          <div className="lg:hidden relative flex gap-1 sm:gap-2 mb-4">
+            <Skeleton className="h-10 w-20 sm:w-24 rounded-lg" />
+            <Skeleton className="h-10 w-24 sm:w-28 rounded-lg" />
+            <Skeleton className="h-10 w-28 sm:w-32 rounded-lg" />
+            <Skeleton className="h-10 w-24 sm:w-28 rounded-lg" />
+          </div>
+          {/* Mobile: Currency dropdown */}
           <div className="lg:hidden">
             <Skeleton className="h-10 w-full rounded-lg" />
           </div>
         </div>
 
         {/* Content Skeleton - Tab-specific */}
-        <GlassCard variant="secondary" className="overflow-hidden">
-          {activeTab === "budgets" && <BudgetsTabSkeleton />}
-          {activeTab === "expenses" && <ExpensesTabSkeleton />}
-          {activeTab === "calendar" && <CalendarTabSkeleton />}
-          {activeTab === "analytics" && <AnalyticsTabSkeleton />}
-        </GlassCard>
+        {activeTab === "categories" ? (
+          <CategoriesTabSkeleton />
+        ) : (
+          <GlassCard variant="secondary" className="overflow-hidden">
+            {activeTab === "budgets" && <BudgetsTabSkeleton />}
+            {activeTab === "expenses" && <ExpensesTabSkeleton />}
+            {activeTab === "calendar" && <CalendarTabSkeleton />}
+            {activeTab === "analytics" && <AnalyticsTabSkeleton />}
+          </GlassCard>
+        )}
       </motion.div>
     );
   }
@@ -472,7 +678,7 @@ export const Budget: React.FC = () => {
             className={`relative overflow-hidden md:p-6 md:rounded-xl md:backdrop-blur-xl md:border ${
               isDark
                 ? "md:bg-[rgba(26,26,31,0.6)] md:border-[rgba(255,255,255,0.1)]"
-                : "md:border-gray-200/60"
+                : "md:bg-white/90 md:border-gray-200/60 md:shadow-[0_8px_32px_rgba(0,0,0,0.1)]"
             } ${
               isHalloweenMode
                 ? "md:border-[rgba(96,201,182,0.2)] md:shadow-[0_0_20px_rgba(96,201,182,0.15)]"
@@ -597,11 +803,19 @@ export const Budget: React.FC = () => {
                       ? "text-[#8B5CF6]"
                       : activeTab === "budgets"
                         ? "text-[#8B5CF6]"
-                        : activeTab === "calendar"
-                          ? "text-[#F59E0B]"
-                          : activeTab === "expenses"
-                            ? "text-[#10B981]"
-                            : "text-[#3B82F6]"
+                        : activeTab === "recurring"
+                          ? "text-[#8B5CF6]"
+                          : activeTab === "accounts"
+                            ? "text-[#F97316]"
+                            : activeTab === "balance_sheet"
+                              ? "text-[#06B6D4]"
+                              : activeTab === "categories"
+                                ? "text-[#EC4899]"
+                                : activeTab === "calendar"
+                                  ? "text-[#F59E0B]"
+                                  : activeTab === "expenses"
+                                    ? "text-[#10B981]"
+                                    : "text-[#3B82F6]"
                 } ${isHalloweenMode ? "drop-shadow-[0_0_8px_rgba(96,201,182,0.5)]" : ""}`}
               >
                 {currentView === "detail" && selectedBudget ? (
@@ -623,7 +837,7 @@ export const Budget: React.FC = () => {
                     <span>{selectedBudget.name}</span>
                   </div>
                 ) : (
-                  "Budget Tracker"
+                  "Financial Management"
                 )}
               </h1>
 
@@ -680,27 +894,9 @@ export const Budget: React.FC = () => {
                     </motion.button>
                   </div>
                 )}
-            </div>
-            <p
-              className={`relative z-10 text-xs ${isDark ? "text-[#B4B4B8]" : "text-gray-600"}`}
-            >
-              {getTabDescription()}
-            </p>
 
-            {/* Action Buttons - Mobile (below description) */}
-            {currentView === "list" &&
-              (activeTab === "budgets" || activeTab === "expenses") && (
-                <div className="flex md:hidden items-center gap-2 mt-3">
-                  <motion.button
-                    onClick={() => setShowQuickExpense(true)}
-                    className="flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer bg-[rgba(16,185,129,0.2)] border border-[rgba(16,185,129,0.3)] rounded-lg text-[#10B981] hover:bg-[rgba(16,185,129,0.3)] transition-colors text-xs font-medium shrink-0"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Quick Expense</span>
-                  </motion.button>
-
+              {currentView === "list" && activeTab === "accounts" && (
+                <div className="hidden md:flex items-center gap-2 flex-wrap justify-end">
                   <motion.button
                     onClick={() => setShowTransactionForm(true)}
                     className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
@@ -717,16 +913,247 @@ export const Budget: React.FC = () => {
 
                   <motion.button
                     onClick={() => {
-                      setEditingBudget(undefined);
-                      setShowBudgetForm(true);
+                      setEditingAccount(undefined);
+                      setShowAccountModal(true);
                     }}
-                    className="flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer bg-[rgba(139,92,246,0.2)] border border-[rgba(139,92,246,0.3)] rounded-lg text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.3)] transition-colors text-xs font-medium shrink-0"
+                    className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                      isHalloweenMode
+                        ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                        : "bg-[rgba(249,115,22,0.2)] border border-[rgba(249,115,22,0.3)] text-[#F97316] hover:bg-[rgba(249,115,22,0.3)]"
+                    }`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>New Budget</span>
+                    <span>Add Account</span>
                   </motion.button>
+
+                  <motion.button
+                    onClick={() => {
+                      setEditingGoal(undefined);
+                      setShowGoalModal(true);
+                    }}
+                    className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                      isHalloweenMode
+                        ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                        : "bg-[rgba(249,115,22,0.2)] border border-[rgba(249,115,22,0.3)] text-[#F97316] hover:bg-[rgba(249,115,22,0.3)]"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Goal</span>
+                  </motion.button>
+                </div>
+              )}
+
+              {currentView === "list" && activeTab === "recurring" && (
+                <div className="hidden md:flex items-center gap-2 flex-wrap justify-end">
+                  <motion.button
+                    onClick={() => {
+                      const event = new CustomEvent("openRecurringModal");
+                      window.dispatchEvent(event);
+                    }}
+                    className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                      isHalloweenMode
+                        ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                        : "bg-[rgba(139,92,246,0.2)] border border-[rgba(139,92,246,0.3)] text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.3)]"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Rule</span>
+                  </motion.button>
+                </div>
+              )}
+
+              {currentView === "list" && activeTab === "categories" && (
+                <div className="hidden md:flex items-center gap-2 flex-wrap justify-end">
+                  <motion.button
+                    onClick={() => setTriggerAddCategory((prev) => prev + 1)}
+                    className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                      isHalloweenMode
+                        ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                        : "bg-[rgba(236,72,153,0.2)] border border-[rgba(236,72,153,0.3)] text-[#EC4899] hover:bg-[rgba(236,72,153,0.3)]"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Category</span>
+                  </motion.button>
+                </div>
+              )}
+
+              {currentView === "list" && activeTab === "balance_sheet" && (
+                <div className="hidden md:flex items-center gap-2 flex-wrap justify-end">
+                  <motion.button
+                    onClick={() => {
+                      setEditingLiability(undefined);
+                      setShowLiabilityModal(true);
+                    }}
+                    className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                      isHalloweenMode
+                        ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                        : "bg-[rgba(239,68,68,0.2)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.3)]"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Liability</span>
+                  </motion.button>
+                </div>
+              )}
+            </div>
+            <p
+              className={`relative z-10 text-xs ${isDark ? "text-[#B4B4B8]" : "text-gray-600"}`}
+            >
+              {getTabDescription()}
+            </p>
+
+            {/* Action Buttons - Mobile (below description) */}
+            {currentView === "list" &&
+              (activeTab === "budgets" ||
+                activeTab === "expenses" ||
+                activeTab === "accounts" ||
+                activeTab === "balance_sheet" ||
+                activeTab === "categories" ||
+                activeTab === "recurring") && (
+                <div className="flex flex-wrap md:hidden items-center gap-2 mt-3">
+                  {(activeTab === "budgets" || activeTab === "expenses") && (
+                    <>
+                      <motion.button
+                        onClick={() => setShowTransactionForm(true)}
+                        className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                          isHalloweenMode
+                            ? "bg-[rgba(96,201,182,0.2)] border border-[rgba(96,201,182,0.3)] text-[#60c9b6] hover:bg-[rgba(96,201,182,0.3)]"
+                            : "bg-[rgba(245,158,11,0.2)] border border-[rgba(245,158,11,0.3)] text-[#F59E0B] hover:bg-[rgba(245,158,11,0.3)]"
+                        }`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Transaction</span>
+                      </motion.button>
+
+                      <motion.button
+                        onClick={() => setShowQuickExpense(true)}
+                        className="flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer bg-[rgba(16,185,129,0.2)] border border-[rgba(16,185,129,0.3)] rounded-lg text-[#10B981] hover:bg-[rgba(16,185,129,0.3)] transition-colors text-xs font-medium shrink-0"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Quick Expense</span>
+                      </motion.button>
+
+                      <motion.button
+                        onClick={() => {
+                          setEditingBudget(undefined);
+                          setShowBudgetForm(true);
+                        }}
+                        className="flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer bg-[rgba(139,92,246,0.2)] border border-[rgba(139,92,246,0.3)] rounded-lg text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.3)] transition-colors text-xs font-medium shrink-0"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>New Budget</span>
+                      </motion.button>
+                    </>
+                  )}
+
+                  {activeTab === "accounts" && (
+                    <>
+                      <motion.button
+                        onClick={() => {
+                          setEditingAccount(undefined);
+                          setShowAccountModal(true);
+                        }}
+                        className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                          isHalloweenMode
+                            ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                            : "bg-[rgba(249,115,22,0.2)] border border-[rgba(249,115,22,0.3)] text-[#F97316] hover:bg-[rgba(249,115,22,0.3)]"
+                        }`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Account</span>
+                      </motion.button>
+
+                      <motion.button
+                        onClick={() => {
+                          setEditingGoal(undefined);
+                          setShowGoalModal(true);
+                        }}
+                        className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                          isHalloweenMode
+                            ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                            : "bg-[rgba(249,115,22,0.2)] border border-[rgba(249,115,22,0.3)] text-[#F97316] hover:bg-[rgba(249,115,22,0.3)]"
+                        }`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add Goal</span>
+                      </motion.button>
+                    </>
+                  )}
+
+                  {activeTab === "categories" && (
+                    <motion.button
+                      onClick={() => setTriggerAddCategory((prev) => prev + 1)}
+                      className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                        isHalloweenMode
+                          ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                          : "bg-[rgba(236,72,153,0.2)] border border-[rgba(236,72,153,0.3)] text-[#EC4899] hover:bg-[rgba(236,72,153,0.3)]"
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Category</span>
+                    </motion.button>
+                  )}
+
+                  {activeTab === "balance_sheet" && (
+                    <motion.button
+                      onClick={() => {
+                        setEditingLiability(undefined);
+                        setShowLiabilityModal(true);
+                      }}
+                      className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                        isHalloweenMode
+                          ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                          : "bg-[rgba(239,68,68,0.2)] border border-[rgba(239,68,68,0.3)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.3)]"
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Liability</span>
+                    </motion.button>
+                  )}
+
+                  {activeTab === "recurring" && (
+                    <motion.button
+                      onClick={() => {
+                        const event = new CustomEvent("openRecurringModal");
+                        window.dispatchEvent(event);
+                      }}
+                      className={`flex items-center justify-center space-x-1 px-3 py-1.5 cursor-pointer rounded-lg transition-colors text-xs font-medium shrink-0 ${
+                        isHalloweenMode
+                          ? "bg-[#60c9b6] text-black hover:bg-[#4db8a5]"
+                          : "bg-[rgba(139,92,246,0.2)] border border-[rgba(139,92,246,0.3)] text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.3)]"
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Rule</span>
+                    </motion.button>
+                  )}
                 </div>
               )}
             {currentView === "detail" && selectedBudget && (
@@ -758,7 +1185,7 @@ export const Budget: React.FC = () => {
               >
                 {/* Sliding Background */}
                 <motion.div
-                  className="absolute rounded-lg border"
+                  className="absolute rounded-lg border z-0"
                   animate={{
                     left: tabPosition.left,
                     width: tabPosition.width,
@@ -768,20 +1195,36 @@ export const Budget: React.FC = () => {
                       ? "rgba(96,201,182,0.2)"
                       : activeTab === "budgets"
                         ? "rgba(139,92,246,0.2)"
-                        : activeTab === "calendar"
-                          ? "rgba(245,158,11,0.2)"
-                          : activeTab === "expenses"
-                            ? "rgba(16,185,129,0.2)"
-                            : "rgba(59,130,246,0.2)",
+                        : activeTab === "accounts"
+                          ? "rgba(249,115,22,0.2)"
+                          : activeTab === "balance_sheet"
+                            ? "rgba(6,182,212,0.2)"
+                            : activeTab === "categories"
+                              ? "rgba(236,72,153,0.2)"
+                              : activeTab === "calendar"
+                                ? "rgba(245,158,11,0.2)"
+                                : activeTab === "expenses"
+                                  ? "rgba(16,185,129,0.2)"
+                                  : activeTab === "recurring"
+                                    ? "rgba(139,92,246,0.2)"
+                                    : "rgba(59,130,246,0.2)",
                     borderColor: isHalloweenMode
                       ? "rgba(96,201,182,0.3)"
                       : activeTab === "budgets"
                         ? "rgba(139,92,246,0.3)"
-                        : activeTab === "calendar"
-                          ? "rgba(245,158,11,0.3)"
-                          : activeTab === "expenses"
-                            ? "rgba(16,185,129,0.3)"
-                            : "rgba(59,130,246,0.3)",
+                        : activeTab === "accounts"
+                          ? "rgba(249,115,22,0.3)"
+                          : activeTab === "balance_sheet"
+                            ? "rgba(6,182,212,0.3)"
+                            : activeTab === "categories"
+                              ? "rgba(236,72,153,0.3)"
+                              : activeTab === "calendar"
+                                ? "rgba(245,158,11,0.3)"
+                                : activeTab === "expenses"
+                                  ? "rgba(16,185,129,0.3)"
+                                  : activeTab === "recurring"
+                                    ? "rgba(139,92,246,0.3)"
+                                    : "rgba(59,130,246,0.3)",
                   }}
                   transition={{
                     type: "spring",
@@ -791,7 +1234,7 @@ export const Budget: React.FC = () => {
                 />
                 {isHalloweenMode && (
                   <motion.div
-                    className="absolute rounded-lg"
+                    className="absolute rounded-lg z-0"
                     animate={{
                       left: tabPosition.left,
                       width: tabPosition.width,
@@ -825,13 +1268,97 @@ export const Budget: React.FC = () => {
                       ? isHalloweenMode
                         ? "text-[#60c9b6]"
                         : "text-[#8B5CF6]"
-                      : isHalloweenMode
-                        ? "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
-                        : "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(139,92,246,0.1)] hover:text-[#8B5CF6]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(139,92,246,0.1)] hover:text-[#8B5CF6]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(139,92,246,0.1)] hover:text-[#8B5CF6]"
                   }`}
                 >
                   <List className="w-4 h-4 inline mr-1 sm:mr-2" />
                   Budgets
+                </button>
+                <button
+                  ref={recurringTabRef}
+                  onClick={() => handleTabChange("recurring")}
+                  className={`relative z-10 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer text-xs sm:text-sm ${
+                    activeTab === "recurring"
+                      ? isHalloweenMode
+                        ? "text-[#60c9b6]"
+                        : "text-[#8B5CF6]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(139,92,246,0.1)] hover:text-[#8B5CF6]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(139,92,246,0.1)] hover:text-[#8B5CF6]"
+                  }`}
+                >
+                  <Repeat className="w-4 h-4 inline mr-1 sm:mr-2" />
+                  Recurring
+                </button>
+                <button
+                  ref={accountsTabRef}
+                  onClick={() => handleTabChange("accounts")}
+                  className={`relative z-10 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer text-xs sm:text-sm ${
+                    activeTab === "accounts"
+                      ? isHalloweenMode
+                        ? "text-[#60c9b6]"
+                        : "text-[#F97316]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(249,115,22,0.1)] hover:text-[#F97316]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(249,115,22,0.1)] hover:text-[#F97316]"
+                  }`}
+                >
+                  <Wallet className="w-4 h-4 inline mr-1 sm:mr-2" />
+                  Accounts
+                </button>
+                <button
+                  ref={balanceSheetTabRef}
+                  onClick={() => handleTabChange("balance_sheet")}
+                  className={`relative z-10 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer text-xs sm:text-sm ${
+                    activeTab === "balance_sheet"
+                      ? isHalloweenMode
+                        ? "text-[#60c9b6]"
+                        : "text-[#06B6D4]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(6,182,212,0.1)] hover:text-[#06B6D4]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(6,182,212,0.1)] hover:text-[#06B6D4]"
+                  }`}
+                >
+                  <BarChart className="w-4 h-4 inline mr-1 sm:mr-2" />
+                  Balance Sheet
+                </button>
+                <button
+                  ref={categoriesTabRef}
+                  onClick={() => handleTabChange("categories")}
+                  className={`relative z-10 px-3 sm:px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer text-xs sm:text-sm ${
+                    activeTab === "categories"
+                      ? isHalloweenMode
+                        ? "text-[#60c9b6]"
+                        : "text-[#EC4899]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(236,72,153,0.1)] hover:text-[#EC4899]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(236,72,153,0.1)] hover:text-[#EC4899]"
+                  }`}
+                >
+                  <Tag className="w-4 h-4 inline mr-1 sm:mr-2" />
+                  Categories
                 </button>
                 <button
                   ref={insightsTabRef}
@@ -841,9 +1368,13 @@ export const Budget: React.FC = () => {
                       ? isHalloweenMode
                         ? "text-[#60c9b6]"
                         : "text-[#3B82F6]"
-                      : isHalloweenMode
-                        ? "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
-                        : "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(59,130,246,0.1)] hover:text-[#3B82F6]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(59,130,246,0.1)] hover:text-[#3B82F6]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(59,130,246,0.1)] hover:text-[#3B82F6]"
                   }`}
                 >
                   <Sparkles className="w-4 h-4 inline mr-1 sm:mr-2" />
@@ -857,9 +1388,13 @@ export const Budget: React.FC = () => {
                       ? isHalloweenMode
                         ? "text-[#60c9b6]"
                         : "text-[#10B981]"
-                      : isHalloweenMode
-                        ? "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
-                        : "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(16,185,129,0.1)] hover:text-[#10B981]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(16,185,129,0.1)] hover:text-[#10B981]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(16,185,129,0.1)] hover:text-[#10B981]"
                   }`}
                 >
                   <FileText className="w-4 h-4 inline mr-1 sm:mr-2" />
@@ -873,9 +1408,13 @@ export const Budget: React.FC = () => {
                       ? isHalloweenMode
                         ? "text-[#60c9b6]"
                         : "text-[#3B82F6]"
-                      : isHalloweenMode
-                        ? "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
-                        : "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(59,130,246,0.1)] hover:text-[#3B82F6]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(59,130,246,0.1)] hover:text-[#3B82F6]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(59,130,246,0.1)] hover:text-[#3B82F6]"
                   }`}
                 >
                   <BarChart className="w-4 h-4 inline mr-1 sm:mr-2" />
@@ -889,9 +1428,13 @@ export const Budget: React.FC = () => {
                       ? isHalloweenMode
                         ? "text-[#60c9b6]"
                         : "text-[#F59E0B]"
-                      : isHalloweenMode
-                        ? "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
-                        : "text-gray-500 dark:text-[#B4B4B8] hover:bg-[rgba(245,158,11,0.1)] hover:text-[#F59E0B]"
+                      : isDark
+                        ? isHalloweenMode
+                          ? "text-[#B4B4B8] hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-[#B4B4B8] hover:bg-[rgba(245,158,11,0.1)] hover:text-[#F59E0B]"
+                        : isHalloweenMode
+                          ? "text-gray-600 hover:bg-[rgba(96,201,182,0.1)] hover:text-[#60c9b6]"
+                          : "text-gray-600 hover:bg-[rgba(245,158,11,0.1)] hover:text-[#F59E0B]"
                   }`}
                 >
                   <Calendar className="w-4 h-4 inline mr-1 sm:mr-2" />
@@ -900,9 +1443,8 @@ export const Budget: React.FC = () => {
               </div>
 
               {/* Currency Selector - Desktop only */}
-              <div className="hidden lg:block w-48 shrink-0">
-                <Dropdown
-                  placeholder="Select Currency"
+              <div className="hidden md:block w-48">
+                <SearchableDropdown
                   value={currency.code}
                   onValueChange={(code) => {
                     const selectedCurrency = CURRENCIES.find(
@@ -912,18 +1454,15 @@ export const Budget: React.FC = () => {
                       setCurrency(selectedCurrency);
                     }
                   }}
-                  options={CURRENCIES.map((curr) => ({
-                    value: curr.code,
-                    label: `${curr.name} (${curr.symbol})`,
-                  }))}
+                  options={currencyOptions}
+                  placeholder="Select Currency"
                 />
               </div>
             </div>
 
             {/* Currency Selector - Mobile only (below tabs) */}
-            <div className="lg:hidden">
-              <Dropdown
-                placeholder="Select Currency"
+            <div className="md:hidden w-full mb-4">
+              <SearchableDropdown
                 value={currency.code}
                 onValueChange={(code) => {
                   const selectedCurrency = CURRENCIES.find(
@@ -933,10 +1472,8 @@ export const Budget: React.FC = () => {
                     setCurrency(selectedCurrency);
                   }
                 }}
-                options={CURRENCIES.map((curr) => ({
-                  value: curr.code,
-                  label: `${curr.name} (${curr.symbol})`,
-                }))}
+                options={currencyOptions}
+                placeholder="Select Currency"
               />
             </div>
           </div>
@@ -1859,6 +2396,50 @@ export const Budget: React.FC = () => {
                 </GlassCard>
               )}
             </div>
+          ) : activeTab === "accounts" ? (
+            <AccountList
+              accounts={accounts}
+              onDeleteAccount={async (id: string) => {
+                await deleteAccountMutation.mutateAsync(id);
+              }}
+              onEditAccount={(account) => {
+                setEditingAccount(account);
+                setShowAccountModal(true);
+              }}
+              onEditGoal={handleEditGoal}
+              onDeleteGoal={handleDeleteGoal}
+              isLoading={
+                createAccountMutation.isPending ||
+                updateAccountMutation.isPending ||
+                deleteAccountMutation.isPending
+              }
+            />
+          ) : activeTab === "balance_sheet" ? (
+            accountsLoading || liabilitiesLoading ? (
+              <BalanceSheetSkeleton />
+            ) : (
+              <BalanceSheetTab
+                onAddAccount={() => {
+                  setEditingAccount(undefined);
+                  setShowAccountModal(true);
+                }}
+                onEditAccount={(account) => {
+                  setEditingAccount(account);
+                  setShowAccountModal(true);
+                }}
+                onDeleteAccount={(id) => {
+                  deleteAccountMutation.mutateAsync(id);
+                }}
+                onAddLiability={() => {
+                  setEditingLiability(undefined);
+                  setShowLiabilityModal(true);
+                }}
+                onEditLiability={(liability) => {
+                  setEditingLiability(liability);
+                  setShowLiabilityModal(true);
+                }}
+              />
+            )
           ) : activeTab === "insights" ? (
             <FinancialInsightsCard
               transactions={transactions}
@@ -1878,6 +2459,10 @@ export const Budget: React.FC = () => {
             </GlassCard>
           ) : activeTab === "analytics" ? (
             <BudgetAnalytics budgets={budgets} />
+          ) : activeTab === "categories" ? (
+            <CategoryManager triggerAdd={triggerAddCategory} />
+          ) : activeTab === "recurring" ? (
+            <RecurringManager />
           ) : (
             <TransactionList
               transactions={transactions}
@@ -1922,11 +2507,46 @@ export const Budget: React.FC = () => {
           transaction={editingTransaction}
         />
 
+        <GoalModal
+          isOpen={showGoalModal}
+          onClose={() => {
+            setShowGoalModal(false);
+            setEditingGoal(undefined);
+          }}
+          onSave={handleGoalSubmit}
+          initialData={editingGoal}
+        />
+
+        <AccountModal
+          isOpen={showAccountModal}
+          onClose={() => {
+            setShowAccountModal(false);
+            setEditingAccount(undefined);
+          }}
+          account={editingAccount}
+          onSubmit={handleAccountSubmit}
+          isLoading={
+            editingAccount
+              ? updateAccountMutation.isPending
+              : createAccountMutation.isPending
+          }
+        />
+
         <QuickExpenseModal
           isOpen={showQuickExpense}
           onClose={() => setShowQuickExpense(false)}
           onSubmit={handleAddTransaction}
           isLoading={createTransactionMutation.isPending}
+        />
+
+        <LiabilityModal
+          isOpen={showLiabilityModal}
+          onClose={() => {
+            setShowLiabilityModal(false);
+            setEditingLiability(undefined);
+          }}
+          onSave={handleLiabilitySubmit}
+          initialData={editingLiability}
         />
 
         <ConfirmationModal
@@ -2138,7 +2758,7 @@ export const Budget: React.FC = () => {
                             <img
                               src={pumpkinWitchhat}
                               alt=""
-                              className="w-5 h-5 md:w-6 md:h-6"
+                              className="w-5 h-5 md:w-6 md:h-6 "
                             />
                           ) : (
                             <FileText
