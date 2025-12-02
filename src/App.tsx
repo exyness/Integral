@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import path from "path";
 import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/Tooltip.tsx";
@@ -15,7 +14,6 @@ import { IconPickerProvider } from "./contexts/IconPickerContext";
 import { NetworkProvider } from "./contexts/NetworkContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { useDocumentTitle } from "./hooks/useDocumentTitle";
-import { Auth } from "./pages/Auth";
 
 const Dashboard = lazy(() =>
   import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })),
