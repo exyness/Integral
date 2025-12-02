@@ -793,7 +793,7 @@ export const SearchModal: React.FC = () => {
                             : isDark
                               ? "text-gray-200"
                               : "text-gray-800"
-                            } animate-pulse`}
+                        } animate-pulse`}
                       >
                         <TextShimmer
                           as="span"
@@ -826,74 +826,72 @@ export const SearchModal: React.FC = () => {
               }`}
             >
               <Command className="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-6 opacity-20" />
-            <h3
-              className={`text-xl md:text-3xl font-medium mb-2 md:mb-3 ${
-                isHalloweenMode ? "text-[#60c9b6]" : ""
-              }`}
-            >
-              {isHalloweenMode
-                ? "The Grimoire Awaits"
-                : "Search Integral"}
-            </h3>
-            <p className="text-sm md:text-lg max-w-xs md:max-w-xl mx-auto opacity-70 leading-relaxed">
-              Search through your journal entries, notes, and tasks using
-              natural language.
-            </p>
-          </div>
-        )}
-      </div>
+              <h3
+                className={`text-xl md:text-3xl font-medium mb-2 md:mb-3 ${
+                  isHalloweenMode ? "text-[#60c9b6]" : ""
+                }`}
+              >
+                {isHalloweenMode ? "The Grimoire Awaits" : "Search Integral"}
+              </h3>
+              <p className="text-sm md:text-lg max-w-xs md:max-w-xl mx-auto opacity-70 leading-relaxed">
+                Search through your journal entries, notes, and tasks using
+                natural language.
+              </p>
+            </div>
+          )}
+        </div>
 
-      {/* Mobile Bottom Search Input */}
-      <div
-        className={`md:hidden flex items-center px-4 h-16 border-t shrink-0 relative z-10 ${
-          isHalloweenMode
-            ? "border-[#60c9b6]/20 bg-[#1a1a1f]"
-            : isDark
-              ? "border-white/10 bg-[#1A1A1F]"
-              : "border-gray-200 bg-white"
-        }`}
-      >
-        <Search
-          className={`w-5 h-5 mr-3 ${
-            isHalloweenMode ? "text-[#60c9b6]" : "text-gray-400"
+        {/* Mobile Bottom Search Input */}
+        <div
+          className={`md:hidden flex items-center px-4 h-16 border-t shrink-0 relative z-10 ${
+            isHalloweenMode
+              ? "border-[#60c9b6]/20 bg-[#1a1a1f]"
+              : isDark
+                ? "border-white/10 bg-[#1A1A1F]"
+                : "border-gray-200 bg-white"
           }`}
-        />
-        <form onSubmit={handleSearch} className="flex-1">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={placeholder}
-            className={`w-full h-full bg-transparent border-none outline-none text-sm font-medium ${
-              isHalloweenMode
-                ? "text-[#60c9b6] placeholder:text-[#60c9b6]/40"
-                : isDark
-                  ? "text-white placeholder:text-gray-500"
-                  : "text-gray-900 placeholder:text-gray-400"
+        >
+          <Search
+            className={`w-5 h-5 mr-3 ${
+              isHalloweenMode ? "text-[#60c9b6]" : "text-gray-400"
             }`}
           />
-        </form>
-        <div className="flex items-center gap-1 ml-2 opacity-50 shrink-0">
-          <img src="/ai.svg" alt="Gemini" className="w-3 h-3" />
-          <span
-            className={`text-[10px] ${
-              isHalloweenMode ? "text-[#60c9b6]" : "text-gray-500"
-            }`}
-          >
-            Gemini
-          </span>
+          <form onSubmit={handleSearch} className="flex-1">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={placeholder}
+              className={`w-full h-full bg-transparent border-none outline-none text-sm font-medium ${
+                isHalloweenMode
+                  ? "text-[#60c9b6] placeholder:text-[#60c9b6]/40"
+                  : isDark
+                    ? "text-white placeholder:text-gray-500"
+                    : "text-gray-900 placeholder:text-gray-400"
+              }`}
+            />
+          </form>
+          <div className="flex items-center gap-1 ml-2 opacity-50 shrink-0">
+            <img src="/ai.svg" alt="Gemini" className="w-3 h-3" />
+            <span
+              className={`text-[10px] ${
+                isHalloweenMode ? "text-[#60c9b6]" : "text-gray-500"
+              }`}
+            >
+              Gemini
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div
-        className={`hidden md:flex px-4 md:px-6 py-2 md:py-3 border-t items-center justify-between text-[10px] md:text-xs shrink-0 relative z-10 ${
-          isHalloweenMode
-            ? "border-[#60c9b6]/20 bg-[#60c9b6]/5 text-[#60c9b6]/60"
-            : isDark
-              ? "border-white/10 bg-white/5 text-gray-500"
-              : "border-gray-200 bg-gray-50 text-gray-400"
-        }`}
-      >
+        {/* Footer */}
+        <div
+          className={`hidden md:flex px-4 md:px-6 py-2 md:py-3 border-t items-center justify-between text-[10px] md:text-xs shrink-0 relative z-10 ${
+            isHalloweenMode
+              ? "border-[#60c9b6]/20 bg-[#60c9b6]/5 text-[#60c9b6]/60"
+              : isDark
+                ? "border-white/10 bg-white/5 text-gray-500"
+                : "border-gray-200 bg-gray-50 text-gray-400"
+          }`}
+        >
           <div className="hidden md:flex items-center gap-4">
             <span className="flex items-center gap-1">
               <CornerDownLeft className="w-3.5 h-3.5" /> to select
