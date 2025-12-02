@@ -183,16 +183,16 @@ export const Footer: React.FC<FooterProps> = ({ isDark }) => {
             </h4>
             <ul className="space-y-1.5 sm:space-y-2">
               {[
-                "Tasks",
-                "Journal",
-                "Finances",
-                "Time Tracking",
-                "Notes",
-                "Pomodoro",
+                { name: "Tasks", path: "/tasks" },
+                { name: "Journal", path: "/journal" },
+                { name: "Finances", path: "/finances" },
+                { name: "Time Tracking", path: "/time" },
+                { name: "Notes", path: "/notes" },
+                { name: "Pomodoro", path: "/pomodoro" },
               ].map((item) => (
-                <li key={item}>
+                <li key={item.name}>
                   <button
-                    onClick={() => navigate("/auth")}
+                    onClick={() => navigate(item.path)}
                     className={`text-xs sm:text-sm transition-colors cursor-pointer ${
                       isHalloweenMode
                         ? "text-gray-400 hover:text-[#60c9b6]"
@@ -201,7 +201,7 @@ export const Footer: React.FC<FooterProps> = ({ isDark }) => {
                           : "text-gray-600 hover:text-gray-900"
                     }`}
                   >
-                    {item}
+                    {item.name}
                   </button>
                 </li>
               ))}

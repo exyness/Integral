@@ -90,10 +90,10 @@ const navigationItems: NavigationItem[] = [
     color: "#F59E0B",
   },
   {
-    id: "budget",
+    id: "finances",
     icon: Wallet,
     label: "Finances",
-    path: "/budget",
+    path: "/finances",
     color: "#10B981",
   },
   {
@@ -444,7 +444,7 @@ export const Navbar: React.FC = () => {
         <motion.div
           layoutId="search-modal-expand"
           onClick={() => setSearchModalOpen(true)}
-          className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border cursor-text transition-colors w-64 ${
+          className={`hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg border cursor-text transition-colors w-36 ${
             isHalloweenMode
               ? "bg-[#60c9b6]/10 border-[#60c9b6]/30 text-[#60c9b6] hover:bg-[#60c9b6]/20"
               : isDark
@@ -455,7 +455,7 @@ export const Navbar: React.FC = () => {
           <Search className="w-4 h-4 shrink-0" />
           <span className="text-xs flex-1 text-left">Search...</span>
           <kbd
-            className={`hidden xl:inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 ${
+            className={`hidden xl:inline-flex h-6 items-center gap-1 rounded border px-1.5 font-bold text-[10px] opacity-100 ${
               isHalloweenMode
                 ? "bg-[#60c9b6]/20 border-[#60c9b6]/30 text-[#60c9b6]"
                 : isDark
@@ -463,7 +463,8 @@ export const Navbar: React.FC = () => {
                   : "bg-gray-100 border-gray-200 text-gray-500"
             }`}
           >
-            <span className="text-xs">Ctrl+K</span>
+            <span className="text-xs mt-1">⌘</span>
+            <span className="text-sm">K</span>
           </kbd>
         </motion.div>
 
