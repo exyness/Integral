@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useContext, useState } from "react";
+import { ExpandableScreen } from "@/components/ui/expandable-screen";
 
 interface FloatingWidgetContextType {
   isWidgetVisible: boolean;
@@ -72,7 +73,13 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
         toggleSearchModal,
       }}
     >
-      {children}
+      <ExpandableScreen
+        expanded={isSearchModalOpen}
+        onExpandChange={setSearchModalOpen}
+        layoutId="search-modal-expand"
+      >
+        {children}
+      </ExpandableScreen>
     </FloatingWidgetContext.Provider>
   );
 };

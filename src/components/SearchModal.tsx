@@ -1,10 +1,4 @@
 import {
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@radix-ui/react-tooltip";
-import { AnimatePresence, motion } from "framer-motion";
-import {
   ArrowDown,
   ArrowUp,
   BookOpen,
@@ -14,14 +8,15 @@ import {
   List,
   Search,
   Sparkles,
+  X,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Tooltip } from "recharts";
 import { toast } from "sonner";
 import { spiderSharpHanging, witchBrew } from "@/assets";
 import { Spinner } from "@/components/Spinner";
 import { Button } from "@/components/ui/Button";
+import { ExpandableScreenContent } from "@/components/ui/expandable-screen";
 import { PortalTooltip } from "@/components/ui/PortalTooltip";
 import { Progress } from "@/components/ui/Progress";
 import { ScrollArea } from "@/components/ui/ScrollArea";
@@ -332,437 +327,599 @@ export const SearchModal: React.FC = () => {
     ? "Ask the spirits about your past..."
     : "Search your knowledge base...";
 
-  if (!isSearchModalOpen) return null;
-
   return (
-    <AnimatePresence>
-      {isSearchModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center md:items-start justify-center md:pt-[15vh] px-2 md:px-4">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+    <ExpandableScreenContent
+      className={`shadow-2xl overflow-hidden w-full max-w-5xl h-[85vh] ${
+        isHalloweenMode
+          ? "bg-[#1a1a1f] border border-[#60c9b6]/30 shadow-[0_0_30px_rgba(96,201,182,0.15)]"
+          : isDark
+            ? "bg-[#1A1A1F] border border-white/10"
+            : "bg-white border border-gray-200"
+      }`}
+      closeButtonClassName={
+        isHalloweenMode
+          ? "hidden md:flex right-4 top-4 md:right-6 md:top-6 text-[#60c9b6] bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20"
+          : isDark
+            ? "hidden md:flex right-4 top-4 md:right-6 md:top-6 text-white bg-white/10 hover:bg-white/20"
+            : "hidden md:flex right-4 top-4 md:right-6 md:top-6 text-gray-600 bg-gray-100 hover:text-gray-900 hover:bg-gray-200"
+      }
+    >
+      <div className="flex flex-col h-full relative">
+        {/* Halloween Decorations */}
+        {isHalloweenMode && (
+          <>
+            <div className="hidden md:block absolute bottom-0 left-0 pointer-events-none z-0">
+              <img
+                src={witchBrew}
+                alt=""
+                className="w-48 h-48 md:w-64 md:h-64 opacity-10 object-contain object-bottom-left"
+              />
+            </div>
+            <div className="hidden md:block absolute -top-10 -right-10 pointer-events-none z-0">
+              <img
+                src={spiderSharpHanging}
+                alt=""
+                className="w-32 h-32 md:w-48 md:h-48 opacity-10"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Mobile Top Bar (Icons) */}
+        <div
+          className={`md:hidden flex items-center justify-between px-4 h-14 border-b shrink-0 relative z-10 ${
+            isHalloweenMode
+              ? "border-[#60c9b6]/20"
+              : isDark
+                ? "border-white/10"
+                : "border-gray-200"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {isGhostWriting && (
+              <Sparkles
+                className={`w-5 h-5 animate-spin ${
+                  isHalloweenMode ? "text-[#60c9b6]" : "text-purple-500"
+                }`}
+              />
+            )}
+
+            {/* Import Buttons (Mobile) */}
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon notes from the void"
+                  : "Index all notes for AI search"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportNotes}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <FileText
+                  className={`w-5 h-5 ${isImportingNotes ? "hidden" : ""}`}
+                />
+                {isImportingNotes && (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon tasks from the shadows"
+                  : "Index all tasks for AI search"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportTasks}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <List
+                  className={`w-5 h-5 ${isImportingTasks ? "hidden" : ""}`}
+                />
+                {isImportingTasks && (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon journal entries from the past"
+                  : "Index all journal entries for AI search"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportJournal}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <BookOpen
+                  className={`w-5 h-5 ${isImportingJournal ? "hidden" : ""}`}
+                />
+                {isImportingJournal && (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+          </div>
+
+          {/* Close Button (Mobile) */}
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setSearchModalOpen(false)}
-            className={`fixed inset-0 backdrop-blur-sm ${
-              isDark ? "bg-black/60" : "bg-white/60"
+            className={`h-10 w-10 transition-colors ${
+              isHalloweenMode
+                ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                : isDark
+                  ? "text-gray-400 hover:text-gray-200 hover:bg-white/10"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <X className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* Desktop Header / Search Input Area */}
+        <div
+          className={`hidden md:flex items-center px-4 md:px-6 h-20 md:h-24 border-b shrink-0 relative z-10 ${
+            isHalloweenMode
+              ? "border-[#60c9b6]/20"
+              : isDark
+                ? "border-white/10"
+                : "border-gray-200"
+          }`}
+        >
+          <Search
+            className={`w-5 h-5 md:w-6 md:h-6 mr-3 md:mr-4 ${
+              isHalloweenMode ? "text-[#60c9b6]" : "text-gray-400"
             }`}
           />
 
-          {/* Command Palette Container */}
-          <motion.div
-            layoutId="search-modal-expand"
-            className={`relative w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col ${
-              isHalloweenMode
-                ? "bg-[#1a1a1f] border border-[#60c9b6]/30 shadow-[0_0_30px_rgba(96,201,182,0.15)]"
-                : isDark
-                  ? "bg-[#1A1A1F] border border-white/10"
-                  : "bg-white border border-gray-200"
-            }`}
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            {/* Halloween Decorations */}
-            {isHalloweenMode && (
-              <>
-                <div className="absolute -bottom-0.5 -left-3 pointer-events-none z-0">
-                  <img
-                    src={witchBrew}
-                    alt=""
-                    className="w-32 h-32 md:w-48 md:h-48 opacity-10"
-                  />
-                </div>
-                <div className="absolute -top-10 -right-10 pointer-events-none z-0">
-                  <img
-                    src={spiderSharpHanging}
-                    alt=""
-                    className="w-32 h-32 md:w-48 md:h-48 opacity-10"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Header / Search Input Area */}
-            <div
-              className={`flex items-center px-3 md:px-4 h-12 md:h-16 border-b ${
+          <form onSubmit={handleSearch} className="flex-1">
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={placeholder}
+              className={`w-full h-full bg-transparent border-none outline-none text-xl md:text-2xl font-medium ${
                 isHalloweenMode
-                  ? "border-[#60c9b6]/20"
+                  ? "text-[#60c9b6] placeholder:text-[#60c9b6]/40"
                   : isDark
-                    ? "border-white/10"
-                    : "border-gray-100"
+                    ? "text-white placeholder:text-gray-500"
+                    : "text-gray-900 placeholder:text-gray-400"
               }`}
-            >
-              <Search
-                className={`w-4 h-4 md:w-5 md:h-5 mr-2 md:mr-3 ${
-                  isHalloweenMode ? "text-[#60c9b6]" : "text-gray-400"
+            />
+          </form>
+
+          <div className="flex items-center gap-2 md:gap-3 mr-16">
+            {isGhostWriting && (
+              <Sparkles
+                className={`w-5 h-5 animate-spin ${
+                  isHalloweenMode ? "text-[#60c9b6]" : "text-purple-500"
                 }`}
               />
+            )}
 
-              <form onSubmit={handleSearch} className="flex-1">
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={placeholder}
-                  className={`w-full h-full bg-transparent border-none outline-none text-sm md:text-lg ${
-                    isHalloweenMode
-                      ? "text-[#60c9b6] placeholder:text-[#60c9b6]/40"
-                      : isDark
-                        ? "text-white placeholder:text-gray-500"
-                        : "text-gray-900 placeholder:text-gray-400"
+            {/* Import Buttons */}
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon notes from the void"
+                  : "Index all notes for AI search"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportNotes}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <FileText
+                  className={`w-5 h-5 md:w-6 md:h-6 ${
+                    isImportingNotes ? "hidden" : ""
                   }`}
                 />
-              </form>
+                {isImportingNotes && (
+                  <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
 
-              <div className="flex items-center gap-1 md:gap-2">
-                {isGhostWriting && (
-                  <Sparkles
-                    className={`w-4 h-4 animate-spin ${
-                      isHalloweenMode ? "text-[#60c9b6]" : "text-purple-500"
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon tasks from the shadows"
+                  : "Index all tasks for AI search"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportTasks}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <List
+                  className={`w-5 h-5 md:w-6 md:h-6 ${
+                    isImportingTasks ? "hidden" : ""
+                  }`}
+                />
+                {isImportingTasks && (
+                  <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon journal entries from the past"
+                  : "Index all journal entries for AI search"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportJournal}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <BookOpen
+                  className={`w-5 h-5 md:w-6 md:h-6 ${
+                    isImportingJournal ? "hidden" : ""
+                  }`}
+                />
+                {isImportingJournal && (
+                  <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <div
+              className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded border text-xs font-medium ${
+                isHalloweenMode
+                  ? "border-[#60c9b6]/30 text-[#60c9b6]/60"
+                  : isDark
+                    ? "border-white/10 text-gray-500"
+                    : "border-gray-200 text-gray-400"
+              }`}
+            >
+              <span className="text-xs">ESC</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Area */}
+        <div
+          className={`flex-1 overflow-hidden relative z-10 ${
+            isHalloweenMode
+              ? "bg-[#60c9b6]/5"
+              : isDark
+                ? "bg-black/20"
+                : "bg-gray-50/50"
+          }`}
+        >
+          {isImportingJournal || isImportingNotes || isImportingTasks ? (
+            <div className="h-full flex flex-col items-center justify-center gap-8 p-8">
+              <Spinner
+                className="bg-transparent"
+                singleColor={isHalloweenMode}
+              />
+
+              <div className="w-full max-w-xs space-y-4 animate-in fade-in zoom-in duration-300">
+                <div className="text-center">
+                  <TextShimmer
+                    className={`text-lg font-medium ${
+                      isHalloweenMode ? "font-creepster tracking-wider" : ""
                     }`}
-                  />
+                    duration={2}
+                  >
+                    {isImportingJournal
+                      ? isHalloweenMode
+                        ? "Summoning journal entries..."
+                        : "Syncing journal entries..."
+                      : isImportingNotes
+                        ? isHalloweenMode
+                          ? "Summoning notes..."
+                          : "Syncing notes..."
+                        : isHalloweenMode
+                          ? "Summoning tasks..."
+                          : "Syncing tasks..."}
+                  </TextShimmer>
+                </div>
+
+                {importProgress.total > 0 && (
+                  <div className="space-y-2">
+                    <Progress
+                      value={importProgress.current}
+                      max={importProgress.total}
+                      className={`h-1.5 bg-gray-100 dark:bg-gray-800 ${isHalloweenMode ? "bg-[#60c9b6]/10" : ""}`}
+                      indicatorClassName={
+                        isHalloweenMode ? "bg-[#60c9b6]" : "bg-primary"
+                      }
+                    />
+                    <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 font-mono">
+                      <span className="truncate max-w-[150px]">
+                        {importProgress.item}
+                      </span>
+                      <span>
+                        {importProgress.current} / {importProgress.total}
+                      </span>
+                    </div>
+                  </div>
                 )}
 
-                {/* Import Buttons */}
-                <PortalTooltip
-                  content={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleStopImport}
+                  className={`w-full mt-2 cursor-pointer ${
                     isHalloweenMode
-                      ? "Summon notes from the void"
-                      : "Index all notes for AI search"
-                  }
-                  side="top"
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleImportNotes}
-                    disabled={
-                      isImportingJournal ||
-                      isImportingNotes ||
-                      isImportingTasks ||
-                      isGhostWriting
-                    }
-                    className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
-                      isHalloweenMode
-                        ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-                        : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                    }`}
-                  >
-                    <FileText
-                      className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                        isImportingNotes ? "hidden" : ""
-                      }`}
-                    />
-                    {isImportingNotes && (
-                      <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    )}
-                  </Button>
-                </PortalTooltip>
-
-                <PortalTooltip
-                  content={
-                    isHalloweenMode
-                      ? "Summon tasks from the shadows"
-                      : "Index all tasks for AI search"
-                  }
-                  side="top"
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleImportTasks}
-                    disabled={
-                      isImportingJournal ||
-                      isImportingNotes ||
-                      isImportingTasks ||
-                      isGhostWriting
-                    }
-                    className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
-                      isHalloweenMode
-                        ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-                        : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                    }`}
-                  >
-                    <List
-                      className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                        isImportingTasks ? "hidden" : ""
-                      }`}
-                    />
-                    {isImportingTasks && (
-                      <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    )}
-                  </Button>
-                </PortalTooltip>
-
-                <PortalTooltip
-                  content={
-                    isHalloweenMode
-                      ? "Summon journal entries from the past"
-                      : "Index all journal entries for AI search"
-                  }
-                  side="top"
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleImportJournal}
-                    disabled={
-                      isImportingJournal ||
-                      isImportingNotes ||
-                      isImportingTasks ||
-                      isGhostWriting
-                    }
-                    className={`h-7 w-7 md:h-8 md:w-8 cursor-pointer ${
-                      isHalloweenMode
-                        ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-                        : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
-                    }`}
-                  >
-                    <BookOpen
-                      className={`w-3.5 h-3.5 md:w-4 md:h-4 ${
-                        isImportingJournal ? "hidden" : ""
-                      }`}
-                    />
-                    {isImportingJournal && (
-                      <div className="w-3.5 h-3.5 md:w-4 md:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    )}
-                  </Button>
-                </PortalTooltip>
-
-                <div
-                  className={`hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] font-medium ${
-                    isHalloweenMode
-                      ? "border-[#60c9b6]/30 text-[#60c9b6]/60"
-                      : isDark
-                        ? "border-white/10 text-gray-500"
-                        : "border-gray-200 text-gray-400"
+                      ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   }`}
                 >
-                  <span className="text-xs">ESC</span>
-                </div>
+                  {isHalloweenMode ? "Break the Spell" : "Stop Syncing"}
+                </Button>
               </div>
             </div>
-
-            {/* Results Area */}
-            <div
-              className={`flex-1 min-h-[200px] md:min-h-[300px] max-h-[50vh] md:max-h-[60vh] overflow-hidden relative ${
-                isHalloweenMode
-                  ? "bg-[#60c9b6]/5"
-                  : isDark
-                    ? "bg-black/20"
-                    : "bg-gray-50/50"
-              }`}
-            >
-              {isImportingJournal || isImportingNotes || isImportingTasks ? (
-                <div className="h-full flex flex-col items-center justify-center gap-8 p-8">
-                  <Spinner
-                    className="bg-transparent"
-                    singleColor={isHalloweenMode}
-                  />
-
-                  <div className="w-full max-w-xs space-y-4 animate-in fade-in zoom-in duration-300">
-                    <div className="text-center">
-                      <TextShimmer
-                        className={`text-lg font-medium ${
-                          isHalloweenMode ? "font-creepster tracking-wider" : ""
-                        }`}
-                        duration={2}
-                      >
-                        {isImportingJournal
-                          ? isHalloweenMode
-                            ? "Summoning journal entries..."
-                            : "Syncing journal entries..."
-                          : isImportingNotes
-                            ? isHalloweenMode
-                              ? "Summoning notes..."
-                              : "Syncing notes..."
-                            : isHalloweenMode
-                              ? "Summoning tasks..."
-                              : "Syncing tasks..."}
-                      </TextShimmer>
-                    </div>
-
-                    {importProgress.total > 0 && (
-                      <div className="space-y-2">
-                        <Progress
-                          value={importProgress.current}
-                          max={importProgress.total}
-                          className={`h-1.5 bg-gray-100 dark:bg-gray-800 ${isHalloweenMode ? "bg-[#60c9b6]/10" : ""}`}
-                          indicatorClassName={
-                            isHalloweenMode ? "bg-[#60c9b6]" : "bg-primary"
-                          }
-                        />
-                        <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 font-mono">
-                          <span className="truncate max-w-[150px]">
-                            {importProgress.item}
-                          </span>
-                          <span>
-                            {importProgress.current} / {importProgress.total}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleStopImport}
-                      className={`w-full mt-2 cursor-pointer ${
-                        isHalloweenMode
-                          ? "text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                          : "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      }`}
-                    >
-                      {isHalloweenMode ? "Break the Spell" : "Stop Syncing"}
-                    </Button>
-                  </div>
-                </div>
-              ) : hasSearched ? (
-                <ScrollArea className="h-full w-full">
-                  <div className="p-3 md:p-6 relative z-10">
-                    {completion || isGhostWriting ? (
+          ) : hasSearched ? (
+            <ScrollArea className="h-full w-full">
+              <div className="p-3 md:p-6 relative z-10">
+                {completion || isGhostWriting ? (
+                  <div
+                    className={`prose prose-sm max-w-none ${
+                      isHalloweenMode
+                        ? "prose-invert"
+                        : isDark
+                          ? "prose-invert"
+                          : ""
+                    }`}
+                  >
+                    {completion ? (
                       <div
-                        className={`prose prose-sm max-w-none ${
+                        className={`${
                           isHalloweenMode
-                            ? "prose-invert"
+                            ? "text-[#60c9b6] [&_strong]:text-[#7ee0ca] [&_em]:text-[#60c9b6]/80 [&_code]:text-[#60c9b6] [&_code]:bg-[#60c9b6]/10"
                             : isDark
-                              ? "prose-invert"
-                              : ""
-                        }`}
+                              ? "text-gray-200 [&_strong]:text-white [&_em]:text-gray-300"
+                              : "text-gray-800 [&_strong]:text-gray-900 [&_em]:text-gray-700"
+                        } leading-relaxed [&>*:first-child]:mt-0`}
                       >
-                        {completion ? (
-                          <div
-                            className={`${
-                              isHalloweenMode
-                                ? "text-[#60c9b6] [&_strong]:text-[#7ee0ca] [&_em]:text-[#60c9b6]/80 [&_code]:text-[#60c9b6] [&_code]:bg-[#60c9b6]/10"
-                                : isDark
-                                  ? "text-gray-200 [&_strong]:text-white [&_em]:text-gray-300"
-                                  : "text-gray-800 [&_strong]:text-gray-900 [&_em]:text-gray-700"
-                            } leading-relaxed [&>*:first-child]:mt-0`}
-                          >
-                            <ReactMarkdown
-                              components={{
-                                p: ({ children }) => (
-                                  <p className="mb-4 last:mb-0 mt-0 first:mt-0">
-                                    {children}
-                                  </p>
-                                ),
-                                strong: ({ children }) => (
-                                  <strong className="font-semibold">
-                                    {children}
-                                  </strong>
-                                ),
-                                em: ({ children }) => (
-                                  <em className="italic">{children}</em>
-                                ),
-                                code: ({ children }) => (
-                                  <code className="px-1.5 py-0.5 rounded text-sm font-mono">
-                                    {children}
-                                  </code>
-                                ),
-                              }}
-                            >
-                              {completion}
-                            </ReactMarkdown>
-                          </div>
-                        ) : (
-                          <p
-                            className={`m-0 ${
-                              isHalloweenMode
-                                ? "text-[#60c9b6]"
-                                : isDark
-                                  ? "text-gray-200"
-                                  : "text-gray-800"
-                            } animate-pulse`}
-                          >
-                            <TextShimmer
-                              as="span"
-                              className={`font-medium ${
-                                isHalloweenMode
-                                  ? "[--base-color:#60c9b6] [--base-gradient-color:#60c9b6]"
-                                  : "[--base-color:#a855f7] [--base-gradient-color:#a855f7]"
-                              }`}
-                              duration={1.5}
-                            >
-                              {isHalloweenMode
-                                ? "The spirits are consulting the ancient texts..."
-                                : "Thinking..."}
-                            </TextShimmer>
-                          </p>
-                        )}
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => (
+                              <p className="mb-4 last:mb-0 mt-0 first:mt-0">
+                                {children}
+                              </p>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold">
+                                {children}
+                              </strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="italic">{children}</em>
+                            ),
+                            code: ({ children }) => (
+                              <code className="px-1.5 py-0.5 rounded text-sm font-mono">
+                                {children}
+                              </code>
+                            ),
+                          }}
+                        >
+                          {completion}
+                        </ReactMarkdown>
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center justify-center h-40 text-center opacity-50">
-                        <Sparkles className="w-8 h-8 mb-2" />
-                        <p>Ask a question to search your journal entries</p>
-                      </div>
+                      <p
+                        className={`m-0 ${
+                          isHalloweenMode
+                            ? "text-[#60c9b6]"
+                            : isDark
+                              ? "text-gray-200"
+                              : "text-gray-800"
+                            } animate-pulse`}
+                      >
+                        <TextShimmer
+                          as="span"
+                          className={`font-medium ${
+                            isHalloweenMode
+                              ? "[--base-color:#60c9b6] [--base-gradient-color:#60c9b6]"
+                              : "[--base-color:#a855f7] [--base-gradient-color:#a855f7]"
+                          }`}
+                          duration={1.5}
+                        >
+                          {isHalloweenMode
+                            ? "The spirits are consulting the ancient texts..."
+                            : "Thinking..."}
+                        </TextShimmer>
+                      </p>
                     )}
                   </div>
-                </ScrollArea>
-              ) : (
-                <div
-                  className={`flex flex-col items-center justify-center h-full p-8 text-center relative z-10 ${
-                    isHalloweenMode ? "text-[#60c9b6]/60" : "text-gray-400"
-                  }`}
-                >
-                  <Command className="w-12 h-12 mb-4 opacity-20" />
-                  <h3
-                    className={`text-lg font-medium mb-2 ${
-                      isHalloweenMode ? "text-[#60c9b6]" : ""
-                    }`}
-                  >
-                    {isHalloweenMode
-                      ? "The Grimoire Awaits"
-                      : "Search Integral"}
-                  </h3>
-                  <p className="text-sm max-w-sm mx-auto opacity-70">
-                    Search through your journal entries, notes, and tasks using
-                    natural language.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-40 text-center opacity-50">
+                    <Sparkles className="w-8 h-8 mb-2" />
+                    <p>Ask a question to search your journal entries</p>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          ) : (
             <div
-              className={`px-2 md:px-4 py-1.5 md:py-2 border-t flex items-center justify-between text-[9px] md:text-[10px] ${
-                isHalloweenMode
-                  ? "border-[#60c9b6]/20 bg-[#60c9b6]/5 text-[#60c9b6]/60"
-                  : isDark
-                    ? "border-white/10 bg-white/5 text-gray-500"
-                    : "border-gray-100 bg-gray-50 text-gray-400"
+              className={`flex flex-col items-center justify-center h-full p-8 text-center relative z-10 ${
+                isHalloweenMode ? "text-[#60c9b6]/60" : "text-gray-400"
               }`}
             >
-              <div className="hidden md:flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <CornerDownLeft className="w-3 h-3" /> to select
-                </span>
-                <span className="flex items-center gap-1">
-                  <ArrowUp className="w-3 h-3" />{" "}
-                  <ArrowDown className="w-3 h-3" /> to navigate
-                </span>
-              </div>
-              <div className="flex md:hidden items-center gap-1">
-                <CornerDownLeft className="w-2.5 h-2.5" />
-                <span>select</span>
-              </div>
-              <div className="flex justify-end items-center gap-1 md:gap-2">
-                <span className="flex items-center gap-1">
-                  <span className="hidden md:inline">Powered by</span>
-                  <img
-                    src="/ai.svg"
-                    alt="Gemini"
-                    className="w-2.5 h-2.5 md:w-3 md:h-3"
-                  />
-                  <span>Gemini</span>
-                </span>
-              </div>
-            </div>
-          </motion.div>
+              <Command className="w-12 h-12 md:w-20 md:h-20 mb-4 md:mb-6 opacity-20" />
+            <h3
+              className={`text-xl md:text-3xl font-medium mb-2 md:mb-3 ${
+                isHalloweenMode ? "text-[#60c9b6]" : ""
+              }`}
+            >
+              {isHalloweenMode
+                ? "The Grimoire Awaits"
+                : "Search Integral"}
+            </h3>
+            <p className="text-sm md:text-lg max-w-xs md:max-w-xl mx-auto opacity-70 leading-relaxed">
+              Search through your journal entries, notes, and tasks using
+              natural language.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Bottom Search Input */}
+      <div
+        className={`md:hidden flex items-center px-4 h-16 border-t shrink-0 relative z-10 ${
+          isHalloweenMode
+            ? "border-[#60c9b6]/20 bg-[#1a1a1f]"
+            : isDark
+              ? "border-white/10 bg-[#1A1A1F]"
+              : "border-gray-200 bg-white"
+        }`}
+      >
+        <Search
+          className={`w-5 h-5 mr-3 ${
+            isHalloweenMode ? "text-[#60c9b6]" : "text-gray-400"
+          }`}
+        />
+        <form onSubmit={handleSearch} className="flex-1">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={placeholder}
+            className={`w-full h-full bg-transparent border-none outline-none text-sm font-medium ${
+              isHalloweenMode
+                ? "text-[#60c9b6] placeholder:text-[#60c9b6]/40"
+                : isDark
+                  ? "text-white placeholder:text-gray-500"
+                  : "text-gray-900 placeholder:text-gray-400"
+            }`}
+          />
+        </form>
+        <div className="flex items-center gap-1 ml-2 opacity-50 shrink-0">
+          <img src="/ai.svg" alt="Gemini" className="w-3 h-3" />
+          <span
+            className={`text-[10px] ${
+              isHalloweenMode ? "text-[#60c9b6]" : "text-gray-500"
+            }`}
+          >
+            Gemini
+          </span>
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+
+      {/* Footer */}
+      <div
+        className={`hidden md:flex px-4 md:px-6 py-2 md:py-3 border-t items-center justify-between text-[10px] md:text-xs shrink-0 relative z-10 ${
+          isHalloweenMode
+            ? "border-[#60c9b6]/20 bg-[#60c9b6]/5 text-[#60c9b6]/60"
+            : isDark
+              ? "border-white/10 bg-white/5 text-gray-500"
+              : "border-gray-200 bg-gray-50 text-gray-400"
+        }`}
+      >
+          <div className="hidden md:flex items-center gap-4">
+            <span className="flex items-center gap-1">
+              <CornerDownLeft className="w-3.5 h-3.5" /> to select
+            </span>
+            <span className="flex items-center gap-1">
+              <ArrowUp className="w-3.5 h-3.5" />{" "}
+              <ArrowDown className="w-3.5 h-3.5" /> to navigate
+            </span>
+          </div>
+          <div className="flex md:hidden items-center gap-1">
+            <CornerDownLeft className="w-3 h-3" />
+            <span>select</span>
+          </div>
+          <div className="flex justify-end items-center gap-1 md:gap-2">
+            <span className="flex items-center gap-1">
+              <span className="hidden md:inline">Powered by</span>
+              <img
+                src="/ai.svg"
+                alt="Gemini"
+                className="w-3 h-3 md:w-4 md:h-4"
+              />
+              <span>Gemini</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </ExpandableScreenContent>
   );
 };

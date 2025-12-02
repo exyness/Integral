@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu.tsx";
+import { ExpandableScreenTrigger } from "@/components/ui/expandable-screen";
 import {
   Sheet,
   SheetContent,
@@ -425,48 +426,49 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Mobile Search Icon - visible only on small screens */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setSearchModalOpen(true)}
-          className={`lg:hidden h-8 w-8 ${
-            isHalloweenMode
-              ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
-              : isDark
-                ? "text-gray-400 hover:bg-white/10"
-                : "text-gray-600 hover:bg-gray-100"
-          }`}
-        >
-          <Search className="w-4 h-4" />
-        </Button>
-
-        {/* Search Trigger */}
-        <motion.div
-          layoutId="search-modal-expand"
-          onClick={() => setSearchModalOpen(true)}
-          className={`hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg border cursor-text transition-colors w-36 ${
-            isHalloweenMode
-              ? "bg-[#60c9b6]/10 border-[#60c9b6]/30 text-[#60c9b6] hover:bg-[#60c9b6]/20"
-              : isDark
-                ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-gray-300"
-                : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          }`}
-        >
-          <Search className="w-4 h-4 shrink-0" />
-          <span className="text-xs flex-1 text-left">Search...</span>
-          <kbd
-            className={`hidden xl:inline-flex h-6 items-center gap-1 rounded border px-1.5 font-bold text-[10px] opacity-100 ${
+        <ExpandableScreenTrigger>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`lg:hidden h-8 w-8 ${
               isHalloweenMode
-                ? "bg-[#60c9b6]/20 border-[#60c9b6]/30 text-[#60c9b6]"
+                ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
                 : isDark
-                  ? "bg-white/10 border-white/10 text-gray-400"
-                  : "bg-gray-100 border-gray-200 text-gray-500"
+                  ? "text-gray-400 hover:bg-white/10"
+                  : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            <span className="text-xs mt-1">⌘</span>
-            <span className="text-sm">K</span>
-          </kbd>
-        </motion.div>
+            <Search className="w-4 h-4" />
+          </Button>
+        </ExpandableScreenTrigger>
+
+        {/* Search Trigger */}
+        <ExpandableScreenTrigger>
+          <div
+            className={`hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg border cursor-text transition-colors w-36 ${
+              isHalloweenMode
+                ? "bg-[#60c9b6]/10 border-[#60c9b6]/30 text-[#60c9b6] hover:bg-[#60c9b6]/20"
+                : isDark
+                  ? "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-gray-300"
+                  : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            }`}
+          >
+            <Search className="w-4 h-4 shrink-0" />
+            <span className="text-xs flex-1 text-left">Search...</span>
+            <kbd
+              className={`hidden xl:inline-flex h-6 items-center gap-1 rounded border px-1.5 font-bold text-[10px] opacity-100 ${
+                isHalloweenMode
+                  ? "bg-[#60c9b6]/20 border-[#60c9b6]/30 text-[#60c9b6]"
+                  : isDark
+                    ? "bg-white/10 border-white/10 text-gray-400"
+                    : "bg-gray-100 border-gray-200 text-gray-500"
+              }`}
+            >
+              <span className="text-xs mt-1">⌘</span>
+              <span className="text-sm">K</span>
+            </kbd>
+          </div>
+        </ExpandableScreenTrigger>
 
         {hasRunningTimers && (
           <Button
