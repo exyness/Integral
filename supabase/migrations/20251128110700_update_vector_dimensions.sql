@@ -1,21 +1,17 @@
--- Drop existing table and function
 drop function if exists match_documents;
 drop table if exists search_index;
 
--- Recreate table with correct embedding dimension (3072 for gemini-embedding-001)
 create table if not exists search_index (
   id uuid primary key default gen_random_uuid(),
   content text,
   metadata jsonb,
-  embedding extensions.vector(3072), -- Correct dimension for gemini-embedding-001
+  embedding extensions.vector(3072), 
   user_id uuid not null,
   created_at timestamptz default now()
 );
 
--- Enable Row Level Security
 alter table search_index enable row level security;
 
--- Create policies
 create policy "Users can insert their own documents"
   on search_index for insert
   with check (auth.uid() = user_id);
@@ -32,7 +28,6 @@ create policy "Users can delete their own documents"
   on search_index for delete
   using (auth.uid() = user_id);
 
--- Recreate function with correct dimension
 create or replace function match_documents (
   query_embedding extensions.vector(3072),
   match_threshold float,
