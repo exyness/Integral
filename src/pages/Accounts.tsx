@@ -98,7 +98,7 @@ export const Accounts: React.FC = () => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         const searchInput = document.querySelector(
-          'input[placeholder*="Search"]'
+          'input[placeholder*="Search"]',
         ) as HTMLInputElement;
         searchInput?.focus();
       }
@@ -264,7 +264,7 @@ export const Accounts: React.FC = () => {
 
   const handleUpdateAccount = async (
     accountId: string,
-    data: UpdateAccountData
+    data: UpdateAccountData,
   ) => {
     try {
       await updateAccount(accountId, data);
@@ -316,7 +316,7 @@ export const Accounts: React.FC = () => {
   }));
 
   const selectedFolderData = foldersWithCount.find(
-    (f) => f.id === selectedFolder
+    (f) => f.id === selectedFolder,
   );
 
   const filteredAccounts = accounts.filter((account) => {
@@ -327,7 +327,7 @@ export const Accounts: React.FC = () => {
         ?.toLowerCase()
         .includes(searchQuery.toLowerCase()) ||
       account.tags?.some((tag) =>
-        tag?.toLowerCase().includes(searchQuery.toLowerCase())
+        tag?.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     const matchesFolder =
       !selectedFolder || account.folder_id === selectedFolder;
@@ -874,7 +874,7 @@ export const Accounts: React.FC = () => {
               onCreateFolder={() => setShowCreateFolder(true)}
               onEditFolder={() => {
                 const folderToEdit = folders.find(
-                  (f) => f.id === selectedFolder
+                  (f) => f.id === selectedFolder,
                 );
                 if (folderToEdit) {
                   setEditingFolder(folderToEdit);
@@ -1532,7 +1532,7 @@ export const Accounts: React.FC = () => {
                                 </span>
                                 <span>
                                   {new Date(
-                                    account.updated_at
+                                    account.updated_at,
                                   ).toLocaleDateString("en-US", {
                                     month: "short",
                                     day: "numeric",
@@ -1593,7 +1593,7 @@ export const Accounts: React.FC = () => {
                               className={`text-xs ml-3 ${isDark ? "text-[#71717A]" : "text-gray-500"}`}
                             >
                               {new Date(
-                                account.updated_at
+                                account.updated_at,
                               ).toLocaleDateString()}
                             </span>
                           </div>
