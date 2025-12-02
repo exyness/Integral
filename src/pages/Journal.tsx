@@ -14,7 +14,6 @@ import {
   pumpkinSneaky,
   spiderCuteHanging,
   spiderHairyCrawling,
-  spiderSharpHanging,
   webCenter,
   webHanging,
   witchFly,
@@ -205,13 +204,15 @@ export const Journal: React.FC = () => {
       setFormError(null);
 
       try {
-        await createEntryMutation.mutateAsync(entryData);
+        const newEntry = await createEntryMutation.mutateAsync(entryData);
 
         // Add to Grimoire for RAG
         await addToGrimoire(`${entryData.title}\n\n${entryData.content}`, {
           type: "journal",
-          date: new Date().toISOString(),
           title: entryData.title,
+          original_id: newEntry?.id || "",
+          entry_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
         });
 
         setShowEntryForm(false);

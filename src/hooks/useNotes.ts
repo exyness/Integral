@@ -216,6 +216,7 @@ export const useNotes = () => {
     notes,
     loading,
     createNote: createNoteMutation.mutate,
+    createNoteAsync: createNoteMutation.mutateAsync,
     updateNote: (noteId: string, updates: Partial<Note>) =>
       updateNoteMutation.mutate({ noteId, updates }),
     deleteNote: deleteNoteMutation.mutate,

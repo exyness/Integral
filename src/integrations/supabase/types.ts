@@ -1205,6 +1205,10 @@ export type Database = {
         };
         Returns: string;
       };
+      extract_metadata_date: {
+        Args: { key: string; metadata: Json };
+        Returns: string;
+      };
       get_goal_analytics: { Args: { p_user_id: string }; Returns: Json };
       get_project_details: {
         Args: { p_project_id: string; p_user_id: string };
@@ -1323,6 +1327,21 @@ export type Database = {
           match_count: number;
           match_threshold: number;
           query_embedding: string;
+        };
+        Returns: {
+          content: string;
+          id: string;
+          metadata: Json;
+          similarity: number;
+        }[];
+      };
+      match_documents_with_date_filter: {
+        Args: {
+          end_date?: string;
+          match_count: number;
+          match_threshold: number;
+          query_embedding: string;
+          start_date?: string;
         };
         Returns: {
           content: string;

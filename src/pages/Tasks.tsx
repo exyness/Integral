@@ -244,7 +244,7 @@ export const Tasks: React.FC = () => {
       setFormError(null);
 
       try {
-        await createTask({
+        const newTask = await createTask({
           ...taskData,
           due_date: taskData.due_date || undefined,
         });
@@ -255,10 +255,13 @@ export const Tasks: React.FC = () => {
           : taskData.title;
         await addToGrimoire(content, {
           type: "task",
+          title: taskData.title,
+          original_id: newTask?.id || "",
           priority: taskData.priority || "medium",
           status: "pending",
           due_date: taskData.due_date,
           project: taskData.project,
+          created_at: new Date().toISOString(),
         });
 
         setShowTaskForm(false);

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "../integrations/supabase/client";
 import { Json } from "../integrations/supabase/types";
 import { generateEmbedding } from "../lib/gemini";
+import { extractTemporalIntent, formatDateRange } from "../lib/temporalQuery";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -197,7 +198,7 @@ Prompt: "${text}"`;
       const { error } = await supabase.from("search_index").insert({
         content,
         metadata,
-        embedding,
+        embedding: JSON.stringify(embedding),
         user_id: user.id,
       });
 
@@ -205,7 +206,7 @@ Prompt: "${text}"`;
       return true;
     } catch (error) {
       console.error("Grimoire error:", error);
-      // Silent failure - don't show error toast since creation succeeded
+
       return false;
     }
   };
@@ -215,7 +216,14 @@ Prompt: "${text}"`;
       setIsGhostWriting(true);
       setCompletion("");
 
-      const embedding = await generateEmbedding(query);
+      const temporalIntent = extractTemporalIntent(query);
+      const hasTemporalFilter = temporalIntent.type !== "none";
+
+      const queryForEmbedding = hasTemporalFilter
+        ? temporalIntent.cleanedQuery || query
+        : query;
+
+      const embedding = await generateEmbedding(queryForEmbedding);
       if (!embedding) {
         toast.error(
           isHalloweenMode
@@ -225,35 +233,93 @@ Prompt: "${text}"`;
         return null;
       }
 
-      const { data: documents, error } = await supabase.rpc("match_documents", {
-        query_embedding: embedding,
-        match_threshold: 0.5,
-        match_count: 5,
-      });
+      let documents;
+      let error;
+
+      if (
+        hasTemporalFilter &&
+        temporalIntent.startDate &&
+        temporalIntent.endDate
+      ) {
+        const result = await supabase.rpc("match_documents_with_date_filter", {
+          query_embedding: JSON.stringify(embedding),
+          match_threshold: 0.3,
+          match_count: 10,
+          start_date: temporalIntent.startDate.toISOString(),
+          end_date: temporalIntent.endDate.toISOString(),
+        });
+        documents = result.data;
+        error = result.error;
+      } else {
+        const result = await supabase.rpc("match_documents", {
+          query_embedding: JSON.stringify(embedding),
+          match_threshold: 0.5,
+          match_count: 5,
+        });
+        documents = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
 
-      const context = documents?.map((doc) => doc.content).join("\n\n") || "";
+      const context =
+        documents
+          ?.map((doc) => {
+            const metadata = doc.metadata as {
+              type?: string;
+              title?: string;
+              due_date?: string;
+              entry_date?: string;
+            };
+            const title = metadata?.title || "";
+            const type = metadata?.type || "";
+            const dueDate = metadata?.due_date
+              ? new Date(metadata.due_date).toLocaleDateString()
+              : "";
+            const entryDate = metadata?.entry_date
+              ? new Date(metadata.entry_date).toLocaleDateString()
+              : "";
+
+            let header = "";
+            if (type === "task" && title) {
+              header = `[Task: ${title}${dueDate ? ` (Due: ${dueDate})` : ""}]\n`;
+            } else if (type === "journal" && entryDate) {
+              header = `[Journal Entry: ${entryDate}]\n`;
+            } else if (type === "note" && title) {
+              header = `[Note: ${title}]\n`;
+            }
+
+            return header + doc.content;
+          })
+          .join("\n\n") || "";
+
+      const dateContext = hasTemporalFilter
+        ? `\nTemporal Context: User is asking about "${temporalIntent.type.replace("_", " ")}" (${formatDateRange(temporalIntent.startDate, temporalIntent.endDate)})`
+        : "";
 
       const prompt = isHalloweenMode
         ? `You are a Keeper of the Grimoire (a mystical knowledge base).
-User Question: "${query}"
+User Question: "${query}"${dateContext}
 
 Relevant Knowledge from the Grimoire:
-${context || "No specific records found."}
+${context || "The pages are blank for this period..."}
 
-Answer the user's question based ONLY on the knowledge above. 
-If the answer is not in the knowledge, say "The Grimoire is silent on this matter..." in a spooky way.
-Keep the answer concise and slightly mysterious.`
+Instructions:
+- Answer based ONLY on the knowledge above
+- If documents were found, summarize them clearly
+- If the Grimoire is empty for this period, say: "The Grimoire holds no records for ${temporalIntent.type === "tomorrow" ? "the morrow" : temporalIntent.type === "yesterday" ? "yesternight" : "this time"}..."
+- Keep the answer slightly mysterious but helpful`
         : `You are an AI assistant helping to search through the user's journal entries and personal knowledge base.
-User Question: "${query}"
+User Question: "${query}"${dateContext}
 
 Relevant Information:
-${context || "No relevant information found."}
+${context || "No relevant information found for this time period."}
 
-Answer the user's question based ONLY on the information above.
-If the answer is not available, politely say you don't have that information.
-Keep the answer concise and helpful.`;
+Instructions:
+- Answer based ONLY on the information above
+- If documents were found, provide a clear, organized summary
+- If no information exists for the requested time period, politely explain: "I don't have any entries for ${temporalIntent.type.replace("_", " ")}. ${documents && documents.length > 0 ? "Here are your most recent entries instead." : "Your most recent entry is from a different date."}"
+- Be concise and helpful`;
 
       const ai = new GoogleGenAI({ apiKey: API_KEY });
       const model = "gemini-flash-lite-latest";
@@ -294,7 +360,6 @@ Keep the answer concise and helpful.`;
       } = await supabase.auth.getUser();
       if (!user) return false;
 
-      // Delete entries matching the content type and original ID
       const { error } = await supabase
         .from("search_index")
         .delete()

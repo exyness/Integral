@@ -36,7 +36,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/DropdownMenu.tsx";
-import { ScrollArea } from "../components/ui/ScrollArea";
 import { useTheme } from "../contexts/ThemeContext";
 import { Folder, useFolders } from "../hooks/useFolders";
 import { Note, useNotes } from "../hooks/useNotes";
@@ -83,6 +82,7 @@ export const Notes: React.FC = () => {
   const {
     notes,
     createNote,
+    createNoteAsync,
     updateNote,
     deleteNote,
     loading: notesLoading,
@@ -227,16 +227,19 @@ export const Notes: React.FC = () => {
     tags?: string[];
   }) => {
     try {
-      await createNote({
+      const newNote = await createNoteAsync({
         ...noteData,
         folder_id: selectedFolder || undefined,
       });
 
-      // Auto-index for search (note: createNote doesn't return the ID, but indexing will still work)
+      // Auto-index for search
       await addToGrimoire(`${noteData.title}\n\n${noteData.content}`, {
         type: "note",
+        title: noteData.title,
+        original_id: newNote.id,
         category: noteData.category,
         tags: noteData.tags,
+        created_at: new Date().toISOString(),
       });
     } catch (error) {
       console.error("Failed to create note:", error);
