@@ -40,21 +40,21 @@ export const Checkbox: React.FC<CheckboxProps> = ({
             ${
               checked
                 ? isHalloweenMode
-                  ? "bg-[#60c9b6] border-[#60c9b6]"
-                  : "bg-[#8B5CF6] border-[#8B5CF6]"
+                  ? "bg-[#60c9b6] border-[#60c9b6] shadow-[0_0_8px_rgba(96,201,182,0.4)]"
+                  : "bg-[#8B5CF6] border-[#8B5CF6] shadow-[0_0_8px_rgba(139,92,246,0.3)]"
                 : isHalloweenMode
-                  ? "bg-transparent border-[#60c9b6]/30 group-hover:border-[#60c9b6]/50"
+                  ? "bg-transparent border-[#60c9b6]/30"
                   : isDark
-                    ? "bg-transparent border-[rgba(255,255,255,0.2)] group-hover:border-[rgba(255,255,255,0.3)]"
-                    : "bg-white border-gray-300 group-hover:border-gray-400"
+                    ? "bg-transparent border-[rgba(255,255,255,0.2)]"
+                    : "bg-white border-gray-300"
             }
             ${
-              !disabled
+              !disabled && !checked
                 ? isHalloweenMode
-                  ? "group-hover:bg-[#60c9b6]/10"
+                  ? "group-hover:border-[#60c9b6]/60 group-hover:bg-[#60c9b6]/10 group-hover:shadow-[0_0_8px_rgba(96,201,182,0.2)]"
                   : isDark
-                    ? "group-hover:bg-[rgba(139,92,246,0.1)]"
-                    : "group-hover:bg-[rgba(139,92,246,0.05)]"
+                    ? "group-hover:border-[rgba(139,92,246,0.5)] group-hover:bg-[rgba(139,92,246,0.1)] group-hover:shadow-[0_0_8px_rgba(139,92,246,0.2)]"
+                    : "group-hover:border-[#8B5CF6] group-hover:bg-[rgba(139,92,246,0.05)] group-hover:shadow-[0_0_8px_rgba(139,92,246,0.15)]"
                 : ""
             }
           `}
