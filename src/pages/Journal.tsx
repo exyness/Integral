@@ -88,7 +88,7 @@ export const Journal: React.FC = () => {
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDayEntries, setSelectedDayEntries] = useState<JournalEntry[]>(
-    [],
+    []
   );
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -194,7 +194,7 @@ export const Journal: React.FC = () => {
   };
 
   const todayEntries = entries.filter(
-    (entry) => entry.entry_date === getTodayDate(),
+    (entry) => entry.entry_date === getTodayDate()
   );
 
   const handleCreateEntry = useCallback(
@@ -222,7 +222,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [createEntryMutation, addToGrimoire],
+    [createEntryMutation, addToGrimoire]
   );
 
   const handleUpdateEntry = useCallback(
@@ -234,7 +234,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [updateEntryMutation],
+    [updateEntryMutation]
   );
 
   const handleDeleteEntry = useCallback(
@@ -246,7 +246,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [deleteEntryMutation],
+    [deleteEntryMutation]
   );
 
   const handleProjectDetailsClick = useCallback((project: Project) => {
@@ -401,7 +401,7 @@ export const Journal: React.FC = () => {
 
               {/* Spider web thread */}
               <motion.div
-                className="absolute left-1/3 -translate-x-1/2 w-[1px] bg-[#60c9b6] opacity-30 pointer-events-none"
+                className="absolute left-1/3 -translate-x-1/2 w-px bg-[#60c9b6] opacity-30 pointer-events-none"
                 initial={{ top: "0%", height: "0%" }}
                 animate={{ top: "0%", height: "40%" }}
                 transition={{ duration: 2, ease: "easeOut" }}
@@ -733,19 +733,32 @@ export const Journal: React.FC = () => {
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <h4
-                              className="font-medium truncate text-sm md:text-base"
-                              style={{
-                                color: isHalloweenMode
-                                  ? "#60c9b6"
-                                  : entry.project?.color ||
-                                    (isDark ? "#fff" : "#111827"),
-                              }}
-                            >
-                              {entry.title}
-                            </h4>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4
+                                className="font-medium truncate text-sm md:text-base"
+                                style={{
+                                  color: isHalloweenMode
+                                    ? "#60c9b6"
+                                    : entry.project?.color ||
+                                      (isDark ? "#fff" : "#111827"),
+                                }}
+                              >
+                                {entry.title}
+                              </h4>
+                              {entry.project && (
+                                <span
+                                  className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium whitespace-nowrap`}
+                                  style={{
+                                    backgroundColor: `${entry.project.color}20`,
+                                    color: entry.project.color,
+                                  }}
+                                >
+                                  {entry.project.name}
+                                </span>
+                              )}
+                            </div>
                             <p
-                              className={`text-xs md:text-sm mt-1 line-clamp-2 break-words ${
+                              className={`text-xs md:text-sm mt-1 line-clamp-2 wrap-break-word ${
                                 isDark ? "text-[#B4B4B8]" : "text-gray-600"
                               }`}
                             >
@@ -762,23 +775,12 @@ export const Journal: React.FC = () => {
                                   {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  },
+                                  }
                                 )}
                               </span>
                             </div>
                           </div>
                           <div className="flex items-center justify-between sm:justify-start sm:flex-col gap-2 sm:gap-0 sm:space-y-1.5 sm:ml-4">
-                            {entry.project && (
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full font-medium whitespace-nowrap`}
-                                style={{
-                                  backgroundColor: `${entry.project.color}20`,
-                                  color: entry.project.color,
-                                }}
-                              >
-                                {entry.project.name}
-                              </span>
-                            )}
                             <div className="flex sm:flex-col space-x-1.5 sm:space-x-0 sm:space-y-1.5">
                               <button
                                 onClick={(e) => {
@@ -940,7 +942,7 @@ export const Journal: React.FC = () => {
 
       <ConfirmationModal
         isOpen={!!entryToDelete}
-        onClose={() => setEntryToDelete(null)}
+        onClose={() => !deleteEntryMutation.isPending && setEntryToDelete(null)}
         onConfirm={async () => {
           if (entryToDelete) {
             await handleDeleteEntry(entryToDelete);
@@ -963,6 +965,7 @@ export const Journal: React.FC = () => {
         }
         confirmText="Delete Entry"
         type="danger"
+        isLoading={deleteEntryMutation.isPending}
       />
 
       <ProjectCreationModal

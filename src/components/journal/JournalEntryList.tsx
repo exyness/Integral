@@ -143,16 +143,30 @@ export const JournalEntryList: React.FC<JournalListProps> = ({
               )}
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
                 <div className="flex-1 min-w-0">
-                  <h4
-                    className="font-medium truncate text-xs sm:text-sm md:text-base"
-                    style={{
-                      color: isHalloweenMode
-                        ? "#60c9b6"
-                        : entry.project?.color || (isDark ? "#fff" : "#111827"),
-                    }}
-                  >
-                    {entry.title}
-                  </h4>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4
+                      className="font-medium truncate text-xs sm:text-sm md:text-base"
+                      style={{
+                        color: isHalloweenMode
+                          ? "#60c9b6"
+                          : entry.project?.color ||
+                            (isDark ? "#fff" : "#111827"),
+                      }}
+                    >
+                      {entry.title}
+                    </h4>
+                    {entry.project && (
+                      <span
+                        className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium whitespace-nowrap`}
+                        style={{
+                          backgroundColor: `${entry.project.color}20`,
+                          color: entry.project.color,
+                        }}
+                      >
+                        {entry.project.name}
+                      </span>
+                    )}
+                  </div>
                   <p
                     className={`text-[11px] sm:text-xs md:text-sm mt-0.5 sm:mt-1 line-clamp-2 wrap-break-word ${
                       isDark ? "text-[#B4B4B8]" : "text-gray-600"
@@ -197,17 +211,6 @@ export const JournalEntryList: React.FC<JournalListProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center justify-between sm:justify-start sm:flex-col gap-1.5 sm:gap-0 sm:space-y-1.5 sm:ml-4">
-                  {entry.project && (
-                    <span
-                      className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full font-medium whitespace-nowrap`}
-                      style={{
-                        backgroundColor: `${entry.project.color}20`,
-                        color: entry.project.color,
-                      }}
-                    >
-                      {entry.project.name}
-                    </span>
-                  )}
                   <div className="flex sm:flex-col space-x-1 sm:space-x-0 sm:space-y-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                     <button
                       onClick={(e) => {
