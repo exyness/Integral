@@ -88,7 +88,7 @@ export const Journal: React.FC = () => {
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDayEntries, setSelectedDayEntries] = useState<JournalEntry[]>(
-    []
+    [],
   );
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -194,7 +194,7 @@ export const Journal: React.FC = () => {
   };
 
   const todayEntries = entries.filter(
-    (entry) => entry.entry_date === getTodayDate()
+    (entry) => entry.entry_date === getTodayDate(),
   );
 
   const handleCreateEntry = useCallback(
@@ -222,7 +222,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [createEntryMutation, addToGrimoire]
+    [createEntryMutation, addToGrimoire],
   );
 
   const handleUpdateEntry = useCallback(
@@ -234,7 +234,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [updateEntryMutation]
+    [updateEntryMutation],
   );
 
   const handleDeleteEntry = useCallback(
@@ -246,7 +246,7 @@ export const Journal: React.FC = () => {
         throw error;
       }
     },
-    [deleteEntryMutation]
+    [deleteEntryMutation],
   );
 
   const handleProjectDetailsClick = useCallback((project: Project) => {
@@ -775,7 +775,7 @@ export const Journal: React.FC = () => {
                                   {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  }
+                                  },
                                 )}
                               </span>
                             </div>
