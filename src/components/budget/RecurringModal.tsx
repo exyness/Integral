@@ -1,7 +1,6 @@
 import {
   ArrowLeftRight,
   CalendarIcon,
-  DollarSign,
   Repeat,
   TrendingDown,
   TrendingUp,
@@ -293,11 +292,23 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
             onValueChange={(value) =>
               setFormData({ ...formData, account_id: value })
             }
-            options={accounts.map((acc) => ({
-              value: acc.id,
-              label: acc.name,
-            }))}
-            placeholder="Select account"
+            options={
+              accounts.length === 0
+                ? [
+                    {
+                      value: "",
+                      label: "No accounts available",
+                      disabled: true,
+                    },
+                  ]
+                : accounts.map((acc) => ({
+                    value: acc.id,
+                    label: acc.name,
+                  }))
+            }
+            placeholder={
+              accounts.length === 0 ? "No accounts available" : "Select account"
+            }
           />
 
           {formData.type === "transfer" && (
@@ -307,13 +318,39 @@ export const RecurringModal: React.FC<RecurringModalProps> = ({
               onValueChange={(value) =>
                 setFormData({ ...formData, to_account_id: value })
               }
-              options={accounts
-                .filter((acc) => acc.id !== formData.account_id)
-                .map((acc) => ({
-                  value: acc.id,
-                  label: acc.name,
-                }))}
-              placeholder="Select destination"
+              options={
+                accounts.length === 0
+                  ? [
+                      {
+                        value: "",
+                        label: "No accounts available",
+                        disabled: true,
+                      },
+                    ]
+                  : accounts.filter((acc) => acc.id !== formData.account_id)
+                        .length === 0
+                    ? [
+                        {
+                          value: "",
+                          label: "No other accounts available",
+                          disabled: true,
+                        },
+                      ]
+                    : accounts
+                        .filter((acc) => acc.id !== formData.account_id)
+                        .map((acc) => ({
+                          value: acc.id,
+                          label: acc.name,
+                        }))
+              }
+              placeholder={
+                accounts.length === 0
+                  ? "No accounts available"
+                  : accounts.filter((acc) => acc.id !== formData.account_id)
+                        .length === 0
+                    ? "No other accounts available"
+                    : "Select destination"
+              }
             />
           )}
         </div>

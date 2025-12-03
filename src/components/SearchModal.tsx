@@ -8,6 +8,7 @@ import {
   List,
   Search,
   Sparkles,
+  Wallet,
   X,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
@@ -124,6 +125,7 @@ export const SearchModal: React.FC = () => {
   const [isImportingJournal, setIsImportingJournal] = useState(false);
   const [isImportingNotes, setIsImportingNotes] = useState(false);
   const [isImportingTasks, setIsImportingTasks] = useState(false);
+  const [isImportingFinance, setIsImportingFinance] = useState(false);
   const [importProgress, setImportProgress] = useState({
     current: 0,
     total: 0,
@@ -315,6 +317,314 @@ export const SearchModal: React.FC = () => {
     }
   };
 
+  const handleImportFinance = async () => {
+    try {
+      setIsImportingFinance(true);
+      stopImportRef.current = false;
+      toast.info(
+        isHalloweenMode
+          ? "Summoning financial records..."
+          : "Syncing financial data...",
+      );
+
+      // Fetch all data
+      const { data: transactions } = await supabase
+        .from("budget_transactions")
+        .select("*");
+      const { data: recurring } = await supabase
+        .from("recurring_transactions")
+        .select("*");
+      const { data: accounts } = await supabase
+        .from("finance_accounts")
+        .select("*");
+      const { data: liabilities } = await supabase
+        .from("liabilities")
+        .select("*");
+      const { data: goals } = await supabase
+        .from("financial_goals")
+        .select("*");
+      const { data: categories } = await supabase
+        .from("finance_categories")
+        .select("*");
+      const { data: budgets } = await supabase.from("budgets").select("*");
+
+      const categoryMap = new Map(categories?.map((c) => [c.id, c.name]) || []);
+      const accountMap = new Map(accounts?.map((a) => [a.id, a.name]) || []);
+
+      // Get already indexed items
+      const { data: indexed } = await supabase
+        .from("search_index")
+        .select("metadata")
+        .in("metadata->>type", [
+          "transaction",
+          "recurring_transaction",
+          "account",
+          "liability",
+          "financial_goal",
+          "budget",
+        ]);
+
+      const indexedIds = new Set(
+        indexed?.map(
+          (i: { metadata: { original_id: string } }) => i.metadata.original_id,
+        ) || [],
+      );
+
+      let added = 0;
+      const totalItems =
+        (transactions?.length || 0) +
+        (recurring?.length || 0) +
+        (accounts?.length || 0) +
+        (liabilities?.length || 0) +
+        (goals?.length || 0) +
+        (budgets?.length || 0);
+      setImportProgress({
+        current: 0,
+        total: totalItems,
+        item: "financial data",
+      });
+
+      // Index Transactions
+      if (transactions) {
+        for (const t of transactions) {
+          if (stopImportRef.current) break;
+          if (indexedIds.has(t.id)) continue;
+
+          setImportProgress((prev) => ({
+            ...prev,
+            current: prev.current + 1,
+            item: `Transaction: ${t.description}`,
+          }));
+
+          const categoryName = t.category_id
+            ? categoryMap.get(t.category_id)
+            : t.category;
+          const accountName = t.account_id
+            ? accountMap.get(t.account_id)
+            : "Unknown";
+
+          const content = `Transaction: ${t.amount} - ${t.description}
+Category: ${categoryName || "Uncategorized"}
+Account: ${accountName}
+Date: ${t.transaction_date}
+Type: ${t.type || "expense"}`;
+
+          await addToGrimoire(content, {
+            type: "transaction",
+            original_id: t.id,
+            amount: t.amount,
+            category: categoryName,
+            category_id: t.category_id,
+            account_name: accountName,
+            account_id: t.account_id,
+            transaction_date: t.transaction_date,
+            transaction_type: t.type || "expense",
+            created_at: t.created_at,
+            tags: t.tags || [],
+          });
+          added++;
+        }
+      }
+
+      // Index Recurring
+      if (recurring && !stopImportRef.current) {
+        for (const r of recurring) {
+          if (stopImportRef.current) break;
+          if (indexedIds.has(r.id)) continue;
+
+          setImportProgress((prev) => ({
+            ...prev,
+            current: prev.current + 1,
+            item: `Recurring: ${r.description}`,
+          }));
+
+          const categoryName = r.category_id
+            ? categoryMap.get(r.category_id)
+            : "Bills";
+          const accountName = r.account_id
+            ? accountMap.get(r.account_id)
+            : "Unknown";
+
+          const content = `Transaction: ${r.amount} - ${r.description} (Recurring)
+Category: ${categoryName}
+Account: ${accountName}
+Date: ${r.next_run_date}
+Type: ${r.type || "expense"}`;
+
+          await addToGrimoire(content, {
+            type: "recurring_transaction",
+            original_id: r.id,
+            amount: r.amount,
+            category: categoryName,
+            category_id: r.category_id,
+            account_name: accountName,
+            account_id: r.account_id,
+            next_run_date: r.next_run_date,
+            interval: r.interval,
+            active: r.active,
+            created_at: r.created_at,
+          });
+          added++;
+        }
+      }
+
+      // Index Accounts
+      if (accounts && !stopImportRef.current) {
+        for (const a of accounts) {
+          if (stopImportRef.current) break;
+          if (indexedIds.has(a.id)) continue;
+
+          setImportProgress((prev) => ({
+            ...prev,
+            current: prev.current + 1,
+            item: `Account: ${a.name}`,
+          }));
+
+          await addToGrimoire(
+            `Account: ${a.name} (${a.type})
+Current Balance: ${a.balance} ${a.currency}
+Status: Active`,
+            {
+              type: "account",
+              original_id: a.id,
+              account_type: a.type,
+              balance: a.balance,
+              currency: a.currency,
+              include_in_total: a.include_in_total,
+              created_at: a.created_at,
+            },
+          );
+          added++;
+        }
+      }
+
+      // Index Budgets
+      if (budgets && !stopImportRef.current) {
+        for (const b of budgets) {
+          if (stopImportRef.current) break;
+          if (indexedIds.has(b.id)) continue;
+
+          setImportProgress((prev) => ({
+            ...prev,
+            current: prev.current + 1,
+            item: `Budget: ${b.name}`,
+          }));
+
+          const categoryName = b.category
+            ? categoryMap.get(b.category) || b.category
+            : "Uncategorized";
+
+          await addToGrimoire(
+            `Budget: ${b.name}
+Category: ${categoryName}
+Amount: ${b.amount}
+Spent: ${b.spent}
+Period: ${b.period}
+Status: ${b.spent > b.amount ? "Over Budget" : "On Track"}`,
+            {
+              type: "budget",
+              original_id: b.id,
+              amount: b.amount,
+              spent: b.spent,
+              category: categoryName,
+              period: b.period,
+              start_date: b.start_date,
+              end_date: b.end_date,
+              created_at: b.created_at,
+            },
+          );
+          added++;
+        }
+      }
+
+      // Index Liabilities
+      if (liabilities && !stopImportRef.current) {
+        for (const l of liabilities) {
+          if (stopImportRef.current) break;
+          if (indexedIds.has(l.id)) continue;
+
+          setImportProgress((prev) => ({
+            ...prev,
+            current: prev.current + 1,
+            item: `Liability: ${l.name}`,
+          }));
+
+          await addToGrimoire(
+            `Liability: ${l.name} (${l.type})
+Amount Owed: ${l.amount}
+Interest Rate: ${l.interest_rate}%
+Minimum Payment: ${l.minimum_payment}
+Due Date: ${l.due_date}
+Status: ${l.is_active ? "Active" : "Paid Off"}`,
+            {
+              type: "liability",
+              original_id: l.id,
+              liability_type: l.type,
+              amount: l.amount,
+              interest_rate: l.interest_rate,
+              minimum_payment: l.minimum_payment,
+              due_date: l.due_date,
+              is_active: l.is_active,
+              created_at: l.created_at,
+            },
+          );
+          added++;
+        }
+      }
+
+      // Index Goals
+      if (goals && !stopImportRef.current) {
+        for (const g of goals) {
+          if (stopImportRef.current) break;
+          if (indexedIds.has(g.id)) continue;
+
+          setImportProgress((prev) => ({
+            ...prev,
+            current: prev.current + 1,
+            item: `Goal: ${g.name}`,
+          }));
+
+          await addToGrimoire(
+            `Financial Goal: ${g.name}
+Target: ${g.target_amount}
+Current: ${g.current_amount}
+Target Date: ${g.target_date}
+Status: ${g.is_active ? "Active" : "Inactive"}`,
+            {
+              type: "financial_goal",
+              original_id: g.id,
+              target_amount: g.target_amount,
+              current_amount: g.current_amount,
+              target_date: g.target_date,
+              is_active: g.is_active,
+              created_at: g.created_at,
+            },
+          );
+          added++;
+        }
+      }
+
+      setImportProgress({ current: 0, total: 0, item: "" });
+
+      if (!stopImportRef.current) {
+        toast.success(
+          isHalloweenMode
+            ? added > 0
+              ? `Resurrected ${added} financial records!`
+              : "All financial data already in the Grimoire."
+            : added > 0
+              ? `Indexed ${added} financial records!`
+              : "All financial data already indexed.",
+        );
+      }
+    } catch (error) {
+      console.error("Financial import error:", error);
+      toast.error("Failed to sync financial data.");
+    } finally {
+      setIsImportingFinance(false);
+    }
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -401,6 +711,7 @@ export const SearchModal: React.FC = () => {
                   isImportingJournal ||
                   isImportingNotes ||
                   isImportingTasks ||
+                  isImportingFinance ||
                   isGhostWriting
                 }
                 className={`h-9 w-9 cursor-pointer ${
@@ -434,6 +745,7 @@ export const SearchModal: React.FC = () => {
                   isImportingJournal ||
                   isImportingNotes ||
                   isImportingTasks ||
+                  isImportingFinance ||
                   isGhostWriting
                 }
                 className={`h-9 w-9 cursor-pointer ${
@@ -446,6 +758,74 @@ export const SearchModal: React.FC = () => {
                   className={`w-5 h-5 ${isImportingTasks ? "hidden" : ""}`}
                 />
                 {isImportingTasks && (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon financial records"
+                  : "Index all financial data"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportFinance}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isImportingFinance ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <Wallet
+                  className={`w-5 h-5 ${isImportingFinance ? "hidden" : ""}`}
+                />
+                {isImportingFinance && (
+                  <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <PortalTooltip
+              content={
+                isHalloweenMode
+                  ? "Summon financial records"
+                  : "Index all financial data"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportFinance}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isImportingFinance ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <Wallet
+                  className={`w-5 h-5 ${isImportingFinance ? "hidden" : ""}`}
+                />
+                {isImportingFinance && (
                   <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                 )}
               </Button>
@@ -467,6 +847,7 @@ export const SearchModal: React.FC = () => {
                   isImportingJournal ||
                   isImportingNotes ||
                   isImportingTasks ||
+                  isImportingFinance ||
                   isGhostWriting
                 }
                 className={`h-9 w-9 cursor-pointer ${
@@ -560,6 +941,7 @@ export const SearchModal: React.FC = () => {
                   isImportingJournal ||
                   isImportingNotes ||
                   isImportingTasks ||
+                  isImportingFinance ||
                   isGhostWriting
                 }
                 className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
@@ -595,6 +977,7 @@ export const SearchModal: React.FC = () => {
                   isImportingJournal ||
                   isImportingNotes ||
                   isImportingTasks ||
+                  isImportingFinance ||
                   isGhostWriting
                 }
                 className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
@@ -617,6 +1000,42 @@ export const SearchModal: React.FC = () => {
             <PortalTooltip
               content={
                 isHalloweenMode
+                  ? "Summon financial records"
+                  : "Index all financial data"
+              }
+              side="top"
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleImportFinance}
+                disabled={
+                  isImportingJournal ||
+                  isImportingNotes ||
+                  isImportingTasks ||
+                  isImportingFinance ||
+                  isGhostWriting
+                }
+                className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                    : "text-gray-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                }`}
+              >
+                <Wallet
+                  className={`w-5 h-5 md:w-6 md:h-6 ${
+                    isImportingFinance ? "hidden" : ""
+                  }`}
+                />
+                {isImportingFinance && (
+                  <div className="w-5 h-5 md:w-6 md:h-6 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                )}
+              </Button>
+            </PortalTooltip>
+
+            <PortalTooltip
+              content={
+                isHalloweenMode
                   ? "Summon journal entries from the past"
                   : "Index all journal entries for AI search"
               }
@@ -630,6 +1049,7 @@ export const SearchModal: React.FC = () => {
                   isImportingJournal ||
                   isImportingNotes ||
                   isImportingTasks ||
+                  isImportingFinance ||
                   isGhostWriting
                 }
                 className={`h-9 w-9 md:h-10 md:w-10 cursor-pointer ${
@@ -673,7 +1093,10 @@ export const SearchModal: React.FC = () => {
                 : "bg-gray-50/50"
           }`}
         >
-          {isImportingJournal || isImportingNotes || isImportingTasks ? (
+          {isImportingJournal ||
+          isImportingNotes ||
+          isImportingTasks ||
+          isImportingFinance ? (
             <div className="h-full flex flex-col items-center justify-center gap-8 p-8">
               <Spinner
                 className="bg-transparent"
@@ -696,9 +1119,13 @@ export const SearchModal: React.FC = () => {
                         ? isHalloweenMode
                           ? "Summoning notes..."
                           : "Syncing notes..."
-                        : isHalloweenMode
-                          ? "Summoning tasks..."
-                          : "Syncing tasks..."}
+                        : isImportingTasks
+                          ? isHalloweenMode
+                            ? "Summoning tasks..."
+                            : "Syncing tasks..."
+                          : isHalloweenMode
+                            ? "Summoning wealth..."
+                            : "Syncing financial data..."}
                   </TextShimmer>
                 </div>
 

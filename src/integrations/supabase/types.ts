@@ -228,6 +228,7 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           end_date: string;
+          icon: string | null;
           id: string;
           name: string;
           period: string;
@@ -243,6 +244,7 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           end_date: string;
+          icon?: string | null;
           id?: string;
           name: string;
           period: string;
@@ -258,6 +260,7 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           end_date?: string;
+          icon?: string | null;
           id?: string;
           name?: string;
           period?: string;

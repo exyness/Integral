@@ -76,6 +76,7 @@ import {
   useAccountsQuery,
   useBudgetsQuery,
   useBudgetTransactionsQuery,
+  useCategoriesQuery,
   useCreateAccount,
   useCreateBudget,
   useCreateTransaction,
@@ -100,6 +101,7 @@ import {
 } from "@/hooks/queries/useLiabilities";
 import { useBudgetFiltering } from "@/hooks/useBudgetFiltering";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useSpookyAI } from "@/hooks/useSpookyAI";
 import {
   Account,
   BudgetTransaction,
@@ -155,6 +157,10 @@ export const Finances: React.FC = () => {
   const { isLoading: liabilitiesLoading } = useLiabilitiesQuery();
   const createLiabilityMutation = useCreateLiability();
   const updateLiabilityMutation = useUpdateLiability();
+
+  // Categories for RAG context
+  const { data: categories = [] } = useCategoriesQuery();
+  const { addToGrimoire } = useSpookyAI();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = (searchParams.get("tab") as TabType) || "budgets";
@@ -499,12 +505,55 @@ export const Finances: React.FC = () => {
           oldAmount: editingTransaction.amount,
         });
       } else {
-        await createTransactionMutation.mutateAsync(data);
+        const newTransaction =
+          await createTransactionMutation.mutateAsync(data);
+
+        // Auto-index for RAG
+        try {
+          const categoryName =
+            categories.find((c) => c.id === data.category_id)?.name ||
+            data.category ||
+            "Uncategorized";
+          const accountName =
+            accounts.find((a) => a.id === data.account_id)?.name ||
+            "Unknown Account";
+
+          const content = `Transaction: ${formatAmount(data.amount)} - ${data.description}
+Category: ${categoryName}
+Account: ${accountName}
+Date: ${data.transaction_date}
+Type: ${data.type || "expense"}`;
+
+          await addToGrimoire(content, {
+            type: "transaction",
+            original_id: newTransaction.id,
+            amount: data.amount,
+            category: categoryName,
+            category_id: data.category_id,
+            account_name: accountName,
+            account_id: data.account_id,
+            transaction_date: data.transaction_date,
+            transaction_type: data.type || "expense",
+            created_at: new Date().toISOString(),
+            tags: data.tags || [],
+          });
+        } catch (error) {
+          console.error("Failed to index transaction:", error);
+          // Don't block UI for indexing failure
+        }
       }
       setShowTransactionForm(false);
       setEditingTransaction(null);
     },
-    [createTransactionMutation, updateTransactionMutation, editingTransaction],
+    [
+      createTransactionMutation,
+      updateTransactionMutation,
+      editingTransaction,
+      categories,
+      accounts,
+      addToGrimoire,
+      formatAmount,
+    ],
   );
 
   const handleDeleteTransaction = useCallback(async () => {

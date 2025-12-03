@@ -5,11 +5,12 @@ export interface Budget {
   description?: string;
   amount: number;
   spent: number;
-  category: BudgetCategory;
+  category: string;
   period: BudgetPeriod;
   start_date: string;
   end_date: string;
   color: string;
+  icon?: string;
   created_at: string;
   updated_at: string;
 }

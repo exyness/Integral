@@ -9,7 +9,9 @@ import {
 } from "lucide-react";
 import React from "react";
 import { pumpkinScary, spiderSharpHanging } from "@/assets";
+import { IconRenderer } from "@/contexts/IconPickerContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useCategoriesQuery } from "@/hooks/queries/useCategories";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Budget } from "@/types/budget";
 
@@ -29,6 +31,10 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const { isDark, isHalloweenMode } = useTheme();
   const { formatAmount } = useCurrency();
   const [showMenu, setShowMenu] = React.useState(false);
+  const { data: categories } = useCategoriesQuery();
+
+  const categoryName =
+    categories?.find((c) => c.id === budget.category)?.name || "Uncategorized";
 
   const percentageUsed = (budget.spent / budget.amount) * 100;
   const remaining = budget.amount - budget.spent;
@@ -96,15 +102,28 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         <div className="flex items-start justify-between mb-2 md:mb-4">
           <div className="flex-1 min-w-0">
             <h3
-              className="font-bold text-sm md:text-base truncate"
+              className="font-bold text-sm md:text-base truncate flex items-center gap-2"
               style={{ color: budget.color }}
             >
+              {budget.icon && (
+                <div
+                  className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-lg"
+                  style={{
+                    backgroundColor: `${budget.color}20`,
+                  }}
+                >
+                  <IconRenderer
+                    icon={budget.icon}
+                    className="w-4 h-4 md:w-5 md:h-5"
+                  />
+                </div>
+              )}
               {budget.name}
             </h3>
             <p
               className={`text-[10px] md:text-xs capitalize ${isDark ? "text-[#B4B4B8]" : "text-gray-500"}`}
             >
-              {budget.category} • {budget.period}
+              {categoryName} • {budget.period}
             </p>
           </div>
 

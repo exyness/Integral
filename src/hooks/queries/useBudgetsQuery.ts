@@ -2,12 +2,15 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSpookyAI } from "@/hooks/useSpookyAI";
 import { supabase } from "@/integrations/supabase/client";
+import { Database } from "@/integrations/supabase/types";
 import {
   Account,
   AnalyticsSummary,
   Budget,
   BudgetTransaction,
+  Category,
   CategorySpending,
   DailySpending,
   RecurringTransaction,
@@ -62,6 +65,7 @@ export const useBudgetsQuery = () => {
 export const useCreateBudget = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addToGrimoire } = useSpookyAI();
 
   return useMutation({
     mutationFn: async (
@@ -85,12 +89,45 @@ export const useCreateBudget = () => {
       if (error) throw error;
       return data as Budget;
     },
-    onSuccess: (newBudget) => {
+    onSuccess: async (newBudget) => {
       queryClient.setQueryData(
         [QUERY_KEYS.BUDGETS, user?.id],
         (oldData: Budget[] = []) => [newBudget, ...oldData],
       );
       toast.success("Budget created successfully!");
+
+      // Auto-index for RAG
+      try {
+        const categories = queryClient.getQueryData<Category[]>([
+          QUERY_KEYS.CATEGORIES,
+          user?.id,
+        ]);
+        const categoryName =
+          categories?.find((c) => c.id === newBudget.category)?.name ||
+          newBudget.category;
+
+        await addToGrimoire(
+          `Budget: ${newBudget.name}
+Category: ${categoryName}
+Amount: ${newBudget.amount}
+Spent: ${newBudget.spent}
+Period: ${newBudget.period}
+Status: On Track`,
+          {
+            type: "budget",
+            original_id: newBudget.id,
+            amount: newBudget.amount,
+            spent: newBudget.spent,
+            category: categoryName,
+            period: newBudget.period,
+            start_date: newBudget.start_date,
+            end_date: newBudget.end_date,
+            created_at: newBudget.created_at,
+          },
+        );
+      } catch (error) {
+        console.error("Failed to index budget:", error);
+      }
     },
     onError: (error: PostgrestError) => {
       handleSupabaseError(error, "create budget");
@@ -101,6 +138,7 @@ export const useCreateBudget = () => {
 export const useUpdateBudget = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addToGrimoire } = useSpookyAI();
 
   return useMutation({
     mutationFn: async ({
@@ -123,7 +161,7 @@ export const useUpdateBudget = () => {
       if (error) throw error;
       return data as Budget;
     },
-    onSuccess: (updatedBudget) => {
+    onSuccess: async (updatedBudget) => {
       queryClient.setQueryData(
         [QUERY_KEYS.BUDGETS, user?.id],
         (oldData: Budget[] = []) =>
@@ -132,6 +170,39 @@ export const useUpdateBudget = () => {
           ),
       );
       toast.success("Budget updated successfully!");
+
+      // Auto-index for RAG
+      try {
+        const categories = queryClient.getQueryData<Category[]>([
+          QUERY_KEYS.CATEGORIES,
+          user?.id,
+        ]);
+        const categoryName =
+          categories?.find((c) => c.id === updatedBudget.category)?.name ||
+          updatedBudget.category;
+
+        await addToGrimoire(
+          `Budget: ${updatedBudget.name}
+Category: ${categoryName}
+Amount: ${updatedBudget.amount}
+Spent: ${updatedBudget.spent}
+Period: ${updatedBudget.period}
+Status: ${updatedBudget.spent > updatedBudget.amount ? "Over Budget" : "On Track"}`,
+          {
+            type: "budget",
+            original_id: updatedBudget.id,
+            amount: updatedBudget.amount,
+            spent: updatedBudget.spent,
+            category: categoryName,
+            period: updatedBudget.period,
+            start_date: updatedBudget.start_date,
+            end_date: updatedBudget.end_date,
+            created_at: updatedBudget.created_at,
+          },
+        );
+      } catch (error) {
+        console.error("Failed to index budget:", error);
+      }
     },
     onError: (error: PostgrestError) => {
       handleSupabaseError(error, "update budget");
@@ -306,7 +377,8 @@ export const useUpdateTransaction = () => {
       if (!user) throw new Error("User not authenticated");
 
       // Only include valid fields for budget_transactions table
-      const transactionUpdates: any = {};
+      const transactionUpdates: Database["public"]["Tables"]["budget_transactions"]["Update"] =
+        {};
       if (updates.budget_id !== undefined)
         transactionUpdates.budget_id = updates.budget_id;
       if (updates.amount !== undefined)
@@ -660,6 +732,7 @@ export const useAccountsQuery = () => {
 export const useCreateAccount = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addToGrimoire } = useSpookyAI();
 
   return useMutation({
     mutationFn: async (
@@ -688,6 +761,22 @@ export const useCreateAccount = () => {
         (oldData: Account[] = []) => [newAccount, ...oldData],
       );
       toast.success("Account created successfully!");
+
+      // Auto-index for RAG
+      addToGrimoire(
+        `Account: ${newAccount.name} (${newAccount.type})
+Current Balance: ${newAccount.balance} ${newAccount.currency}
+Status: Active`,
+        {
+          type: "account",
+          original_id: newAccount.id,
+          account_type: newAccount.type,
+          balance: newAccount.balance,
+          currency: newAccount.currency,
+          include_in_total: newAccount.include_in_total,
+          created_at: new Date().toISOString(),
+        },
+      ).catch(console.error);
     },
     onError: (error: PostgrestError) => {
       handleSupabaseError(error, "create account");
@@ -698,6 +787,7 @@ export const useCreateAccount = () => {
 export const useUpdateAccount = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addToGrimoire } = useSpookyAI();
 
   return useMutation({
     mutationFn: async ({
@@ -729,6 +819,22 @@ export const useUpdateAccount = () => {
           ),
       );
       toast.success("Account updated successfully!");
+
+      // Auto-index for RAG
+      addToGrimoire(
+        `Account: ${updatedAccount.name} (${updatedAccount.type})
+Current Balance: ${updatedAccount.balance} ${updatedAccount.currency}
+Status: Active`,
+        {
+          type: "account",
+          original_id: updatedAccount.id,
+          account_type: updatedAccount.type,
+          balance: updatedAccount.balance,
+          currency: updatedAccount.currency,
+          include_in_total: updatedAccount.include_in_total,
+          created_at: new Date().toISOString(),
+        },
+      ).catch(console.error);
     },
     onError: (error: PostgrestError) => {
       handleSupabaseError(error, "update account");
@@ -773,13 +879,13 @@ export const useRecurringTransactionsQuery = () => {
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
-        .from("recurring_transactions" as any)
+        .from("recurring_transactions")
         .select("*")
         .eq("user_id", user.id)
         .order("next_run_date", { ascending: true });
 
       if (error) throw error;
-      return (data || []) as RecurringTransaction[];
+      return (data || []) as unknown as RecurringTransaction[];
     },
     enabled: !!user,
   });
@@ -788,6 +894,7 @@ export const useRecurringTransactionsQuery = () => {
 export const useCreateRecurringTransaction = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addToGrimoire } = useSpookyAI();
 
   return useMutation({
     mutationFn: async (
@@ -799,7 +906,7 @@ export const useCreateRecurringTransaction = () => {
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
-        .from("recurring_transactions" as any)
+        .from("recurring_transactions")
         .insert({
           ...newTransaction,
           user_id: user.id,
@@ -808,14 +915,57 @@ export const useCreateRecurringTransaction = () => {
         .single();
 
       if (error) throw error;
-      return data as RecurringTransaction;
+      return data as unknown as RecurringTransaction;
     },
-    onSuccess: (newTransaction) => {
+    onSuccess: async (newTransaction) => {
       queryClient.setQueryData(
         [QUERY_KEYS.RECURRING_TRANSACTIONS, user?.id],
         (oldData: RecurringTransaction[] = []) => [newTransaction, ...oldData],
       );
       toast.success("Recurring transaction created successfully!");
+
+      // Auto-index for RAG
+      try {
+        const categories = queryClient.getQueryData<Category[]>([
+          QUERY_KEYS.CATEGORIES,
+          user?.id,
+        ]);
+        const accounts = queryClient.getQueryData<Account[]>([
+          QUERY_KEYS.ACCOUNTS,
+          user?.id,
+        ]);
+
+        const categoryName =
+          categories?.find((c) => c.id === newTransaction.category_id)?.name ||
+          "Bills";
+        const accountName =
+          accounts?.find((a) => a.id === newTransaction.account_id)?.name ||
+          "Unknown";
+
+        await addToGrimoire(
+          `Recurring Transaction: ${newTransaction.amount} - ${newTransaction.description}
+Category: ${categoryName}
+Account: ${accountName}
+Interval: ${newTransaction.interval}
+Next Run: ${newTransaction.next_run_date}
+Type: ${newTransaction.type}`,
+          {
+            type: "recurring_transaction",
+            original_id: newTransaction.id,
+            amount: newTransaction.amount,
+            category: categoryName,
+            category_id: newTransaction.category_id,
+            account_name: accountName,
+            account_id: newTransaction.account_id,
+            next_run_date: newTransaction.next_run_date,
+            interval: newTransaction.interval,
+            active: newTransaction.active,
+            created_at: newTransaction.created_at,
+          },
+        );
+      } catch (error) {
+        console.error("Failed to index recurring transaction:", error);
+      }
     },
     onError: (error: PostgrestError) => {
       handleSupabaseError(error, "create recurring transaction");
@@ -826,6 +976,7 @@ export const useCreateRecurringTransaction = () => {
 export const useUpdateRecurringTransaction = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addToGrimoire } = useSpookyAI();
 
   return useMutation({
     mutationFn: async ({
@@ -838,7 +989,7 @@ export const useUpdateRecurringTransaction = () => {
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
-        .from("recurring_transactions" as any)
+        .from("recurring_transactions")
         .update(updates)
         .eq("id", id)
         .eq("user_id", user.id)
@@ -846,9 +997,9 @@ export const useUpdateRecurringTransaction = () => {
         .single();
 
       if (error) throw error;
-      return data as RecurringTransaction;
+      return data as unknown as RecurringTransaction;
     },
-    onSuccess: (updatedTransaction) => {
+    onSuccess: async (updatedTransaction) => {
       queryClient.setQueryData(
         [QUERY_KEYS.RECURRING_TRANSACTIONS, user?.id],
         (oldData: RecurringTransaction[] = []) =>
@@ -857,6 +1008,50 @@ export const useUpdateRecurringTransaction = () => {
           ),
       );
       toast.success("Recurring transaction updated successfully!");
+
+      // Auto-index for RAG
+      try {
+        const categories = queryClient.getQueryData<Category[]>([
+          QUERY_KEYS.CATEGORIES,
+          user?.id,
+        ]);
+        const accounts = queryClient.getQueryData<Account[]>([
+          QUERY_KEYS.ACCOUNTS,
+          user?.id,
+        ]);
+
+        const categoryName =
+          categories?.find((c) => c.id === updatedTransaction.category_id)
+            ?.name || "Bills";
+        const accountName =
+          accounts?.find((a) => a.id === updatedTransaction.account_id)?.name ||
+          "Unknown";
+
+        await addToGrimoire(
+          `Recurring Transaction: ${updatedTransaction.amount} - ${updatedTransaction.description}
+Category: ${categoryName}
+Account: ${accountName}
+Interval: ${updatedTransaction.interval}
+Next Run: ${updatedTransaction.next_run_date}
+Type: ${updatedTransaction.type}
+Status: ${updatedTransaction.active ? "Active" : "Inactive"}`,
+          {
+            type: "recurring_transaction",
+            original_id: updatedTransaction.id,
+            amount: updatedTransaction.amount,
+            category: categoryName,
+            category_id: updatedTransaction.category_id,
+            account_name: accountName,
+            account_id: updatedTransaction.account_id,
+            next_run_date: updatedTransaction.next_run_date,
+            interval: updatedTransaction.interval,
+            active: updatedTransaction.active,
+            created_at: updatedTransaction.created_at,
+          },
+        );
+      } catch (error) {
+        console.error("Failed to index recurring transaction:", error);
+      }
     },
     onError: (error: PostgrestError) => {
       handleSupabaseError(error, "update recurring transaction");
@@ -873,7 +1068,7 @@ export const useDeleteRecurringTransaction = () => {
       if (!user) throw new Error("User not authenticated");
 
       const { error } = await supabase
-        .from("recurring_transactions" as any)
+        .from("recurring_transactions")
         .delete()
         .eq("id", id)
         .eq("user_id", user.id);
@@ -899,6 +1094,9 @@ export const useProcessRecurringTransactions = () => {
   const queryClient = useQueryClient();
   const createTransactionMutation = useCreateTransaction();
   const updateRecurringMutation = useUpdateRecurringTransaction();
+  const { addToGrimoire } = useSpookyAI();
+  const { data: categories = [] } = useCategoriesQuery();
+  const { data: accounts = [] } = useAccountsQuery();
 
   const processDueTransactions = async () => {
     if (!user) return;
@@ -922,7 +1120,7 @@ export const useProcessRecurringTransactions = () => {
     for (const recurring of dueTransactions) {
       try {
         // Create the actual transaction
-        await createTransactionMutation.mutateAsync({
+        const newTransaction = await createTransactionMutation.mutateAsync({
           amount: recurring.amount,
           description: recurring.description,
           category: "bills", // Default or fetch category name if needed
@@ -935,6 +1133,39 @@ export const useProcessRecurringTransactions = () => {
           recurring_id: recurring.id,
           budget_id: null, // Optional: could link to a budget if we had that info
         });
+
+        // Auto-index for RAG
+        try {
+          const categoryName =
+            categories.find((c) => c.id === recurring.category_id)?.name ||
+            "Bills";
+          const accountName =
+            accounts.find((a) => a.id === recurring.account_id)?.name ||
+            "Unknown Account";
+
+          const content = `Transaction: $${recurring.amount} - ${recurring.description} (Recurring)
+Category: ${categoryName}
+Account: ${accountName}
+Date: ${recurring.next_run_date}
+Type: ${recurring.type || "expense"}`;
+
+          await addToGrimoire(content, {
+            type: "transaction",
+            original_id: newTransaction.id,
+            amount: recurring.amount,
+            category: categoryName,
+            category_id: recurring.category_id,
+            account_name: accountName,
+            account_id: recurring.account_id,
+            transaction_date: recurring.next_run_date,
+            transaction_type: recurring.type || "expense",
+            is_recurring: true,
+            recurring_id: recurring.id,
+            created_at: new Date().toISOString(),
+          });
+        } catch (error) {
+          console.error("Failed to index recurring transaction:", error);
+        }
 
         // Calculate next run date
         const nextDate = new Date(recurring.next_run_date);
@@ -990,7 +1221,7 @@ export const useCategoriesQuery = () => {
 
   return useQuery({
     queryKey: [QUERY_KEYS.CATEGORIES, user?.id],
-    queryFn: async (): Promise<CategorySpending[]> => {
+    queryFn: async (): Promise<Category[]> => {
       if (!user) throw new Error("User not authenticated");
 
       const { data, error } = await supabase
@@ -1000,7 +1231,7 @@ export const useCategoriesQuery = () => {
         .order("name");
 
       if (error) throw error;
-      return (data || []) as CategorySpending[];
+      return (data || []) as unknown as Category[];
     },
     enabled: !!user?.id,
     staleTime: QUERY_CONFIG.STALE_TIME,

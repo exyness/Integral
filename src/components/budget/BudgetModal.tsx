@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { catWitchHat, webCornerLeft } from "@/assets";
+import { CategoryPicker } from "@/components/budget/CategoryPicker";
 import { Calendar } from "@/components/ui/Calendar.tsx";
 import { Dropdown } from "@/components/ui/Dropdown";
 import { Modal } from "@/components/ui/Modal";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Budget, BudgetCategory, BudgetPeriod } from "@/types/budget";
+import { useCategoriesQuery } from "@/hooks/queries/useCategories";
+import { Budget, BudgetPeriod } from "@/types/budget";
 
 interface BudgetModalProps {
   isOpen: boolean;
@@ -19,18 +21,6 @@ interface BudgetModalProps {
   ) => Promise<void>;
   isLoading?: boolean;
 }
-
-const CATEGORIES: BudgetCategory[] = [
-  "food",
-  "transport",
-  "entertainment",
-  "utilities",
-  "healthcare",
-  "education",
-  "shopping",
-  "savings",
-  "other",
-];
 
 const PERIODS: BudgetPeriod[] = ["weekly", "monthly", "quarterly", "yearly"];
 
@@ -57,12 +47,15 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
     name: "",
     description: "",
     amount: 0,
-    category: "other" as BudgetCategory,
+    category: "other",
     period: "monthly" as BudgetPeriod,
     start_date: new Date().toISOString().split("T")[0],
     end_date: "",
     color: COLORS[0],
+    icon: "",
   });
+
+  const { data: categories } = useCategoriesQuery();
 
   useEffect(() => {
     if (budget) {
@@ -75,6 +68,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
         start_date: budget.start_date,
         end_date: budget.end_date,
         color: budget.color,
+        icon: budget.icon || "",
       });
     } else {
       setFormData({
@@ -86,6 +80,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
         start_date: new Date().toISOString().split("T")[0],
         end_date: "",
         color: COLORS[0],
+        icon: "",
       });
     }
   }, [budget]);
@@ -267,19 +262,17 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
 
         {/* Category */}
         <div>
-          <Dropdown
-            title="Category"
+          <CategoryPicker
+            label="Category"
             value={formData.category}
-            onValueChange={(value) =>
+            onChange={(categoryId) => {
+              const category = categories?.find((c) => c.id === categoryId);
               setFormData({
                 ...formData,
-                category: value as BudgetCategory,
-              })
-            }
-            options={CATEGORIES.map((cat) => ({
-              value: cat,
-              label: cat.charAt(0).toUpperCase() + cat.slice(1),
-            }))}
+                category: categoryId,
+                icon: category?.icon || "",
+              });
+            }}
             placeholder="Select category"
           />
         </div>
