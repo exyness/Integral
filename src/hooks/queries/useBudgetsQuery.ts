@@ -342,9 +342,12 @@ export const useCreateTransaction = () => {
         queryKey: [QUERY_KEYS.ANALYTICS, user?.id],
       });
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
-      });
+      // Invalidate accounts if transaction affects account balance
+      if (newTransaction.account_id || newTransaction.to_account_id) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
+        });
+      }
 
       toast.success(
         newTransaction.budget_id
@@ -466,9 +469,15 @@ export const useUpdateTransaction = () => {
         queryKey: [QUERY_KEYS.ANALYTICS, user?.id],
       });
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
-      });
+      // Invalidate accounts if transaction affects account balance
+      if (
+        updates.account_id !== undefined ||
+        updates.to_account_id !== undefined
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
+        });
+      }
 
       toast.success("Transaction updated successfully!");
     },
@@ -529,9 +538,12 @@ export const useDeleteTransaction = () => {
         queryKey: [QUERY_KEYS.ANALYTICS, user?.id],
       });
 
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
-      });
+      // Invalidate accounts if transaction affected account balance
+      if (budgetId || amount) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.ACCOUNTS, user?.id],
+        });
+      }
 
       toast.success("Transaction deleted successfully!");
     },

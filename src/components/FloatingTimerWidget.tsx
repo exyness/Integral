@@ -86,6 +86,7 @@ export const FloatingTimerWidget: React.FC = () => {
   const { timeEntries, stopTimer, pauseTimer, resumeTimer } = useTimeTracking();
   const { tasks } = useTasks();
   const { isWidgetVisible, setWidgetVisible } = useFloatingWidget();
+  const { isAIChatOpen } = useFloatingWidget();
   const { isHalloweenMode, isDark } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [, forceUpdate] = useState({});
@@ -142,7 +143,9 @@ export const FloatingTimerWidget: React.FC = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         onClick={() => setWidgetVisible(true)}
-        className={`fixed bottom-3 right-3 md:bottom-4 md:right-4 z-50 w-12 h-12 md:w-14 md:h-14 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer ${
+        className={`fixed bottom-3 z-50 w-12 h-12 md:w-14 md:h-14 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer ${
+          isAIChatOpen ? "right-[72px] md:right-[84px]" : "right-3 md:right-4"
+        } ${
           isHalloweenMode
             ? "bg-[#60c9b6]/20 border border-[#60c9b6]/50 text-[#60c9b6] hover:bg-[#60c9b6]/30 hover:shadow-[0_0_15px_rgba(96,201,182,0.3)]"
             : "bg-[rgba(16,185,129,0.2)] border border-[rgba(16,185,129,0.3)] text-emerald-500 hover:bg-[rgba(16,185,129,0.3)]"
@@ -165,7 +168,9 @@ export const FloatingTimerWidget: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`fixed bottom-3 right-3 md:bottom-4 md:right-4 z-9999 w-[240px] md:w-[320px] rounded-xl ${
+      className={`fixed bottom-3 z-9999 w-[240px] md:w-[320px] rounded-xl ${
+        isAIChatOpen ? "right-[72px] md:right-[84px]" : "right-3 md:right-4"
+      } ${
         isHalloweenMode
           ? "border-2 border-[#60c9b6]/50 shadow-[0_0_30px_rgba(96,201,182,0.2)]"
           : ""
@@ -173,6 +178,7 @@ export const FloatingTimerWidget: React.FC = () => {
       style={{
         position: "fixed",
         zIndex: 9999,
+        transition: "right 0.3s ease-in-out",
       }}
     >
       <GlassCard

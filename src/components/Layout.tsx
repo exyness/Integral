@@ -1,4 +1,5 @@
 import React from "react";
+import { FloatingAIChatWidget } from "@/components/ai/FloatingAIChatWidget";
 import { Navbar } from "@/components/Navbar";
 import { OfflinePage } from "@/components/OfflinePage";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -30,6 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Navbar />
         <div className="p-2 sm:p-4 md:p-6 h-full w-full">{children}</div>
       </main>
+      <FloatingAIChatWidget />
     </div>
   );
 };

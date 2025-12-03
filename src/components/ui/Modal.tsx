@@ -55,8 +55,8 @@ export const Modal: React.FC<ModalProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div
-          className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 ${isDark ? "bg-[rgba(10,10,11,0.8)]" : "bg-black/50"}`}
-          style={{ margin: 0, padding: "16px" }}
+          className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-10000 ${isDark ? "bg-[rgba(10,10,11,0.8)]" : "bg-black/50"}`}
+          style={{ margin: 0, padding: "16px", paddingTop: "48px" }}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
         >

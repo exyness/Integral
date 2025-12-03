@@ -141,8 +141,11 @@ export const Finances: React.FC = () => {
   }, []);
 
   // Account hooks
-  const { data: accounts = [], isLoading: accountsLoading } =
-    useAccountsQuery();
+  const {
+    data: accounts = [],
+    isLoading: accountsLoading,
+    isFetching: accountsFetching,
+  } = useAccountsQuery();
   const createAccountMutation = useCreateAccount();
   const updateAccountMutation = useUpdateAccount();
   const deleteAccountMutation = useDeleteAccount();
@@ -2458,6 +2461,7 @@ Type: ${data.type || "expense"}`;
               onEditGoal={handleEditGoal}
               onDeleteGoal={handleDeleteGoal}
               isLoading={
+                (accountsLoading && accounts.length === 0) ||
                 createAccountMutation.isPending ||
                 updateAccountMutation.isPending ||
                 deleteAccountMutation.isPending

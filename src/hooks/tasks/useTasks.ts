@@ -225,6 +225,7 @@ export const useTasks = () => {
     tasks,
     loading,
     isCreating,
+    isDeleting: deleteTaskMutation.isPending,
     createTask,
     updateTask,
     deleteTask,

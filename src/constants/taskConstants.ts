@@ -1,5 +1,11 @@
 export type PriorityType = "low" | "medium" | "high";
-export type FilterType = "all" | "completed" | "pending";
+export type FilterType =
+  | "all"
+  | "completed"
+  | "pending"
+  | "today"
+  | "tomorrow"
+  | "next7days";
 export type SortType =
   | "created-desc"
   | "created-asc"

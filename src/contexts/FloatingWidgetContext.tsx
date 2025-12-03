@@ -8,6 +8,8 @@ interface FloatingWidgetContextType {
   isSearchModalOpen: boolean;
   setSearchModalOpen: (visible: boolean) => void;
   toggleSearchModal: () => void;
+  isAIChatOpen: boolean;
+  setAIChatOpen: (visible: boolean) => void;
 }
 
 const FloatingWidgetContext = createContext<
@@ -33,6 +35,7 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
 }) => {
   const [isWidgetVisible, setIsWidgetVisible] = useState(true);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpenState] = useState(false);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,6 +65,10 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
     setIsSearchModalOpen(!isSearchModalOpen);
   };
 
+  const setAIChatOpen = (visible: boolean) => {
+    setIsAIChatOpenState(visible);
+  };
+
   return (
     <FloatingWidgetContext.Provider
       value={{
@@ -71,6 +78,8 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
         isSearchModalOpen,
         setSearchModalOpen,
         toggleSearchModal,
+        isAIChatOpen,
+        setAIChatOpen,
       }}
     >
       <ExpandableScreen

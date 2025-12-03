@@ -23,11 +23,39 @@ export const useTaskFiltering = ({
   dateRange,
 }: UseTaskFilteringProps) => {
   const filteredTasks = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const next7Days = new Date(today);
+    next7Days.setDate(next7Days.getDate() + 7);
+
     return tasks.filter((task) => {
-      const matchesFilter =
-        filter === "all" ||
-        (filter === "completed" && task.completed) ||
-        (filter === "pending" && !task.completed);
+      // Date-based filters
+      let matchesFilter = true;
+      if (filter === "today") {
+        if (!task.due_date) return false;
+        const taskDate = new Date(task.due_date);
+        taskDate.setHours(0, 0, 0, 0);
+        matchesFilter = taskDate.getTime() === today.getTime();
+      } else if (filter === "tomorrow") {
+        if (!task.due_date) return false;
+        const taskDate = new Date(task.due_date);
+        taskDate.setHours(0, 0, 0, 0);
+        matchesFilter = taskDate.getTime() === tomorrow.getTime();
+      } else if (filter === "next7days") {
+        if (!task.due_date) return false;
+        const taskDate = new Date(task.due_date);
+        taskDate.setHours(0, 0, 0, 0);
+        matchesFilter =
+          taskDate.getTime() >= today.getTime() &&
+          taskDate.getTime() < next7Days.getTime();
+      } else {
+        matchesFilter =
+          filter === "all" ||
+          (filter === "completed" && task.completed) ||
+          (filter === "pending" && !task.completed);
+      }
 
       const matchesSearch =
         task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
