@@ -558,9 +558,11 @@ export const Navbar: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 className={`p-1.5 sm:p-2 rounded-lg transition-colors ${
-                  isDark
-                    ? "hover:bg-[rgba(255,255,255,0.1)] text-[#B4B4B8]"
-                    : "hover:bg-slate-100 text-slate-600"
+                  isHalloweenMode
+                    ? "hover:bg-[#60c9b6]/10 text-[#60c9b6]"
+                    : isDark
+                      ? "hover:bg-[rgba(255,255,255,0.1)] text-[#B4B4B8]"
+                      : "hover:bg-slate-100 text-slate-600"
                 }`}
                 aria-label="Open navigation menu"
               >
@@ -570,13 +572,23 @@ export const Navbar: React.FC = () => {
             <SheetContent
               side="right"
               hideClose
-              className={`w-[260px] p-3 flex flex-col ${getThemeClasses(
-                THEME_STYLES.mobileSheet.dark,
-                THEME_STYLES.mobileSheet.light,
-              )} backdrop-blur-xl rounded-l-2xl`}
+              className={`w-[260px] p-3 flex flex-col ${
+                isHalloweenMode
+                  ? "bg-[#1a1a1f]/95 border-l-[#60c9b6]/30"
+                  : getThemeClasses(
+                      THEME_STYLES.mobileSheet.dark,
+                      THEME_STYLES.mobileSheet.light,
+                    )
+              } backdrop-blur-xl rounded-l-2xl`}
             >
               <SheetHeader
-                className={`p-3 mb-2 pb-3 border-b ${isDark ? "border-[rgba(255,255,255,0.1)]" : "border-slate-200"}`}
+                className={`p-3 mb-2 pb-3 border-b ${
+                  isHalloweenMode
+                    ? "border-[#60c9b6]/30"
+                    : isDark
+                      ? "border-[rgba(255,255,255,0.1)]"
+                      : "border-slate-200"
+                }`}
               >
                 <SheetTitle className="flex items-center space-x-2">
                   <Link
@@ -585,11 +597,26 @@ export const Navbar: React.FC = () => {
                     className="flex items-center space-x-2"
                   >
                     <motion.div
-                      className={`${THEME_STYLES.logo} h-8 w-8 rounded-lg flex items-center justify-center`}
+                      className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                        isHalloweenMode ? "bg-[#60c9b6]/20" : THEME_STYLES.logo
+                      }`}
                     >
-                      <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
+                      {isHalloweenMode ? (
+                        <img
+                          src={pumpkinScary}
+                          alt="Halloween"
+                          className="w-6 h-6"
+                          style={{ filter: "brightness(1.2)" }}
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
+                      )}
                     </motion.div>
-                    <h1 className="text-xl font-semibold tracking-tight font-['Outfit'] text-purple-600">
+                    <h1
+                      className={`text-xl font-semibold tracking-tight font-['Outfit'] ${
+                        isHalloweenMode ? "text-[#60c9b6]" : "text-purple-600"
+                      }`}
+                    >
                       Integral
                     </h1>
                   </Link>
@@ -609,22 +636,38 @@ export const Navbar: React.FC = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 text-base ${
                         isActive
-                          ? "bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] border border-[rgba(139,92,246,0.3)]"
+                          ? isHalloweenMode
+                            ? "bg-[#60c9b6]/20 text-[#60c9b6] border border-[#60c9b6]/30"
+                            : "bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] border border-[rgba(139,92,246,0.3)]"
                           : `text-slate-400 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)] ${
-                              isDark ? "text-slate-300" : "text-slate-600"
+                              isHalloweenMode
+                                ? "text-gray-200 hover:text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                                : isDark
+                                  ? "text-slate-300"
+                                  : "text-slate-600"
                             }`
                       }`}
                     >
                       <item.icon
-                        className="w-5 h-5 mr-3 transition-colors"
-                        style={{ color: item.color }}
+                        className={`w-5 h-5 mr-3 transition-colors ${
+                          isHalloweenMode ? "text-[#60c9b6]" : ""
+                        }`}
+                        style={{
+                          color: isHalloweenMode ? undefined : item.color,
+                        }}
                       />
                       <span>{item.label}</span>
                     </Link>
                   );
                 })}
                 {hasRunningTimers && (
-                  <div className="pt-3 mt-2 border-t border-[rgba(255,255,255,0.1)]">
+                  <div
+                    className={`pt-3 mt-2 border-t ${
+                      isHalloweenMode
+                        ? "border-[#60c9b6]/30"
+                        : "border-[rgba(255,255,255,0.1)]"
+                    }`}
+                  >
                     <button
                       onClick={() => {
                         toggleWidget();
@@ -650,7 +693,13 @@ export const Navbar: React.FC = () => {
                 )}
               </nav>
               <div
-                className={`px-2 py-3 border-t ${isDark ? "border-[rgba(255,255,255,0.1)]" : "border-slate-200"}`}
+                className={`px-2 py-3 border-t ${
+                  isHalloweenMode
+                    ? "border-[#60c9b6]/30"
+                    : isDark
+                      ? "border-[rgba(255,255,255,0.1)]"
+                      : "border-slate-200"
+                }`}
               >
                 <div className="flex gap-2">
                   <Button
@@ -658,9 +707,11 @@ export const Navbar: React.FC = () => {
                     size="icon"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`h-11 w-11 rounded-xl ${
-                      isDark
-                        ? "bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] text-white"
-                        : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                      isHalloweenMode
+                        ? "bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20 text-[#60c9b6]"
+                        : isDark
+                          ? "bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] text-white"
+                          : "bg-slate-100 hover:bg-slate-200 text-slate-700"
                     }`}
                   >
                     <PanelRightClose className="h-5 w-5" />
@@ -671,9 +722,11 @@ export const Navbar: React.FC = () => {
                       setIsMobileMenuOpen(false);
                     }}
                     className={`flex-1 flex items-center justify-center px-3 py-2.5 rounded-xl transition-colors text-base font-medium ${
-                      isDark
-                        ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                        : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+                      isHalloweenMode
+                        ? "bg-[#60c9b6]/20 text-[#60c9b6] hover:bg-[#60c9b6]/30"
+                        : isDark
+                          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                          : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
                     }`}
                   >
                     <span>Log out</span>

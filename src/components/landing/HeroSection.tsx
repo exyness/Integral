@@ -119,7 +119,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
           >
             {isHalloweenMode
               ? "Haunt Your Habits"
-              : "Organize Your Life with AI"}
+              : "Everything You Need. Nothing You Don't."}
           </h1>
           <p
             className={`text-sm sm:text-base md:text-lg lg:text-xl mb-3 sm:mb-4 max-w-3xl mx-auto leading-relaxed px-4 ${
@@ -131,8 +131,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
             }`}
           >
             {isHalloweenMode
-              ? "Manage zombie tasks, track phantom expenses, and brew the perfect budget—all in one haunted platform."
-              : "Manage tasks, track time, journal your progress, control your budget, and organize notes—all in one beautiful, integrated platform."}
+              ? "Summon zombie tasks from the grave, banish phantom expenses, and conjure the ultimate budget spell—all in one bewitched productivity realm."
+              : "Replace the chaos of ten apps with the clarity of one. Your tasks, money, and mind—perfectly aligned in a single, beautiful space."}
           </p>
           <p
             className={`text-xs sm:text-sm md:text-base mb-8 sm:mb-10 font-medium ${
@@ -144,8 +144,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
             }`}
           >
             {isHalloweenMode
-              ? "Don't let your productivity die..."
-              : "Integral part of your life"}
+              ? "Resurrect your productivity... if you dare 👻"
+              : "Integral is an integral part of your life"}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pointer-events-auto px-4">
             <motion.button

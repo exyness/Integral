@@ -53,7 +53,7 @@ Use these credentials to explore the platform:
 | **Time Tracking** | **AI Focus Insights** and smart timers that adapt to your deep work patterns              |
 | **Pomodoro**      | **Smart Pomodoro** sessions with flow state analytics and productivity tracking           |
 | **Journal**       | **RAG Vector Search** to connect daily reflections with past entries and insights         |
-| **Budget**        | **RAG Financial Chat** to query your expenses and get AI-powered spending analysis        |
+| **Budget**        | **Smart Budget Management** with visual icons, category tracking, recurring transactions, and RAG-powered expense insights |
 | **Accounts**      | **Secure AI Vault** with intelligent activity monitoring and usage analytics              |
 
 **Built on Modern Tech** - React 19, TypeScript, Supabase, Google Gemini AI, and WebGL.

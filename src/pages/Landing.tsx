@@ -96,13 +96,15 @@ export const Landing: React.FC = () => {
       icon: Wallet,
       title: "Financial Management",
       description:
-        "Track assets, liabilities, and net worth. Chat with your financial data using RAG technology for AI-powered insights.",
+        "Track budgets with visual icons, manage recurring transactions, assets & liabilities. Chat with your finances using RAG for AI-powered insights.",
       color: "#F59E0B",
       features: [
-        "Net Worth Tracking",
-        "Asset & Liability Management",
+        "Visual Budget Icons",
+        "Smart Category Tracking",
+        "Recurring Transactions",
         "RAG Financial Chat",
-        "Multi-Currency",
+        "Net Worth Dashboard",
+        "Multi-Currency Support",
       ],
     },
     {

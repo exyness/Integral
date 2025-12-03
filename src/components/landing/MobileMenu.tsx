@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import { Home, PanelRightClose } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { pumpkinScary } from "@/assets";
 import { Button } from "@/components/ui/Button.tsx";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface NavFeature {
   name: string;
@@ -26,6 +28,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isHalloweenMode } = useTheme();
 
   const handleScrollToSection = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -69,23 +72,50 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         animate={{ x: mobileMenuOpen ? 0 : "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={`fixed top-0 right-0 bottom-0 w-[260px] z-50 lg:hidden flex flex-col ${
-          isDark
-            ? "bg-[rgba(20,20,25,0.85)] border-l-[rgba(255,255,255,0.1)]"
-            : "bg-[rgba(250,250,252,0.85)] border-l-slate-200"
+          isHalloweenMode
+            ? "bg-[#1a1a1f]/95 border-l-[#60c9b6]/30"
+            : isDark
+              ? "bg-[rgba(20,20,25,0.85)] border-l-[rgba(255,255,255,0.1)]"
+              : "bg-[rgba(250,250,252,0.85)] border-l-slate-200"
         } backdrop-blur-xl border-l rounded-l-2xl p-3`}
       >
         {/* Mobile Menu Header */}
         <div
           className={`p-3 mb-2 pb-3 border-b ${
-            isDark ? "border-[rgba(255,255,255,0.1)]" : "border-slate-200"
+            isHalloweenMode
+              ? "border-[#60c9b6]/30"
+              : isDark
+                ? "border-[rgba(255,255,255,0.1)]"
+                : "border-slate-200"
           }`}
         >
           <button
             onClick={() => navigate("/")}
             className="flex items-center space-x-2 cursor-pointer"
           >
-            <motion.div className="bg-linear-to-br from-[#8B5CF6] to-[#7C3AED] h-8 w-8 rounded-lg flex items-center justify-center" />
-            <h1 className="text-xl font-semibold tracking-tight font-['Outfit'] text-purple-600">
+            <motion.div
+              className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                isHalloweenMode
+                  ? "bg-[#60c9b6]/20"
+                  : "bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]"
+              }`}
+            >
+              {isHalloweenMode ? (
+                <img
+                  src={pumpkinScary}
+                  alt="Halloween"
+                  className="w-6 h-6"
+                  style={{ filter: "brightness(1.2)" }}
+                />
+              ) : (
+                <div className="w-full h-full rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#7C3AED]" />
+              )}
+            </motion.div>
+            <h1
+              className={`text-xl font-semibold tracking-tight font-['Outfit'] ${
+                isHalloweenMode ? "text-[#60c9b6]" : "text-purple-600"
+              }`}
+            >
               Integral
             </h1>
           </button>
@@ -104,14 +134,18 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                   href={`#${sectionId}`}
                   onClick={(e) => handleScrollToSection(e, sectionId)}
                   className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200 text-base ${
-                    isDark
-                      ? "text-slate-300 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]"
-                      : "text-slate-600 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]"
+                    isHalloweenMode
+                      ? "text-gray-300 hover:text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                      : isDark
+                        ? "text-slate-300 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]"
+                        : "text-slate-600 hover:text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.1)]"
                   }`}
                 >
                   <feature.icon
-                    className="w-5 h-5 mr-3 transition-colors"
-                    style={{ color: feature.color }}
+                    className={`w-5 h-5 mr-3 transition-colors ${
+                      isHalloweenMode ? "text-[#60c9b6]" : ""
+                    }`}
+                    style={isHalloweenMode ? {} : { color: feature.color }}
                   />
                   <span>{feature.name}</span>
                 </a>
@@ -122,7 +156,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         {/* Mobile Menu Footer */}
         <div
           className={`px-2 py-3 border-t ${
-            isDark ? "border-[rgba(255,255,255,0.1)]" : "border-slate-200"
+            isHalloweenMode
+              ? "border-[#60c9b6]/30"
+              : isDark
+                ? "border-[rgba(255,255,255,0.1)]"
+                : "border-slate-200"
           }`}
         >
           <div className="flex gap-2">
@@ -131,9 +169,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               size="icon"
               onClick={() => setMobileMenuOpen(false)}
               className={`h-11 w-11 rounded-xl ${
-                isDark
-                  ? "bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] text-white"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                isHalloweenMode
+                  ? "bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20 text-[#60c9b6]"
+                  : isDark
+                    ? "bg-[rgba(255,255,255,0.08)] hover:bg-[rgba(255,255,255,0.12)] text-white"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
               }`}
             >
               <PanelRightClose className="h-5 w-5" />
@@ -145,12 +185,16 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
               }}
               className={`flex-1 flex items-center justify-center px-3 py-2.5 rounded-xl transition-colors text-base font-medium ${
                 user
-                  ? isDark
-                    ? "bg-[rgba(16,185,129,0.2)] text-[#10B981] hover:bg-[rgba(16,185,129,0.3)]"
-                    : "bg-[rgba(16,185,129,0.1)] text-green-600 hover:bg-[rgba(16,185,129,0.2)]"
-                  : isDark
-                    ? "bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.3)]"
-                    : "bg-[rgba(139,92,246,0.1)] text-purple-600 hover:bg-[rgba(139,92,246,0.2)]"
+                  ? isHalloweenMode
+                    ? "bg-[#60c9b6]/20 text-[#60c9b6] hover:bg-[#60c9b6]/30"
+                    : isDark
+                      ? "bg-[rgba(16,185,129,0.2)] text-[#10B981] hover:bg-[rgba(16,185,129,0.3)]"
+                      : "bg-[rgba(16,185,129,0.1)] text-green-600 hover:bg-[rgba(16,185,129,0.2)]"
+                  : isHalloweenMode
+                    ? "bg-[#60c9b6]/20 text-[#60c9b6] hover:bg-[#60c9b6]/30"
+                    : isDark
+                      ? "bg-[rgba(139,92,246,0.2)] text-[#8B5CF6] hover:bg-[rgba(139,92,246,0.3)]"
+                      : "bg-[rgba(139,92,246,0.1)] text-purple-600 hover:bg-[rgba(139,92,246,0.2)]"
               }`}
             >
               {user ? (
