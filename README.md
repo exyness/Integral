@@ -1,7 +1,6 @@
-<div align="center">
-
 # Integral
 
+<div align="center">
 <img src="public/showcase/banner.gif" alt="Integral Banner" width="100%" />
 
 <p align="center">
@@ -17,8 +16,8 @@
   Built with React, TypeScript, Supabase, and Google Gemini AI
 </p>
 
-<p align="center">
-  <strong>The AI-Powered Productivity Platform for Modern Professionals</strong>
+<strong>Integral is an integral part of you Life</strong>
+
 </p>
 </div>
 
@@ -26,7 +25,7 @@
 
 ## Overview
 
-**Integral** is a cutting-edge, AI-powered productivity suite that unifies task management, note-taking, time tracking, journaling, and budgeting into one intelligent platform. Featuring a stunning **Liquid Ether** WebGL interface and powered by **RAG (Retrieval-Augmented Generation)** technology, Integral helps you organize your life with the power of AI.
+**Integral** is a cutting-edge, AI-powered productivity suite that unifies task management, note-taking, time tracking, journaling, and budgeting into one intelligent platform. Powered by **RAG (Retrieval-Augmented Generation)** technology and featuring an intelligent **AI Assistant**, Integral helps you organize your life with natural language commands and smart contextual insights.
 
 ## Live Demo
 
@@ -43,36 +42,42 @@ Use these credentials to explore the platform:
 - **Username:** `demo@integral.com`
 - **Password:** `integral`
 
+## Themed Modes
+
+Integral supports multiple visual themes to personalize your experience:
+
+- **Light Mode** - Clean, bright interface for daytime productivity
+- **Dark Mode** - Vibrant **Neon Purple/Fuchsia** theme for low-light environments
+- **Halloween Mode** - Spooky seasonal theme with **Liquid Ether** effects and custom animations
+
 ## Key Features
 
-| Module            | AI-Powered Capabilities                                                                                                    |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Dashboard**     | Unified hub with **Liquid Ether** visual effects and AI-driven insights                                                    |
-| **Tasks**         | **Smart Prioritization** and **Zombie Task Resurrection** to manage your workflow                                          |
-| **Notes**         | **AI Semantic Search** to chat with your second brain and find connections instantly                                       |
-| **Time Tracking** | **AI Focus Insights** and smart timers that adapt to your deep work patterns                                               |
-| **Pomodoro**      | **Smart Pomodoro** sessions with flow state analytics and productivity tracking                                            |
-| **Journal**       | **RAG Vector Search** to connect daily reflections with past entries and insights                                          |
-| **Budget**        | **Smart Budget Management** with visual icons, category tracking, recurring transactions, and RAG-powered expense insights |
-| **Accounts**      | **Secure AI Vault** with intelligent activity monitoring and usage analytics                                               |
+### Integral AI Assistant
 
-**Built on Modern Tech** - React 19, TypeScript, Supabase, Google Gemini AI, and WebGL.
+Your global command center for managing your entire digital life with natural language and smart mentions.
 
-**Seamless Experience** - Glass morphism UI, vibrant Dark Mode, Halloween themes, and real-time sync.
+- **Universal Control**: Create tasks, notes, journals, and transactions without leaving your current view.
+- **Smart Mentions**: Instantly route your commands to the right module:
+  - `@task` - Create tasks and reminders
+  - `@note` - Capture quick ideas
+  - `@journal` - Log daily reflections
+  - `@transaction` - Record expenses
+  - `@budget` - Set spending limits
+  - `@category` - Organize finances
+  - `@goal` - Track savings goals
+  - `@liability` - Manage debts
+  - `@transfer` - Move funds between accounts
+  - `@finance` - Manage financial accounts
+  - `@recurring` - Set up subscriptions
+  - `@account` - Secure credentials
+- **Context Awareness**: The assistant understands where you are and suggests relevant actions.
+- **Natural Language**: Just say "Remind me to buy milk tomorrow" or "Spent $50 on groceries" and let AI handle the rest.
 
-**Secure & Private** - Row-level security, encrypted data, and privacy-first architecture.
+The Dashboard serves as your unified hub with AI-driven insights and visual analytics across all productivity modules, giving you a comprehensive view of your day at a glance. Tasks features smart prioritization and zombie task resurrection to manage your workflow effectively with project-based organization. Notes provides AI semantic search to chat with your second brain and find connections instantly using RAG technology. Time Tracking offers AI focus insights and smart timers that adapt to your deep work patterns with persistent floating widgets. The Pomodoro module delivers smart sessions with flow state analytics and productivity tracking for optimal focus management. Journal uses RAG vector search to connect daily reflections with past entries and insights for meaningful self-discovery. Budget enables smart financial management with visual icons, category tracking, recurring transactions, and RAG-powered expense insights. Finally, Accounts provides a secure AI vault with intelligent activity monitoring and usage analytics for credential management.
 
 ## Technology Stack
 
-| Category             | Technologies                         | Features                                                    |
-| -------------------- | ------------------------------------ | ----------------------------------------------------------- |
-| **Frontend**         | React 19.2, TypeScript 5.9, Vite 7.2 | Latest React features, strict typing, lightning-fast builds |
-| **AI & ML**          | Google Gemini Flash & Embedding 001  | RAG, Vector Search, Semantic Analysis, Content Generation   |
-| **Visuals**          | Three.js, WebGL, Framer Motion       | **Liquid Ether** fluid simulations, smooth animations       |
-| **Styling**          | Tailwind CSS 4.1, Glass Morphism     | Modern utility-first CSS, premium visual aesthetics         |
-| **Backend**          | Supabase (Auth, DB, Vector Store)    | Real-time sync, pgvector for embeddings, RLS security       |
-| **Rich Text**        | Lexical Editor 0.38                  | Advanced text editing, extensible plugins                   |
-| **State Management** | TanStack Query v5, React Context     | Server state sync, optimistic updates                       |
+Frontend powered by React 19.2, TypeScript 5.9, and Vite 7.2 for lightning-fast builds with the latest React features. AI capabilities through Google Gemini Flash and Embedding 001 enable RAG, vector search, semantic analysis, and content generation. Stunning visuals with Three.js, WebGL, and Framer Motion deliver Liquid Ether fluid simulations and smooth animations. Modern styling via Tailwind CSS 4.1 with glass morphism aesthetics. Backend built on Supabase providing authentication, PostgreSQL database with pgvector for embeddings, and real-time sync with row-level security. Rich text editing powered by Lexical Editor 0.38 with extensible plugins. State management handled by TanStack Query v5 and React Context for server state sync and optimistic updates.
 
 ## Quick Start
 
@@ -111,14 +116,6 @@ bunx supabase gen types typescript --project-id YOUR_PROJECT_ID > src/integratio
 ```
 
 **Application will be available at:** `http://localhost:8080`
-
-## Themed Modes
-
-Integral supports multiple visual themes to personalize your experience:
-
-- **Light Mode** - Clean, bright interface for daytime productivity
-- **Dark Mode** - Vibrant **Neon Purple/Fuchsia** theme for low-light environments
-- **Halloween Mode** - Spooky seasonal theme with **Liquid Ether** effects and custom animations
 
 ## Contributing
 
