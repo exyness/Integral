@@ -2,7 +2,7 @@
 
 # Integral
 
-<img src="public/showcase/banner.webp" alt="Integral Banner" width="100%" />
+<img src="public/showcase/banner.gif" alt="Integral Banner" width="100%" />
 
 <p align="center">
   <img src="https://img.shields.io/badge/React-19.2-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React 19.2" />
