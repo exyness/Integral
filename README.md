@@ -32,9 +32,9 @@
 
 Check out the live application:
 
-<a href="https://integral-productivity.vercel.app/"><img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Demo" /></a>
+<a href="https://integral-beta.scntix.com/"><img src="https://img.shields.io/badge/Live_Demo-integral--beta.scntix.com-8E75B2?style=for-the-badge&logo=https://raw.githubusercontent.com/exyness/Integral/f5812272034464c600153a7fd9ac41f1fe06ae64/public/logo.svg&logoColor=white" alt="Live Demo" /></a>
 
-- **Vercel:** https://integral-productivity.vercel.app/
+- **Website:** https://integral-beta.scntix.com/
 
 ## Demo Account
 
@@ -45,16 +45,16 @@ Use these credentials to explore the platform:
 
 ## Key Features
 
-| Module            | AI-Powered Capabilities                                                                   |
-| ----------------- | ----------------------------------------------------------------------------------------- |
-| **Dashboard**     | Unified hub with **Liquid Ether** visual effects and AI-driven insights                   |
-| **Tasks**         | **Smart Prioritization** and **Zombie Task Resurrection** to manage your workflow         |
-| **Notes**         | **AI Semantic Search** to chat with your second brain and find connections instantly      |
-| **Time Tracking** | **AI Focus Insights** and smart timers that adapt to your deep work patterns              |
-| **Pomodoro**      | **Smart Pomodoro** sessions with flow state analytics and productivity tracking           |
-| **Journal**       | **RAG Vector Search** to connect daily reflections with past entries and insights         |
+| Module            | AI-Powered Capabilities                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Dashboard**     | Unified hub with **Liquid Ether** visual effects and AI-driven insights                                                    |
+| **Tasks**         | **Smart Prioritization** and **Zombie Task Resurrection** to manage your workflow                                          |
+| **Notes**         | **AI Semantic Search** to chat with your second brain and find connections instantly                                       |
+| **Time Tracking** | **AI Focus Insights** and smart timers that adapt to your deep work patterns                                               |
+| **Pomodoro**      | **Smart Pomodoro** sessions with flow state analytics and productivity tracking                                            |
+| **Journal**       | **RAG Vector Search** to connect daily reflections with past entries and insights                                          |
 | **Budget**        | **Smart Budget Management** with visual icons, category tracking, recurring transactions, and RAG-powered expense insights |
-| **Accounts**      | **Secure AI Vault** with intelligent activity monitoring and usage analytics              |
+| **Accounts**      | **Secure AI Vault** with intelligent activity monitoring and usage analytics                                               |
 
 **Built on Modern Tech** - React 19, TypeScript, Supabase, Google Gemini AI, and WebGL.
 
@@ -64,15 +64,15 @@ Use these credentials to explore the platform:
 
 ## Technology Stack
 
-| Category               | Technologies                         | Features                                                    |
-| ---------------------- | ------------------------------------ | ----------------------------------------------------------- |
-| **Frontend**           | React 19.2, TypeScript 5.9, Vite 7.2 | Latest React features, strict typing, lightning-fast builds |
-| **AI & ML**            | Google Gemini Flash & Embedding 001  | RAG, Vector Search, Semantic Analysis, Content Generation   |
-| **Visuals**            | Three.js, WebGL, Framer Motion       | **Liquid Ether** fluid simulations, smooth animations       |
-| **Styling**            | Tailwind CSS 4.1, Glass Morphism     | Modern utility-first CSS, premium visual aesthetics         |
-| **Backend**            | Supabase (Auth, DB, Vector Store)    | Real-time sync, pgvector for embeddings, RLS security       |
-| **Rich Text**          | Lexical Editor 0.38                  | Advanced text editing, extensible plugins                   |
-| **State Management**   | TanStack Query v5, React Context     | Server state sync, optimistic updates                       |
+| Category             | Technologies                         | Features                                                    |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------- |
+| **Frontend**         | React 19.2, TypeScript 5.9, Vite 7.2 | Latest React features, strict typing, lightning-fast builds |
+| **AI & ML**          | Google Gemini Flash & Embedding 001  | RAG, Vector Search, Semantic Analysis, Content Generation   |
+| **Visuals**          | Three.js, WebGL, Framer Motion       | **Liquid Ether** fluid simulations, smooth animations       |
+| **Styling**          | Tailwind CSS 4.1, Glass Morphism     | Modern utility-first CSS, premium visual aesthetics         |
+| **Backend**          | Supabase (Auth, DB, Vector Store)    | Real-time sync, pgvector for embeddings, RLS security       |
+| **Rich Text**        | Lexical Editor 0.38                  | Advanced text editing, extensible plugins                   |
+| **State Management** | TanStack Query v5, React Context     | Server state sync, optimistic updates                       |
 
 ## Quick Start
 
