@@ -13,11 +13,7 @@
 </p>
 
 <p align="center">
-  Built with React, TypeScript, Supabase, and Google Gemini AI
-</p>
-
-<strong>Integral is an integral part of you Life</strong>
-
+  <strong>Integral is an integral part of your Life</strong>
 </p>
 </div>
 
@@ -48,7 +44,7 @@ Integral supports multiple visual themes to personalize your experience:
 
 - **Light Mode** - Clean, bright interface for daytime productivity
 - **Dark Mode** - Vibrant **Neon Purple/Fuchsia** theme for low-light environments
-- **Halloween Mode** - Spooky seasonal theme with **Liquid Ether** effects and custom animations
+- **Halloween Mode** - Spooky seasonal theme with custom animations
 
 ## Key Features
 
@@ -73,7 +69,29 @@ Your global command center for managing your entire digital life with natural la
 - **Context Awareness**: The assistant understands where you are and suggests relevant actions.
 - **Natural Language**: Just say "Remind me to buy milk tomorrow" or "Spent $50 on groceries" and let AI handle the rest.
 
-The Dashboard serves as your unified hub with AI-driven insights and visual analytics across all productivity modules, giving you a comprehensive view of your day at a glance. Tasks features smart prioritization and zombie task resurrection to manage your workflow effectively with project-based organization. Notes provides AI semantic search to chat with your second brain and find connections instantly using RAG technology. Time Tracking offers AI focus insights and smart timers that adapt to your deep work patterns with persistent floating widgets. The Pomodoro module delivers smart sessions with flow state analytics and productivity tracking for optimal focus management. Journal uses RAG vector search to connect daily reflections with past entries and insights for meaningful self-discovery. Budget enables smart financial management with visual icons, category tracking, recurring transactions, and RAG-powered expense insights. Finally, Accounts provides a secure AI vault with intelligent activity monitoring and usage analytics for credential management.
+### Dashboard
+Unified hub with AI-driven insights and visual analytics across all productivity modules.
+
+### Tasks
+**Smart Prioritization** and **Zombie Task Resurrection** to manage your workflow effectively with project-based organization.
+
+### Notes
+**AI Semantic Search** to chat with your second brain and find connections instantly using RAG technology.
+
+### Time Tracking
+**AI Focus Insights** and smart timers that adapt to your deep work patterns with persistent floating widgets.
+
+### Pomodoro
+**Smart Pomodoro** sessions with flow state analytics and productivity tracking for optimal focus management.
+
+### Journal
+**RAG Vector Search** to connect daily reflections with past entries and insights for meaningful self-discovery.
+
+### Budget
+**Smart Budget Management** with visual icons, category tracking, recurring transactions, and RAG-powered expense insights.
+
+### Accounts
+**Secure AI Vault** with intelligent activity monitoring and usage analytics for credential management.
 
 ## Technology Stack
 
