@@ -11,7 +11,6 @@ import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
 import React, { useEffect } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import "./lexical-editor.css";
-import { RichTextRenderer } from ".";
 
 interface RichTextRendererProps {
   content: string;

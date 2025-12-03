@@ -54,6 +54,7 @@ export const CategoryModal: React.FC<CategoryModalProps> = ({
     is_active: true,
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     if (category) {
       setFormData({

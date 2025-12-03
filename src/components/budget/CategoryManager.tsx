@@ -35,6 +35,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
   const [isManaging, setIsManaging] = useState(false);
 
   // Listen for external trigger to add category
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   React.useEffect(() => {
     if (triggerAdd && triggerAdd > 0) {
       setSelectedType("expense");

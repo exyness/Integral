@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { BookOpen, Folder, Sparkles, Tag, Wand2, X } from "lucide-react";
+import { BookOpen, Sparkles, Tag, Wand2, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { batSwoop, witchTakeoff } from "@/assets";
 import { Calendar } from "@/components/ui/Calendar.tsx";

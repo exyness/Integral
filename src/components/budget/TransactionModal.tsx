@@ -39,7 +39,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     category_id: string;
     account_id: string;
     to_account_id: string;
-    type: CategoryType | "transfer";
+    type: "expense" | "income" | "transfer";
     transaction_date: string;
   }>({
     budget_id: budgetId || null,
@@ -52,6 +52,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     transaction_date: new Date().toISOString().split("T")[0],
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     if (transaction) {
       setFormData({
@@ -94,7 +95,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         account_id: formData.account_id || null,
         to_account_id:
           formData.type === "transfer" ? formData.to_account_id : null,
-        type: formData.type as any,
+        type: formData.type,
         transaction_date: formData.transaction_date,
       });
 

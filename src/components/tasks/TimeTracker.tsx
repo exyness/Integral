@@ -1,13 +1,9 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
-  Check,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Edit2,
   Edit3,
-  History,
   Pause,
   Play,
   RadioTower,

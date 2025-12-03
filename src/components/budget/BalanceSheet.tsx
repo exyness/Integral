@@ -1,6 +1,16 @@
-import { Plus } from "lucide-react";
+import { motion } from "framer-motion";
+import { DollarSign, Plus, TrendingUp } from "lucide-react";
 import React from "react";
-import { batHang, cardHauntedHouse, webCornerLeft } from "@/assets";
+import {
+  batHang,
+  cardHauntedHouse,
+  ghostGenie,
+  ghostScare,
+  pumpkinScary,
+  skullStaring,
+  spiderSharpHanging,
+  webCornerLeft,
+} from "@/assets";
 import { AccountCard } from "@/components/budget/AccountCard";
 import { NetWorthChart } from "@/components/budget/NetWorthChart";
 import { GlassCard } from "@/components/GlassCard";
@@ -283,16 +293,110 @@ export const BalanceSheetTab: React.FC<BalanceSheetTabProps> = ({
               ))}
           </div>
           {accounts.filter((acc) => acc.include_in_total).length === 0 && (
-            <div
-              className={`text-center py-12 rounded-xl border-2 border-dashed ${
-                isDark ? "border-white/10" : "border-gray-200"
-              }`}
-            >
-              <p
-                className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            <div className="relative overflow-hidden rounded-xl min-h-[300px] flex items-center justify-center p-8">
+              {isHalloweenMode && (
+                <>
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-5 z-0"
+                    style={{
+                      backgroundImage: `url(${cardHauntedHouse})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                  <motion.img
+                    src={pumpkinScary}
+                    alt=""
+                    className="absolute top-8 right-8 w-12 md:w-16 opacity-10 pointer-events-none z-0"
+                    style={{
+                      filter: "drop-shadow(0 0 20px rgba(96, 201, 182, 0.4))",
+                    }}
+                    animate={{
+                      rotate: [0, 10, -10, 0],
+                      opacity: [0.1, 0.15, 0.1],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  <motion.img
+                    src={spiderSharpHanging}
+                    alt=""
+                    className="absolute bottom-8 left-8 w-12 opacity-8 pointer-events-none z-0"
+                    style={{
+                      filter: "drop-shadow(0 0 15px rgba(96, 201, 182, 0.3))",
+                    }}
+                    animate={{
+                      y: [0, 15, 0],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </>
+              )}
+              <motion.div
+                className="relative z-10 text-center max-w-md mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                No accounts yet. Click "Add Account" to get started.
-              </p>
+                {isHalloweenMode ? (
+                  <motion.img
+                    src={ghostScare}
+                    alt=""
+                    className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 opacity-80"
+                    style={{
+                      filter: "drop-shadow(0 0 30px rgba(96, 201, 182, 0.5))",
+                    }}
+                    animate={{
+                      y: [0, -8, 0],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ) : (
+                  <DollarSign
+                    className={`w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 ${
+                      isDark ? "text-[#71717A]" : "text-gray-300"
+                    }`}
+                  />
+                )}
+                <h3
+                  className={`text-xl md:text-2xl font-bold mb-3 ${
+                    isHalloweenMode
+                      ? "text-[#60c9b6] font-creepster tracking-wide"
+                      : isDark
+                        ? "text-white"
+                        : "text-gray-900"
+                  }`}
+                >
+                  {isHalloweenMode
+                    ? "No Treasure Vaults Found"
+                    : "No Accounts Yet"}
+                </h3>
+                <p
+                  className={`text-sm md:text-base ${
+                    isHalloweenMode
+                      ? "text-[#60c9b6]/70"
+                      : isDark
+                        ? "text-[#B4B4B8]"
+                        : "text-gray-600"
+                  }`}
+                >
+                  {isHalloweenMode
+                    ? "Your financial realm awaits its first treasure. Click 'Add Account' to begin your wealth journey."
+                    : "No accounts yet. Click 'Add Account' to get started."}
+                </p>
+              </motion.div>
             </div>
           )}
         </div>
@@ -338,16 +442,110 @@ export const BalanceSheetTab: React.FC<BalanceSheetTabProps> = ({
               ))}
           </div>
           {liabilities.filter((lib) => lib.is_active).length === 0 && (
-            <div
-              className={`text-center py-12 rounded-xl border-2 border-dashed ${
-                isDark ? "border-white/10" : "border-gray-200"
-              }`}
-            >
-              <p
-                className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
+            <div className="relative overflow-hidden rounded-xl min-h-[300px] flex items-center justify-center p-8">
+              {isHalloweenMode && (
+                <>
+                  <div
+                    className="absolute inset-0 pointer-events-none opacity-5 z-0"
+                    style={{
+                      backgroundImage: `url(${cardHauntedHouse})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                  <motion.img
+                    src={skullStaring}
+                    alt=""
+                    className="absolute top-8 left-8 w-12 md:w-16 opacity-10 pointer-events-none z-0"
+                    style={{
+                      filter: "drop-shadow(0 0 20px rgba(96, 201, 182, 0.4))",
+                    }}
+                    animate={{
+                      rotate: [0, -15, 15, 0],
+                      opacity: [0.1, 0.15, 0.1],
+                    }}
+                    transition={{
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  <motion.img
+                    src={batHang}
+                    alt=""
+                    className="absolute bottom-8 right-8 w-10 opacity-8 pointer-events-none z-0"
+                    style={{
+                      filter: "drop-shadow(0 0 15px rgba(96, 201, 182, 0.3))",
+                    }}
+                    animate={{
+                      x: [0, -10, 0],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                </>
+              )}
+              <motion.div
+                className="relative z-10 text-center max-w-md mx-auto"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
               >
-                No liabilities yet. Click "Add Liability" to track debts.
-              </p>
+                {isHalloweenMode ? (
+                  <motion.img
+                    src={ghostGenie}
+                    alt=""
+                    className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 opacity-80"
+                    style={{
+                      filter: "drop-shadow(0 0 30px rgba(96, 201, 182, 0.5))",
+                    }}
+                    animate={{
+                      y: [0, -8, 0],
+                      scale: [1, 1.05, 1],
+                    }}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                ) : (
+                  <TrendingUp
+                    className={`w-20 h-20 md:w-24 md:h-24 mx-auto mb-6 ${
+                      isDark ? "text-[#71717A]" : "text-gray-300"
+                    }`}
+                  />
+                )}
+                <h3
+                  className={`text-xl md:text-2xl font-bold mb-3 ${
+                    isHalloweenMode
+                      ? "text-[#60c9b6] font-creepster tracking-wide"
+                      : isDark
+                        ? "text-white"
+                        : "text-gray-900"
+                  }`}
+                >
+                  {isHalloweenMode
+                    ? "No Dark Debts Lurking"
+                    : "No Liabilities Yet"}
+                </h3>
+                <p
+                  className={`text-sm md:text-base ${
+                    isHalloweenMode
+                      ? "text-[#60c9b6]/70"
+                      : isDark
+                        ? "text-[#B4B4B8]"
+                        : "text-gray-600"
+                  }`}
+                >
+                  {isHalloweenMode
+                    ? "Your financial castle is debt-free. May it forever remain uncursed by liabilities."
+                    : "No liabilities yet. Click 'Add Liability' to track debts."}
+                </p>
+              </motion.div>
             </div>
           )}
         </div>

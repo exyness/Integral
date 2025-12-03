@@ -48,6 +48,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
     color: COLORS[0],
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     if (initialData) {
       setFormData({

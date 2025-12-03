@@ -5,12 +5,10 @@ import {
   Edit2,
   MoreVertical,
   Plus,
-  Target,
   Trash2,
   TrendingUp,
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
-import { data } from "react-router-dom";
 import { batGlide, pumpkinWitchhat } from "@/assets";
 import { IconRenderer } from "@/contexts/IconPickerContext";
 import { useTheme } from "@/contexts/ThemeContext";

@@ -47,7 +47,6 @@ import {
   skullStaring,
   spiderCuteHanging,
   spiderHairyCrawling,
-  webCenter,
   webCenterHanging,
   webCornerLeft,
   witchBrew,

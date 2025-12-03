@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/correctness/useExhaustiveDependencies: false positive */
 import { motion } from "framer-motion";
-import { Brain, Lightbulb, Skull, Sparkles } from "lucide-react";
+import { Lightbulb, Skull, Sparkles } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { ghostScare, skullStaring } from "@/assets";
 import { GlassCard } from "@/components/GlassCard";

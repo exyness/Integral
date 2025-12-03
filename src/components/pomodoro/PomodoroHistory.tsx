@@ -1,12 +1,9 @@
 import { motion } from "framer-motion";
 import {
   CheckCircle,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   Coffee,
   Edit2,
-  Filter,
   Save,
   Search,
   Trash2,

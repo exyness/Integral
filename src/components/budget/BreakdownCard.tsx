@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import React from "react";
 import {
   Bar,
@@ -10,8 +10,8 @@ import {
   ResponsiveContainer,
   Tooltip,
   XAxis,
-  YAxis,
 } from "recharts";
+import { batSwoop, ghostDroopy, pumpkinBlocky } from "@/assets";
 import { IconRenderer } from "@/contexts/IconPickerContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -67,7 +67,15 @@ export const BreakdownCard: React.FC<BreakdownCardProps> = ({
     amount: point.amount,
   }));
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div
@@ -184,12 +192,61 @@ export const BreakdownCard: React.FC<BreakdownCardProps> = ({
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <p
-              className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+          <div className="relative overflow-hidden h-full flex items-center justify-center">
+            {isHalloweenMode && (
+              <motion.img
+                src={type === "assets" ? pumpkinBlocky : batSwoop}
+                alt=""
+                className="absolute top-4 right-4 w-8 opacity-10 pointer-events-none z-0"
+                animate={{
+                  rotate: type === "assets" ? [0, 5, -5, 0] : undefined,
+                  x: type === "liabilities" ? [0, 10, 0] : undefined,
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            )}
+            <motion.div
+              className="relative z-10"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
             >
-              No history data yet
-            </p>
+              {isHalloweenMode ? (
+                <motion.img
+                  src={ghostDroopy}
+                  alt=""
+                  className="w-16 h-16 mx-auto mb-2 opacity-60"
+                  animate={{
+                    y: [0, -5, 0],
+                  }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              ) : (
+                <DollarSign
+                  className={`w-16 h-16 mx-auto mb-2 ${isDark ? "text-[#71717A]" : "text-gray-300"}`}
+                />
+              )}
+              <p
+                className={`text-sm ${
+                  isHalloweenMode
+                    ? "text-[#60c9b6]/70"
+                    : isDark
+                      ? "text-gray-500"
+                      : "text-gray-400"
+                }`}
+              >
+                {isHalloweenMode
+                  ? "No mystical records found"
+                  : "No history data yet"}
+              </p>
+            </motion.div>
           </div>
         )}
       </div>
@@ -208,11 +265,7 @@ export const BreakdownCard: React.FC<BreakdownCardProps> = ({
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{ backgroundColor: `${item.color}20` }}
               >
-                <IconRenderer
-                  icon={item.icon}
-                  className="w-4 h-4"
-                  style={{ color: item.color }}
-                />
+                <IconRenderer icon={item.icon} className="w-4 h-4" />
               </div>
               <span
                 className={`text-sm font-medium ${

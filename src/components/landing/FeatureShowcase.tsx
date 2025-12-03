@@ -7,7 +7,6 @@ import {
   KeyRound,
   Timer,
   Wallet,
-  X,
 } from "lucide-react";
 import React, { useEffect, useId, useRef, useState } from "react";
 

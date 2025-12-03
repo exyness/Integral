@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Loader2, Sparkles } from "lucide-react";
 import React from "react";
-import { batSwoop, ghostScare, spiderCuteHanging, witchFly } from "@/assets";
+import { batSwoop, ghostScare, spiderCuteHanging } from "@/assets";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFinancialHorror } from "@/hooks/budget/useFinancialHorror";
 import { useCurrency } from "@/hooks/useCurrency";

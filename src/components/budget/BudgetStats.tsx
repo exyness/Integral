@@ -2,11 +2,8 @@ import { motion } from "framer-motion";
 import {
   ArrowDownRight,
   ArrowUpRight,
-  DollarSign,
   PieChart,
   Repeat,
-  TrendingDown,
-  TrendingUp,
   Wallet,
 } from "lucide-react";
 import React from "react";
@@ -23,12 +20,12 @@ import {
   witchFly,
 } from "@/assets";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useCurrency } from "@/hooks/useCurrency";
 import {
   useAccountsQuery,
   useRecurringTransactionsQuery,
 } from "@/hooks/queries/useBudgetsQuery";
 import { useLiabilitiesQuery } from "@/hooks/queries/useLiabilities";
+import { useCurrency } from "@/hooks/useCurrency";
 import { Budget, BudgetTransaction } from "@/types/budget";
 
 interface BudgetStatsProps {

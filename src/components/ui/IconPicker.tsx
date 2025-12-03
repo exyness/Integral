@@ -66,6 +66,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
   }, [localSearch, setSearchTerm]);
 
   // Sync local search when modal opens/closes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     if (!isOpen) {
       setLocalSearch("");
@@ -147,6 +148,7 @@ export const IconPicker: React.FC<IconPickerProps> = ({
   const selectedIcon = icons.find((icon) => icon.name === value);
 
   // Update position on scroll and resize (like Calendar)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   React.useEffect(() => {
     if (!isOpen) return;
 

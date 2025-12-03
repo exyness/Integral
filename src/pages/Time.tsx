@@ -6,7 +6,6 @@ import {
   cardHauntedHouse,
   catWitchHat,
   ghostGenie,
-  pumpkinWitchhat,
   spiderHairyCrawling,
   webCornerLeft,
 } from "@/assets";

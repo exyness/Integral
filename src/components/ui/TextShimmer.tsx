@@ -1,11 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  type CSSProperties,
-  type ElementType,
-  type JSX,
-  memo,
-  useMemo,
-} from "react";
+import { type CSSProperties, type ElementType, memo, useMemo } from "react";
 import { cn } from "@/lib/utils";
 
 export type TextShimmerProps = {

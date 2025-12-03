@@ -1,5 +1,8 @@
 import { useContext } from "react";
-import { CurrencyContext } from "@/contexts/CurrencyContext";
+import {
+  CurrencyContext,
+  type FormatOptions,
+} from "@/contexts/CurrencyContext";
 
 export const useCurrency = () => {
   const context = useContext(CurrencyContext);
@@ -7,17 +10,22 @@ export const useCurrency = () => {
     throw new Error("useCurrency must be used within a CurrencyProvider");
   }
 
-  // Create backward-compatible wrapper
-  const formatAmount = (amount: number, decimalsOrOptions?: number | any) => {
+  const formatAmount = (
+    amount: number,
+    decimalsOrOptions?: number | FormatOptions,
+  ) => {
     // If it's a number, use the simple format
     if (
       typeof decimalsOrOptions === "number" ||
       decimalsOrOptions === undefined
     ) {
-      return context.formatAmountSimple(amount, decimalsOrOptions);
+      return context.formatAmountSimple(
+        amount,
+        decimalsOrOptions as number | undefined,
+      );
     }
     // Otherwise use the advanced format
-    return context.formatAmount(amount, decimalsOrOptions);
+    return context.formatAmount(amount, decimalsOrOptions as FormatOptions);
   };
 
   return {

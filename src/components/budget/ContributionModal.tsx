@@ -219,7 +219,7 @@ export const ContributionModal: React.FC<ContributionModalProps> = ({
               }
               options={accounts.map((acc) => ({
                 value: acc.id,
-                label: (acc as any).name || acc.title,
+                label: acc.title,
               }))}
               placeholder="Select account"
             />

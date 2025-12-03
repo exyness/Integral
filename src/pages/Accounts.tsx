@@ -46,7 +46,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/DropdownMenu.tsx";
-import { ScrollArea } from "../components/ui/ScrollArea";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAccounts } from "../hooks/useAccounts";
 import { Folder, useFolders } from "../hooks/useFolders";

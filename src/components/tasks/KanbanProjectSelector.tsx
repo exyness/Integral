@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Folder, Ghost, Kanban, Plus, Search } from "lucide-react";
+import { Folder, Kanban, Search } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import {
   batGlide,

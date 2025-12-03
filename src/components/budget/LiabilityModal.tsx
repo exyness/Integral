@@ -43,6 +43,7 @@ export const LiabilityModal: React.FC<LiabilityModalProps> = ({
   const [notes, setNotes] = useState("");
   const [isActive, setIsActive] = useState(true);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);

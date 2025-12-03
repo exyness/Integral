@@ -1,5 +1,5 @@
 import { AlertTriangle } from "lucide-react";
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 import { GlassCard } from "./GlassCard";
 
 interface Props {
