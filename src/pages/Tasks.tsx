@@ -55,6 +55,7 @@ export const Tasks: React.FC = () => {
     deleteTask,
     updateTask,
     isCreating,
+    isDeleting,
     resurrectTask,
   } = useTasks();
   const { addToGrimoire } = useSpookyAI();
@@ -204,7 +205,16 @@ export const Tasks: React.FC = () => {
     };
   }, [currentView]);
 
-  const taskSelection = useTaskSelection({ tasks });
+  const { filteredTasks, sortedTasks } = useTaskFiltering({
+    tasks,
+    filter,
+    sortBy,
+    searchTerm,
+    projectFilter,
+    dateRange,
+  });
+
+  const taskSelection = useTaskSelection({ tasks: sortedTasks });
   const {
     selectedTasks,
     handleSelectTask,
@@ -223,15 +233,6 @@ export const Tasks: React.FC = () => {
       await deleteTask(taskId);
     },
     onSelectionClear: taskSelection.clearSelection,
-  });
-
-  const { filteredTasks, sortedTasks } = useTaskFiltering({
-    tasks,
-    filter,
-    sortBy,
-    searchTerm,
-    projectFilter,
-    dateRange,
   });
 
   const { projects, getTasksByProject } = useProjects(tasks);
@@ -797,7 +798,7 @@ export const Tasks: React.FC = () => {
 
       <ConfirmationModal
         isOpen={!!taskToDelete}
-        onClose={() => setTaskToDelete(null)}
+        onClose={() => !isDeleting && setTaskToDelete(null)}
         onConfirm={async () => {
           if (taskToDelete) {
             try {
@@ -824,16 +825,18 @@ export const Tasks: React.FC = () => {
         }
         confirmText="Delete"
         type="danger"
+        isLoading={isDeleting}
       />
 
       <ConfirmationModal
         isOpen={showBulkDeleteModal}
-        onClose={() => setShowBulkDeleteModal(false)}
+        onClose={() => !isDeleting && setShowBulkDeleteModal(false)}
         onConfirm={confirmBulkDelete}
         title="Delete Selected Tasks"
         description={`Are you sure you want to delete ${selectedTasks.length} selected tasks? This action cannot be undone.`}
         confirmText={`Delete ${selectedTasks.length} Tasks`}
         type="danger"
+        isLoading={isDeleting}
       />
 
       <ZombieTaskModal

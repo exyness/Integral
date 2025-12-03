@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
-import React, { useState } from "react";
-import { createPortal } from "react-dom";
+import React from "react";
 import { Virtuoso } from "react-virtuoso";
 import {
   batGlide,
@@ -10,7 +9,6 @@ import {
   ghostScare,
   spiderHairyCrawling,
 } from "@/assets";
-import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Task } from "@/types/task";
 import { TaskItem } from "./TaskItem";
@@ -37,29 +35,6 @@ export const TaskList: React.FC<TaskListProps> = ({
   isManageMode = false,
 }) => {
   const { isDark, isHalloweenMode } = useTheme();
-  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleDeleteClick = (task: Task) => {
-    setTaskToDelete(task);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!taskToDelete) return;
-    setIsDeleting(true);
-    try {
-      await onDeleteTask(taskToDelete.id);
-      setTaskToDelete(null);
-    } catch (error) {
-      console.error("Failed to delete task:", error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setTaskToDelete(null);
-  };
 
   if (tasks.length === 0) {
     return (
@@ -169,21 +144,6 @@ export const TaskList: React.FC<TaskListProps> = ({
     );
   }
 
-  const modalContent = (
-    <ConfirmationModal
-      isOpen={!!taskToDelete}
-      onClose={handleDeleteCancel}
-      onConfirm={handleDeleteConfirm}
-      title="Delete Task"
-      description="Are you sure you want to delete this task?"
-      itemTitle={taskToDelete?.title}
-      itemDescription={taskToDelete?.description}
-      confirmText="Delete"
-      type="danger"
-      isLoading={isDeleting}
-    />
-  );
-
   return (
     <div className="relative overflow-hidden rounded-xl min-h-[200px]">
       {isHalloweenMode && (
@@ -250,7 +210,7 @@ export const TaskList: React.FC<TaskListProps> = ({
                 isSelected={selectedTasks.includes(task.id)}
                 onSelect={() => onSelectTask(task.id)}
                 onToggle={() => onToggleTask(task.id)}
-                onDelete={() => handleDeleteClick(task)}
+                onDelete={() => onDeleteTask(task.id)}
                 onClick={() => onTaskClick(task.id)}
                 isCompact={isCompact}
                 isManageMode={isManageMode}
@@ -259,10 +219,6 @@ export const TaskList: React.FC<TaskListProps> = ({
           )}
         />
       </div>
-
-      {/* Render modal in portal to document.body */}
-      {typeof document !== "undefined" &&
-        createPortal(modalContent, document.body)}
     </div>
   );
 };

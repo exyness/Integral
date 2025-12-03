@@ -58,6 +58,9 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   );
 
   const filterOptions = [
+    { value: "today", label: "Today" },
+    { value: "tomorrow", label: "Tomorrow" },
+    { value: "next7days", label: "Next 7 Days" },
     { value: "pending", label: "Pending" },
     { value: "all", label: "All Tasks" },
     { value: "completed", label: "Completed" },
