@@ -105,11 +105,13 @@ export function ExpandableScreen({
 interface ExpandableScreenTriggerProps {
   children: ReactNode;
   className?: string;
+  childrenClassName?: string;
 }
 
 export function ExpandableScreenTrigger({
   children,
   className = "",
+  childrenClassName = "",
 }: ExpandableScreenTriggerProps) {
   const { isExpanded, expand, layoutId, triggerRadius } = useExpandableScreen();
 
@@ -134,7 +136,7 @@ export function ExpandableScreenTrigger({
             exit={{ opacity: 0, scale: 0.8 }}
             layout={false}
             onClick={expand}
-            className="relative cursor-pointer"
+            className={cn("relative cursor-pointer", childrenClassName)}
           >
             {children}
           </motion.div>
