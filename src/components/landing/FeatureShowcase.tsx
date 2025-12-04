@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   BookOpen,
   CheckCircle2,
@@ -8,20 +8,33 @@ import {
   Timer,
   Wallet,
 } from "lucide-react";
-import React, { useEffect, useId, useRef, useState } from "react";
-
+import React, { useState } from "react";
+import {
+  ExpandableScreen,
+  ExpandableScreenContent,
+  ExpandableScreenTrigger,
+} from "@/components/ui/expandable-screen";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useOutsideClick } from "@/hooks/useOutsideClick";
 
 interface FeatureShowcaseProps {
   isDark: boolean;
 }
 
+interface Showcase {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  color: string;
+  imagePosition: string;
+  features: string[];
+  coverImage: string;
+  galleryImages: string[];
+}
+
 export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
   const { isHalloweenMode } = useTheme();
-  const [active, setActive] = useState<(typeof showcases)[number] | null>(null);
-  const id = useId();
-  const ref = useRef<HTMLDivElement>(null);
+  const [activeShowcase, setActiveShowcase] = useState<Showcase | null>(null);
 
   const getFeatureColor = (originalColor: string) => {
     return isHalloweenMode ? "#60c9b6" : originalColor;
@@ -35,7 +48,7 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
 
   const themeFolder = getThemeFolder();
 
-  const showcases = [
+  const showcases: Showcase[] = [
     {
       id: "tasks",
       icon: CheckCircle2,
@@ -191,32 +204,12 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
     },
   ];
 
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setActive(null);
-      }
-    }
-
-    if (active) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [active]);
-
-  useOutsideClick(ref, () => setActive(null));
-
   return (
     <section
       id="features-in-action"
       className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8"
     >
       <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -237,251 +230,235 @@ export const FeatureShowcase: React.FC<FeatureShowcaseProps> = ({ isDark }) => {
           </h2>
         </motion.div>
 
-        {/* Backdrop Overlay */}
-        <AnimatePresence>
-          {active && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Expanded Card View */}
-        <AnimatePresence>
-          {active ? (
-            <div className="fixed inset-0 grid place-items-center z-50 p-4">
-              <motion.div
-                layoutId={`card-${active.id}-${id}`}
-                ref={ref}
-                className={`w-full max-w-5xl max-h-[90vh] overflow-y-auto mobile-scrollbar-hide rounded-3xl shadow-2xl ${
-                  isDark ? "bg-[#1A1A1F]" : "bg-white"
-                }`}
-              >
-                <motion.div
-                  layoutId={`image-${active.id}-${id}`}
-                  className="relative"
-                >
-                  <img
-                    src={active.coverImage}
-                    alt={active.title}
-                    className="w-full h-48 md:h-64 lg:h-80 object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: `linear-gradient(to bottom, transparent 0%, ${
-                        isDark ? "#1A1A1F" : "#ffffff"
-                      } 100%)`,
-                    }}
-                  />
-                </motion.div>
-
-                <div className="p-4 sm:p-6 md:p-8">
-                  <div className="flex items-start gap-4 mb-6">
-                    <div
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
-                      style={{
-                        backgroundColor: `${getFeatureColor(active.color)}20`,
-                      }}
-                    >
-                      <active.icon
-                        className="w-8 h-8"
-                        style={{ color: getFeatureColor(active.color) }}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <motion.h3
-                        layoutId={`title-${active.id}-${id}`}
-                        className={`text-2xl md:text-3xl font-bold mb-2 ${
-                          isDark ? "text-white" : "text-gray-900"
-                        }`}
-                        style={{ color: getFeatureColor(active.color) }}
-                      >
-                        {active.title}
-                      </motion.h3>
-                      <motion.p
-                        layoutId={`description-${active.id}-${id}`}
-                        className={`text-base md:text-lg ${
-                          isDark ? "text-gray-300" : "text-gray-600"
-                        }`}
-                      >
-                        {active.description}
-                      </motion.p>
-                    </div>
-                  </div>
-
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-6"
-                  >
-                    <div>
-                      <h4
-                        className={`text-lg font-semibold mb-3 ${
-                          isDark ? "text-white" : "text-gray-900"
-                        }`}
-                      >
-                        Key Features
-                      </h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        {active.features.map((feature) => (
-                          <div
-                            key={feature}
-                            className={`flex items-center space-x-2 p-3 rounded-lg ${
-                              isDark ? "bg-white/5" : "bg-gray-100"
-                            }`}
-                          >
-                            <div
-                              className="w-2 h-2 rounded-full shrink-0"
-                              style={{
-                                backgroundColor: getFeatureColor(active.color),
-                              }}
-                            />
-                            <span
-                              className={`text-sm font-medium ${
-                                isDark ? "text-gray-300" : "text-gray-700"
-                              }`}
-                            >
-                              {feature}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4
-                        className={`text-lg font-semibold mb-3 ${
-                          isDark ? "text-white" : "text-gray-900"
-                        }`}
-                      >
-                        Gallery
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {active.galleryImages.slice(0, 6).map((img, idx) => (
-                          <div
-                            key={idx}
-                            className="aspect-video rounded-lg overflow-hidden bg-gray-100"
-                          >
-                            <img
-                              src={img}
-                              alt={`${active.title} screenshot ${idx + 1}`}
-                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                              onError={(e) => {
-                                e.currentTarget.style.opacity = "0.3";
-                              }}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            </div>
-          ) : null}
-        </AnimatePresence>
-
-        {/* Card Grid */}
-        <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-fr">
           {showcases.map((showcase, index) => {
-            const isLarge = index === 0 || index === 3;
             return (
-              <motion.li
-                layoutId={`card-${showcase.id}-${id}`}
+              <div
                 key={showcase.id}
-                onClick={() => setActive(showcase)}
-                className={`rounded-3xl cursor-pointer overflow-hidden group ${
-                  isDark
-                    ? "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.08)] border-transparent"
-                    : "bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 shadow-sm hover:shadow-md"
-                } transition-all duration-300 ${
-                  isLarge ? "md:col-span-2" : "md:col-span-1"
+                className={`flex ${
+                  index === 0 || index === 3
+                    ? "md:col-span-2 lg:col-span-2"
+                    : "md:col-span-1"
                 }`}
               >
-                <div
-                  className={`h-full flex ${isLarge ? "flex-col md:flex-row" : "flex-col"}`}
+                <ExpandableScreen
+                  layoutId={`showcase-${showcase.id}`}
+                  triggerRadius="24px"
+                  contentRadius="24px"
+                  animationDuration={0.4}
                 >
-                  <motion.div
-                    layoutId={`image-${showcase.id}-${id}`}
-                    className={`${isLarge ? "w-full md:w-1/2" : "w-full"}`}
+                  <ExpandableScreenTrigger
+                    className="flex-1"
+                    childrenClassName="h-full"
                   >
-                    <div className="h-full min-h-[200px] relative overflow-hidden">
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          background: `linear-gradient(135deg, ${getFeatureColor(
-                            showcase.color,
-                          )}10 0%, ${getFeatureColor(showcase.color)}05 100%)`,
-                        }}
-                      >
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <showcase.icon
-                            className="w-24 h-24 opacity-10"
-                            style={{ color: getFeatureColor(showcase.color) }}
-                          />
+                    <div
+                      onClick={() => setActiveShowcase(showcase)}
+                      className={`h-full min-h-[320px] rounded-3xl cursor-pointer overflow-hidden group ${
+                        isDark
+                          ? "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.08)] border-transparent"
+                          : "bg-white hover:bg-gray-50 border-2 border-gray-300 hover:border-gray-400 shadow-sm hover:shadow-md"
+                      } transition-all duration-300`}
+                    >
+                      <div className="h-full flex flex-col">
+                        <div className="w-full shrink-0">
+                          <div className="h-48 md:h-56 relative overflow-hidden">
+                            <div
+                              className="absolute inset-0"
+                              style={{
+                                background: `linear-gradient(135deg, ${getFeatureColor(
+                                  showcase.color,
+                                )}10 0%, ${getFeatureColor(showcase.color)}05 100%)`,
+                              }}
+                            >
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <showcase.icon
+                                  className="w-24 h-24 opacity-10"
+                                  style={{
+                                    color: getFeatureColor(showcase.color),
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            {showcase.coverImage && (
+                              <img
+                                src={showcase.coverImage}
+                                alt={showcase.title}
+                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none";
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-6 flex flex-col justify-between w-full flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div
+                              className="w-10 h-10 rounded-lg flex items-center justify-center"
+                              style={{
+                                backgroundColor: `${getFeatureColor(showcase.color)}20`,
+                              }}
+                            >
+                              <showcase.icon
+                                className="w-5 h-5"
+                                style={{
+                                  color: getFeatureColor(showcase.color),
+                                }}
+                              />
+                            </div>
+                            <h3
+                              className={`text-lg font-bold ${
+                                isDark ? "text-white" : "text-gray-900"
+                              }`}
+                              style={{ color: getFeatureColor(showcase.color) }}
+                            >
+                              {showcase.title}
+                            </h3>
+                          </div>
+                          <p
+                            className={`text-sm ${
+                              isDark ? "text-gray-400" : "text-gray-600"
+                            } line-clamp-3`}
+                          >
+                            {showcase.description}
+                          </p>
                         </div>
                       </div>
-                      {showcase.coverImage && (
+                    </div>
+                  </ExpandableScreenTrigger>
+
+                  <ExpandableScreenContent
+                    className={`max-w-6xl mx-auto ${
+                      isDark ? "bg-[#1A1A1F]" : "bg-white"
+                    }`}
+                  >
+                    <div className="h-full overflow-y-auto mobile-scrollbar-hide">
+                      <div className="relative">
                         <img
                           src={showcase.coverImage}
                           alt={showcase.title}
-                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-48 md:h-64 lg:h-80 object-cover"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                           }}
                         />
-                      )}
-                    </div>
-                  </motion.div>
-
-                  <div
-                    className={`p-6 flex flex-col justify-center ${isLarge ? "w-full md:w-1/2" : "w-full"}`}
-                  >
-                    <div className="flex items-center gap-3 mb-3">
-                      <div
-                        className="w-10 h-10 rounded-lg flex items-center justify-center"
-                        style={{
-                          backgroundColor: `${getFeatureColor(showcase.color)}20`,
-                        }}
-                      >
-                        <showcase.icon
-                          className="w-5 h-5"
-                          style={{ color: getFeatureColor(showcase.color) }}
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `linear-gradient(to bottom, transparent 0%, ${
+                              isDark ? "#1A1A1F" : "#ffffff"
+                            } 100%)`,
+                          }}
                         />
                       </div>
-                      <motion.h3
-                        layoutId={`title-${showcase.id}-${id}`}
-                        className={`text-lg font-bold ${
-                          isDark ? "text-white" : "text-gray-900"
-                        }`}
-                        style={{ color: getFeatureColor(showcase.color) }}
-                      >
-                        {showcase.title}
-                      </motion.h3>
+
+                      <div className="p-4 sm:p-6 md:p-8">
+                        <div className="flex items-start gap-4 mb-6">
+                          <div
+                            className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg shrink-0"
+                            style={{
+                              backgroundColor: `${getFeatureColor(showcase.color)}20`,
+                            }}
+                          >
+                            <showcase.icon
+                              className="w-8 h-8"
+                              style={{ color: getFeatureColor(showcase.color) }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h3
+                              className={`text-2xl md:text-3xl font-bold mb-2 ${
+                                isDark ? "text-white" : "text-gray-900"
+                              }`}
+                              style={{ color: getFeatureColor(showcase.color) }}
+                            >
+                              {showcase.title}
+                            </h3>
+                            <p
+                              className={`text-base md:text-lg ${
+                                isDark ? "text-gray-300" : "text-gray-600"
+                              }`}
+                            >
+                              {showcase.description}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-6">
+                          <div>
+                            <h4
+                              className={`text-lg font-semibold mb-3 ${
+                                isDark ? "text-white" : "text-gray-900"
+                              }`}
+                            >
+                              Key Features
+                            </h4>
+                            <div className="grid grid-cols-2 gap-3">
+                              {showcase.features.map((feature) => (
+                                <div
+                                  key={feature}
+                                  className={`flex items-center space-x-2 p-3 rounded-lg ${
+                                    isDark ? "bg-white/5" : "bg-gray-100"
+                                  }`}
+                                >
+                                  <div
+                                    className="w-2 h-2 rounded-full shrink-0"
+                                    style={{
+                                      backgroundColor: getFeatureColor(
+                                        showcase.color,
+                                      ),
+                                    }}
+                                  />
+                                  <span
+                                    className={`text-sm font-medium ${
+                                      isDark ? "text-gray-300" : "text-gray-700"
+                                    }`}
+                                  >
+                                    {feature}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4
+                              className={`text-lg font-semibold mb-3 ${
+                                isDark ? "text-white" : "text-gray-900"
+                              }`}
+                            >
+                              Gallery
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {showcase.galleryImages
+                                .slice(0, 6)
+                                .map((img, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="aspect-video rounded-lg overflow-hidden bg-gray-100"
+                                  >
+                                    <img
+                                      src={img}
+                                      alt={`${showcase.title} screenshot ${idx + 1}`}
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                      onError={(e) => {
+                                        e.currentTarget.style.opacity = "0.3";
+                                      }}
+                                    />
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <motion.p
-                      layoutId={`description-${showcase.id}-${id}`}
-                      className={`text-sm ${
-                        isDark ? "text-gray-400" : "text-gray-600"
-                      } ${isLarge ? "" : "line-clamp-2"}`}
-                    >
-                      {showcase.description}
-                    </motion.p>
-                  </div>
-                </div>
-              </motion.li>
+                  </ExpandableScreenContent>
+                </ExpandableScreen>
+              </div>
             );
           })}
-        </ul>
+        </div>
       </div>
     </section>
   );

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import {
+  AIAssistantSection,
   BenefitsSection,
   CTASection,
   FeatureShowcase,
@@ -157,6 +158,8 @@ export const Landing: React.FC = () => {
         <MobileShowcase isDark={isDark} />
 
         <FeaturesSection isDark={isDark} features={features} />
+
+        <AIAssistantSection isDark={isDark} />
 
         <FeatureShowcase isDark={isDark} />
 
