@@ -38,7 +38,7 @@ export const BulkOperationsBar: React.FC<BulkOperationsBarProps> = ({
       <div className="flex items-center space-x-2 md:space-x-3">
         <button
           onClick={selectedCount === totalCount ? onDeselectAll : onSelectAll}
-          className={`flex items-center space-x-1.5 md:space-x-2 transition-colors ${
+          className={`flex items-center space-x-1.5 md:space-x-2 transition-colors cursor-pointer ${
             isHalloweenMode
               ? "text-[#60c9b6] hover:text-[#60c9b6]/80"
               : "text-[#8B5CF6] hover:text-[#A855F7]"
@@ -54,7 +54,7 @@ export const BulkOperationsBar: React.FC<BulkOperationsBarProps> = ({
       <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 md:gap-2 w-full sm:w-auto">
         <button
           onClick={onBulkComplete}
-          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(16,185,129,0.2)] border border-[rgba(16,185,129,0.3)] rounded-lg text-[#10B981] hover:bg-[rgba(16,185,129,0.3)] transition-colors text-xs md:text-sm whitespace-nowrap"
+          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(16,185,129,0.2)] border border-[rgba(16,185,129,0.3)] rounded-lg text-[#10B981] hover:bg-[rgba(16,185,129,0.3)] transition-colors text-xs md:text-sm cursor-pointer whitespace-nowrap"
         >
           <Check className="w-3 h-3" />
           <span>Complete</span>
@@ -62,7 +62,7 @@ export const BulkOperationsBar: React.FC<BulkOperationsBarProps> = ({
 
         <button
           onClick={onBulkIncomplete}
-          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(113,113,122,0.2)] border border-[rgba(113,113,122,0.3)] rounded-lg text-[#71717A] hover:bg-[rgba(113,113,122,0.3)] transition-colors text-xs md:text-sm whitespace-nowrap"
+          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(113,113,122,0.2)] border border-[rgba(113,113,122,0.3)] rounded-lg text-[#71717A] hover:bg-[rgba(113,113,122,0.3)] transition-colors text-xs md:text-sm cursor-pointer whitespace-nowrap"
         >
           <Circle className="w-3 h-3" />
           <span>Incomplete</span>
@@ -70,7 +70,7 @@ export const BulkOperationsBar: React.FC<BulkOperationsBarProps> = ({
 
         <button
           onClick={onBulkDelete}
-          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(239,68,68,0.2)] border border-[rgba(239,68,68,0.3)] rounded-lg text-[#EF4444] hover:bg-[rgba(239,68,68,0.3)] transition-colors text-xs md:text-sm whitespace-nowrap"
+          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(239,68,68,0.2)] border border-[rgba(239,68,68,0.3)] rounded-lg text-[#EF4444] hover:bg-[rgba(239,68,68,0.3)] transition-colors text-xs md:text-sm cursor-pointer whitespace-nowrap"
         >
           <Trash2 className="w-3 h-3" />
           <span>Delete</span>
@@ -78,7 +78,7 @@ export const BulkOperationsBar: React.FC<BulkOperationsBarProps> = ({
 
         <button
           onClick={onDeselectAll}
-          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(113,113,122,0.2)] border border-[rgba(113,113,122,0.3)] rounded-lg text-[#71717A] hover:bg-[rgba(113,113,122,0.3)] transition-colors text-xs md:text-sm whitespace-nowrap"
+          className="flex items-center justify-center space-x-1 px-2 md:px-3 py-1 bg-[rgba(113,113,122,0.2)] border border-[rgba(113,113,122,0.3)] rounded-lg text-[#71717A] hover:bg-[rgba(113,113,122,0.3)] transition-colors text-xs md:text-sm cursor-pointer whitespace-nowrap"
         >
           <X className="w-3 h-3" />
           <span>Cancel</span>
