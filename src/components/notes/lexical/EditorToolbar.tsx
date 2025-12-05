@@ -197,8 +197,12 @@ export const EditorToolbar: React.FC<EditorToolbarProps> = ({
     <button
       type="button"
       onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
       title={title}
-      className={`p-2 rounded-md transition-all duration-200 ${
+      className={`p-2 rounded-md transition-all duration-200 cursor-pointer ${
         isActive
           ? `text-white shadow-sm`
           : `${isDark ? "text-[#B4B4B8] hover:text-white" : "text-gray-600 hover:text-gray-900"}`
