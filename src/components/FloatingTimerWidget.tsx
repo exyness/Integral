@@ -85,10 +85,14 @@ const TimerCounter = ({
 export const FloatingTimerWidget: React.FC = () => {
   const { timeEntries, stopTimer, pauseTimer, resumeTimer } = useTimeTracking();
   const { tasks } = useTasks();
-  const { isWidgetVisible, setWidgetVisible } = useFloatingWidget();
-  const { isAIChatOpen } = useFloatingWidget();
+  const {
+    isWidgetVisible,
+    setWidgetVisible,
+    isAIChatOpen,
+    isTimerExpanded,
+    setTimerExpanded,
+  } = useFloatingWidget();
   const { isHalloweenMode, isDark } = useTheme();
-  const [isExpanded, setIsExpanded] = useState(false);
   const [, forceUpdate] = useState({});
 
   const runningEntries = timeEntries.filter((entry) => entry.is_running);
@@ -143,9 +147,8 @@ export const FloatingTimerWidget: React.FC = () => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         onClick={() => setWidgetVisible(true)}
-        className={`fixed bottom-3 z-50 w-12 h-12 md:w-14 md:h-14 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer ${
-          isAIChatOpen ? "right-[72px] md:right-[84px]" : "right-3 md:right-4"
-        } ${
+        style={{ bottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
+        className={`fixed z-50 w-12 h-12 md:w-14 md:h-14 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer right-[64px] md:right-[76px] ${
           isHalloweenMode
             ? "bg-[#60c9b6]/20 border border-[#60c9b6]/50 text-[#60c9b6] hover:bg-[#60c9b6]/30 hover:shadow-[0_0_15px_rgba(96,201,182,0.3)]"
             : "bg-[rgba(16,185,129,0.2)] border border-[rgba(16,185,129,0.3)] text-emerald-500 hover:bg-[rgba(16,185,129,0.3)]"
@@ -168,17 +171,15 @@ export const FloatingTimerWidget: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`fixed bottom-3 z-9999 w-[240px] md:w-[320px] rounded-xl ${
-        isAIChatOpen ? "right-[72px] md:right-[84px]" : "right-3 md:right-4"
-      } ${
+      className={`fixed z-9999 w-[240px] md:w-[320px] rounded-xl right-[64px] md:right-[76px] ${
         isHalloweenMode
           ? "border-2 border-[#60c9b6]/50 shadow-[0_0_30px_rgba(96,201,182,0.2)]"
           : ""
       }`}
       style={{
         position: "fixed",
+        bottom: "max(12px, env(safe-area-inset-bottom, 12px))",
         zIndex: 9999,
-        transition: "right 0.3s ease-in-out",
       }}
     >
       <GlassCard
@@ -233,15 +234,15 @@ export const FloatingTimerWidget: React.FC = () => {
           </div>
           <div className="flex items-center space-x-1 md:space-x-2 shrink-0">
             <button
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={() => setTimerExpanded(!isTimerExpanded)}
               className={`p-1.5 md:p-2 rounded-lg cursor-pointer transition-all active:scale-95 ${
                 isHalloweenMode
                   ? "bg-[#60c9b6]/10 border border-[#60c9b6]/20 text-[#60c9b6] hover:bg-[#60c9b6]/20"
                   : "bg-[rgba(40,40,45,0.6)] border border-[rgba(255,255,255,0.1)] text-white hover:text-white hover:bg-[rgba(40,40,45,0.8)]"
               }`}
-              aria-label={isExpanded ? "Collapse" : "Expand"}
+              aria-label={isTimerExpanded ? "Collapse" : "Expand"}
             >
-              {isExpanded ? (
+              {isTimerExpanded ? (
                 <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4" />
               ) : (
                 <ChevronUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -260,7 +261,7 @@ export const FloatingTimerWidget: React.FC = () => {
 
         {/* Timer Entries */}
         <AnimatePresence>
-          {isExpanded && (
+          {isTimerExpanded && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -441,7 +442,7 @@ export const FloatingTimerWidget: React.FC = () => {
         </AnimatePresence>
 
         {/* Collapsed View */}
-        {!isExpanded && runningEntries.length > 0 && (
+        {!isTimerExpanded && runningEntries.length > 0 && (
           <div className="p-3 md:p-4">
             {runningEntries.length === 1 ? (
               (() => {

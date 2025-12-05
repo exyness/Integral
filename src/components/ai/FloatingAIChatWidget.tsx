@@ -1592,7 +1592,8 @@ export const FloatingAIChatWidget: React.FC = () => {
           setTimeout(() => inputRef.current?.focus(), 100);
         }
       }}
-      className={`fixed bottom-3 right-3 md:bottom-4 md:right-4 z-50 w-12 h-12 md:w-14 md:h-14 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer ${
+      style={{ bottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
+      className={`fixed right-3 md:right-4 z-50 w-12 h-12 md:w-14 md:h-14 rounded-xl transition-all shadow-lg flex items-center justify-center cursor-pointer ${
         isHalloweenMode
           ? "bg-[#60c9b6]/25 border border-[#60c9b6]/40 hover:bg-[#60c9b6]/35 hover:shadow-[0_0_20px_rgba(96,201,182,0.3)]"
           : isDark
@@ -1652,7 +1653,10 @@ export const FloatingAIChatWidget: React.FC = () => {
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className={`fixed inset-x-2 top-12 bottom-2 md:inset-auto md:bottom-20 md:right-4 z-9999 w-auto md:w-[350px] h-auto md:h-[414px] rounded-xl ${
+              style={{
+                bottom: "max(8px, env(safe-area-inset-bottom, 8px))",
+              }}
+              className={`fixed inset-x-2 top-12 md:inset-auto md:bottom-20 md:right-4 z-9999 w-auto md:w-[350px] h-[calc(100dvh-(--spacing(12))-max(8px,env(safe-area-inset-bottom,8px))-8px)] md:h-[455px] rounded-xl ${
                 isHalloweenMode
                   ? "md:border-2 md:border-[#60c9b6]/50 md:shadow-[0_0_30px_rgba(96,201,182,0.2)]"
                   : ""
@@ -1979,7 +1983,7 @@ export const FloatingAIChatWidget: React.FC = () => {
                       {/* Styled text overlay for bold @ mentions */}
                       <div
                         ref={overlayRef}
-                        className={`absolute left-4 right-10 top-2.5 pointer-events-none text-sm whitespace-pre-wrap break-words overflow-y-auto custom-scrollbar ${
+                        className={`absolute left-4 right-10 top-2.5 pointer-events-none text-sm whitespace-pre-wrap wrap-break-word overflow-y-auto custom-scrollbar ${
                           isHalloweenMode
                             ? "text-[#60c9b6]"
                             : isDark

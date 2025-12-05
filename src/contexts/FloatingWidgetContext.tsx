@@ -10,6 +10,8 @@ interface FloatingWidgetContextType {
   toggleSearchModal: () => void;
   isAIChatOpen: boolean;
   setAIChatOpen: (visible: boolean) => void;
+  isTimerExpanded: boolean;
+  setTimerExpanded: (expanded: boolean) => void;
 }
 
 const FloatingWidgetContext = createContext<
@@ -36,6 +38,7 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
   const [isWidgetVisible, setIsWidgetVisible] = useState(true);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAIChatOpen, setIsAIChatOpenState] = useState(false);
+  const [isTimerExpanded, setIsTimerExpandedState] = useState(false);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,8 +68,20 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
     setIsSearchModalOpen(!isSearchModalOpen);
   };
 
+  // Mutual exclusivity: when AI chat opens, collapse timer
   const setAIChatOpen = (visible: boolean) => {
+    if (visible) {
+      setIsTimerExpandedState(false);
+    }
     setIsAIChatOpenState(visible);
+  };
+
+  // Mutual exclusivity: when timer expands, close AI chat
+  const setTimerExpanded = (expanded: boolean) => {
+    if (expanded) {
+      setIsAIChatOpenState(false);
+    }
+    setIsTimerExpandedState(expanded);
   };
 
   return (
@@ -80,6 +95,8 @@ export const FloatingWidgetProvider: React.FC<FloatingWidgetProviderProps> = ({
         toggleSearchModal,
         isAIChatOpen,
         setAIChatOpen,
+        isTimerExpanded,
+        setTimerExpanded,
       }}
     >
       <ExpandableScreen
