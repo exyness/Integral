@@ -9,6 +9,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
@@ -164,62 +165,63 @@ export function ExpandableScreenContent({
     useExpandableScreen();
   const { isDark, isHalloweenMode } = useTheme();
 
-  return (
+  if (!isExpanded) return null;
+
+  return createPortal(
     <AnimatePresence initial={false}>
-      {isExpanded && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-2">
-          {/* Backdrop */}
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-2">
+        {/* Backdrop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={collapse}
+          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        />
+
+        {/* Morphing background with shared layoutId */}
+        <motion.div
+          layoutId={layoutId}
+          transition={{ duration: animationDuration }}
+          style={{
+            borderRadius: contentRadius,
+          }}
+          layout
+          className={cn(
+            "relative flex h-full w-full overflow-y-auto transform-gpu will-change-transform z-10",
+            className,
+          )}
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={collapse}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-
-          {/* Morphing background with shared layoutId */}
-          <motion.div
-            layoutId={layoutId}
-            transition={{ duration: animationDuration }}
-            style={{
-              borderRadius: contentRadius,
-            }}
-            layout
-            className={cn(
-              "relative flex h-full w-full overflow-y-auto transform-gpu will-change-transform z-10",
-              className,
-            )}
+            transition={{ delay: 0.15, duration: 0.4 }}
+            className="relative z-20 w-full h-full"
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15, duration: 0.4 }}
-              className="relative z-20 w-full h-full"
-            >
-              {children}
-            </motion.div>
-
-            {showCloseButton && (
-              <motion.button
-                onClick={collapse}
-                className={cn(
-                  "absolute right-6 top-6 z-30 flex h-10 w-10 items-center justify-center transition-colors rounded-full cursor-pointer",
-                  closeButtonClassName ||
-                    (isHalloweenMode
-                      ? "text-[#60c9b6] bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20"
-                      : isDark
-                        ? "text-white bg-white/10 hover:bg-white/20"
-                        : "text-gray-600 bg-gray-100 hover:text-gray-900 hover:bg-gray-200"),
-                )}
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </motion.button>
-            )}
+            {children}
           </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+
+          {showCloseButton && (
+            <motion.button
+              onClick={collapse}
+              className={cn(
+                "absolute right-6 top-6 z-30 flex h-10 w-10 items-center justify-center transition-colors rounded-full cursor-pointer",
+                closeButtonClassName ||
+                  (isHalloweenMode
+                    ? "text-[#60c9b6] bg-[#60c9b6]/10 hover:bg-[#60c9b6]/20"
+                    : isDark
+                      ? "text-white bg-white/10 hover:bg-white/20"
+                      : "text-gray-600 bg-gray-100 hover:text-gray-900 hover:bg-gray-200"),
+              )}
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </motion.button>
+          )}
+        </motion.div>
+      </div>
+    </AnimatePresence>,
+    document.body,
   );
 }
 

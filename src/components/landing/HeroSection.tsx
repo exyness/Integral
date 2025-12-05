@@ -1,8 +1,13 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Play, Sparkles } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { batSwoop, ghostScare } from "@/assets";
+import {
+  ExpandableScreen,
+  ExpandableScreenContent,
+  ExpandableScreenTrigger,
+} from "@/components/ui/expandable-screen";
 import { useTheme } from "@/contexts/ThemeContext";
 import LiquidEther from "../LiquidEther";
 
@@ -165,6 +170,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ isDark }) => {
               </span>
               <ArrowRight className="w-4 h-4" />
             </motion.button>
+
+            <ExpandableScreen layoutId="watch-demo-hero">
+              <ExpandableScreenTrigger>
+                <div
+                  className={`w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base transition-all cursor-pointer flex items-center justify-center space-x-2 border ${
+                    isHalloweenMode
+                      ? "bg-transparent border-[#60c9b6]/30 text-[#60c9b6] hover:bg-[#60c9b6]/10"
+                      : isDark
+                        ? "bg-transparent border-white/10 text-white hover:bg-white/5"
+                        : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>Watch Demo</span>
+                </div>
+              </ExpandableScreenTrigger>
+              <ExpandableScreenContent
+                className={`w-[90vw] max-w-4xl mx-auto aspect-video overflow-hidden ${
+                  isDark ? "bg-black" : "bg-black"
+                }`}
+              >
+                <div className="w-full h-full relative">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src="https://www.youtube.com/embed/mOH2talc6d4"
+                    title="Integral Demo"
+                    frameBorder="0"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0"
+                  />
+                </div>
+              </ExpandableScreenContent>
+            </ExpandableScreen>
           </div>
         </motion.div>
       </div>
