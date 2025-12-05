@@ -50,6 +50,20 @@ export const NetWorthChart = () => {
     amount: snapshot.net_worth,
   }));
 
+  const formatCompactNumber = (number: number) => {
+    const absNumber = Math.abs(number);
+    if (absNumber >= 1000000000) {
+      return (number / 1000000000).toFixed(1).replace(/\.0$/, "") + "B";
+    }
+    if (absNumber >= 1000000) {
+      return (number / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    }
+    if (absNumber >= 1000) {
+      return (number / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    }
+    return number.toString();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -107,9 +121,7 @@ export const NetWorthChart = () => {
               axisLine={false}
             />
             <YAxis
-              tickFormatter={(value) =>
-                formatAmount(value, { notation: "compact" })
-              }
+              tickFormatter={formatCompactNumber}
               stroke={isDark ? "#9CA3AF" : "#6B7280"}
               fontSize={12}
               tickLine={false}

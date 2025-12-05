@@ -247,6 +247,19 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                           </span>
                         )}
 
+                        {/* User Badge for user-created categories */}
+                        {category.category_type === "user" && (
+                          <span
+                            className="text-[8px] md:text-[10px] px-1 py-0.5 rounded w-fit"
+                            style={{
+                              backgroundColor: `${category.color}15`,
+                              color: category.color,
+                            }}
+                          >
+                            User
+                          </span>
+                        )}
+
                         {category.budget_limit && (
                           <p className="text-[9px] md:text-[10px] text-gray-500 truncate">
                             {formatAmount(category.budget_limit)}

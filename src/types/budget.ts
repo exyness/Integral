@@ -88,6 +88,24 @@ export interface AnalyticsSummary {
     actual: number;
     standalone: number;
   };
+  recurringExpenses: {
+    total: number;
+    count: number;
+  };
+  netWorth: {
+    assets: number;
+    liabilities: number;
+    total: number;
+  };
+  spendingDistribution: {
+    fixed: number;
+    variable: number;
+  };
+  assetAllocation: {
+    type: string;
+    amount: number;
+    percentage: number;
+  }[];
 }
 
 export interface CategorySpending {

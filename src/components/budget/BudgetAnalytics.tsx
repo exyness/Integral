@@ -5,14 +5,15 @@ import {
   ArrowUpDown,
   Award,
   Calendar,
-  DollarSign,
   FileText,
   PieChart as PieChartIcon,
   Receipt,
+  Repeat,
   ShoppingBag,
   Target,
   TrendingDown,
   TrendingUp,
+  Wallet as WalletIcon,
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
 import {
@@ -318,13 +319,18 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
 
   const categoryBudgetData = useMemo(() => {
     if (!budgets) return [];
-    return budgets.map((budget) => ({
-      category: budget.category,
-      budgeted: budget.amount,
-      spent: budget.spent,
-      remaining: Math.max(0, budget.amount - budget.spent),
-    }));
-  }, [budgets]);
+    return budgets.map((budget) => {
+      // Look up category name from categories list using budget.category (which is the category ID)
+      const category = categories.find((c) => c.id === budget.category);
+      const categoryName = category?.name || budget.category;
+      return {
+        category: categoryName,
+        budgeted: budget.amount,
+        spent: budget.spent,
+        remaining: Math.max(0, budget.amount - budget.spent),
+      };
+    });
+  }, [budgets, categories]);
 
   const weeklyComparisonData = useMemo(() => {
     if (!analytics || !analytics.dailySpending.length) return [];
@@ -527,6 +533,7 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 relative z-10">
+        {/* Net Worth Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -555,14 +562,14 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
                   isHalloweenMode ? "text-[#60c9b6]" : "text-[#8B5CF6]"
                 }`}
               >
-                Total Spent
+                Net Worth
               </p>
               <p
                 className={`text-base md:text-2xl font-bold ${
                   isHalloweenMode ? "text-[#60c9b6]" : "text-[#8B5CF6]"
                 }`}
               >
-                {formatAmount(analytics.totalSpent, 0)}
+                {formatAmount(analytics.netWorth.total, 0)}
               </p>
             </div>
             <div
@@ -572,118 +579,78 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
                   : "bg-[rgba(139,92,246,0.2)]"
               }`}
             >
-              {isHalloweenMode ? (
-                <img
-                  src={pumpkinWitchhat}
-                  alt=""
-                  className="w-5 h-5 md:w-7 md:h-7 drop-shadow-lg"
-                />
-              ) : (
-                <DollarSign
-                  className={`w-4 h-4 md:w-6 md:h-6 text-[#8B5CF6]"`}
-                />
-              )}
+              <WalletIcon
+                className={`w-4 h-4 md:w-6 md:h-6 ${
+                  isHalloweenMode ? "text-[#60c9b6]" : "text-[#8B5CF6]"
+                }`}
+              />
             </div>
           </div>
         </motion.div>
 
+        {/* Total Spent Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`p-3 md:p-6 rounded-xl border transition-all ${
+          className={`p-3 md:p-6 rounded-xl border transition-all relative overflow-hidden ${
             isDark
-              ? "bg-[rgba(16,185,129,0.1)] border-[rgba(16,185,129,0.2)] hover:bg-[rgba(16,185,129,0.15)]"
-              : "bg-[rgba(16,185,129,0.05)] border-[rgba(16,185,129,0.2)] hover:bg-[rgba(16,185,129,0.1)]"
+              ? "bg-[rgba(239,68,68,0.1)] border-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.15)]"
+              : "bg-[rgba(239,68,68,0.05)] border-[rgba(239,68,68,0.2)] hover:bg-[rgba(239,68,68,0.1)]"
           }`}
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-[10px] md:text-xs font-medium text-[#10B981] mb-0.5 md:mb-1">
-                Transactions
+              <p className="text-[10px] md:text-xs font-medium text-[#EF4444] mb-0.5 md:mb-1">
+                Total Spent
               </p>
-              <p className="text-base md:text-2xl font-bold text-[#10B981]">
-                {analytics.transactionCount}
+              <p className="text-base md:text-2xl font-bold text-[#EF4444]">
+                {formatAmount(analytics.totalSpent, 0)}
               </p>
             </div>
             <div
               className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center ${
-                isHalloweenMode
-                  ? "bg-[rgba(16,185,129,0.2)] border border-[#10B981]/30"
-                  : "bg-[rgba(16,185,129,0.2)]"
+                isDark ? "bg-[rgba(239,68,68,0.2)]" : "bg-[rgba(239,68,68,0.1)]"
               }`}
             >
-              {isHalloweenMode ? (
-                <img
-                  src={ghostScare}
-                  alt=""
-                  className="w-5 h-5 md:w-7 md:h-7 drop-shadow-lg"
-                />
-              ) : (
-                <Receipt className="w-4 h-4 md:w-6 md:h-6 text-[#10B981]" />
-              )}
+              <TrendingDown className="w-4 h-4 md:w-6 md:h-6 text-[#EF4444]" />
             </div>
           </div>
         </motion.div>
 
+        {/* Recurring Expenses Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className={`p-3 md:p-6 rounded-xl border transition-all relative overflow-hidden ${
-            isHalloweenMode
-              ? isDark
-                ? "bg-[rgba(255,107,0,0.1)] border-[rgba(255,107,0,0.2)] hover:bg-[rgba(255,107,0,0.15)]"
-                : "bg-[rgba(255,107,0,0.05)] border-[rgba(255,107,0,0.2)] hover:bg-[rgba(255,107,0,0.1)]"
-              : isDark
-                ? "bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.2)] hover:bg-[rgba(245,158,11,0.15)]"
-                : "bg-[rgba(245,158,11,0.05)] border-[rgba(245,158,11,0.2)] hover:bg-[rgba(245,158,11,0.1)]"
+            isDark
+              ? "bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.2)] hover:bg-[rgba(245,158,11,0.15)]"
+              : "bg-[rgba(245,158,11,0.05)] border-[rgba(245,158,11,0.2)] hover:bg-[rgba(245,158,11,0.1)]"
           }`}
         >
-          {isHalloweenMode && (
-            <img
-              src={catWitchHat}
-              alt=""
-              className="absolute bottom-0 right-0 w-8 md:w-10 opacity-15 pointer-events-none"
-            />
-          )}
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p
-                className={`text-[10px] md:text-xs font-medium mb-0.5 md:mb-1 ${
-                  isHalloweenMode ? "text-[#FF6B00]" : "text-[#F59E0B]"
-                }`}
-              >
-                Average
+              <p className="text-[10px] md:text-xs font-medium text-[#F59E0B] mb-0.5 md:mb-1">
+                Recurring (Mo.)
               </p>
-              <p
-                className={`text-base md:text-2xl font-bold ${
-                  isHalloweenMode ? "text-[#FF6B00]" : "text-[#F59E0B]"
-                }`}
-              >
-                {formatAmount(analytics.averageTransaction, 0)}
+              <p className="text-base md:text-2xl font-bold text-[#F59E0B]">
+                {formatAmount(analytics.recurringExpenses.total, 0)}
               </p>
             </div>
             <div
               className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center ${
-                isHalloweenMode
-                  ? "bg-[rgba(255,107,0,0.2)] border border-[#FF6B00]/30"
-                  : "bg-[rgba(245,158,11,0.2)]"
+                isDark
+                  ? "bg-[rgba(245,158,11,0.2)]"
+                  : "bg-[rgba(245,158,11,0.1)]"
               }`}
             >
-              {isHalloweenMode ? (
-                <img
-                  src={candleFive}
-                  alt=""
-                  className="w-5 h-5 md:w-7 md:h-7 drop-shadow-lg"
-                />
-              ) : (
-                <TrendingUp className="w-4 h-4 md:w-6 md:h-6 text-[#F59E0B]" />
-              )}
+              <Repeat className="w-4 h-4 md:w-6 md:h-6 text-[#F59E0B]" />
             </div>
           </div>
         </motion.div>
 
+        {/* Categories Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -740,6 +707,190 @@ export const BudgetAnalytics: React.FC<AnalyticsTabProps> = ({ budgets }) => {
               )}
             </div>
           </div>
+        </motion.div>
+      </div>
+
+      {/* Asset Allocation & Spending Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+        {/* Asset Allocation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <GlassCard variant="primary" className="p-6 h-full">
+            <h3
+              className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}
+            >
+              Asset Allocation
+            </h3>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={analytics.assetAllocation}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="amount"
+                    nameKey="type"
+                  >
+                    {analytics.assetAllocation.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          [
+                            "#10B981", // Emerald
+                            "#3B82F6", // Blue
+                            "#F59E0B", // Amber
+                            "#8B5CF6", // Purple
+                            "#EC4899", // Pink
+                            "#6366F1", // Indigo
+                          ][index % 6]
+                        }
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: isHalloweenMode
+                        ? "rgba(26, 26, 31, 0.95)"
+                        : isDark
+                          ? "rgba(17, 24, 39, 0.95)"
+                          : "rgba(255, 255, 255, 0.95)",
+                      borderColor: isHalloweenMode
+                        ? "rgba(96, 201, 182, 0.3)"
+                        : isDark
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(0, 0, 0, 0.1)",
+                      borderRadius: "0.5rem",
+                      color: isHalloweenMode
+                        ? "#60c9b6"
+                        : isDark
+                          ? "#fff"
+                          : "#000",
+                      boxShadow: isHalloweenMode
+                        ? "0 4px 12px rgba(96, 201, 182, 0.2)"
+                        : "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    }}
+                    itemStyle={{
+                      color: isHalloweenMode
+                        ? "#60c9b6"
+                        : isDark
+                          ? "#fff"
+                          : "#374151",
+                    }}
+                    labelStyle={{
+                      color: isHalloweenMode
+                        ? "#60c9b6"
+                        : isDark
+                          ? "#fff"
+                          : "#111827",
+                      fontWeight: 600,
+                    }}
+                    formatter={(value: number) => formatAmount(value)}
+                  />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
+        </motion.div>
+
+        {/* Spending Distribution (Fixed vs Variable) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <GlassCard variant="primary" className="p-6 h-full">
+            <h3
+              className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}
+            >
+              Fixed vs Variable Spending
+            </h3>
+            <div className="h-[300px] w-full flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    {
+                      name: "Fixed",
+                      amount: analytics.spendingDistribution.fixed,
+                      fill: "#8B5CF6",
+                    },
+                    {
+                      name: "Variable",
+                      amount: analytics.spendingDistribution.variable,
+                      fill: "#F59E0B",
+                    },
+                  ]}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    horizontal={false}
+                    stroke={gridColor}
+                  />
+                  <XAxis type="number" hide />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    stroke={chartTextColor}
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "transparent" }}
+                    contentStyle={{
+                      backgroundColor: isHalloweenMode
+                        ? "rgba(26, 26, 31, 0.95)"
+                        : isDark
+                          ? "rgba(17, 24, 39, 0.95)"
+                          : "rgba(255, 255, 255, 0.95)",
+                      borderColor: isHalloweenMode
+                        ? "rgba(96, 201, 182, 0.3)"
+                        : isDark
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(0, 0, 0, 0.1)",
+                      borderRadius: "0.5rem",
+                      color: isHalloweenMode
+                        ? "#60c9b6"
+                        : isDark
+                          ? "#fff"
+                          : "#000",
+                      boxShadow: isHalloweenMode
+                        ? "0 4px 12px rgba(96, 201, 182, 0.2)"
+                        : "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    }}
+                    itemStyle={{
+                      color: isHalloweenMode
+                        ? "#60c9b6"
+                        : isDark
+                          ? "#fff"
+                          : "#374151",
+                    }}
+                    labelStyle={{
+                      color: isHalloweenMode
+                        ? "#60c9b6"
+                        : isDark
+                          ? "#fff"
+                          : "#111827",
+                      fontWeight: 600,
+                    }}
+                    formatter={(value: number) => formatAmount(value)}
+                  />
+                  <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
+                    <Cell fill="#8B5CF6" />
+                    <Cell fill="#F59E0B" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
         </motion.div>
       </div>
 

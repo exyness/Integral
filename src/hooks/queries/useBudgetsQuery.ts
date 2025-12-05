@@ -13,6 +13,7 @@ import {
   Category,
   CategorySpending,
   DailySpending,
+  Liability,
   RecurringTransaction,
 } from "@/types/budget";
 
@@ -600,6 +601,35 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
 
       const categoriesMap = new Map((categories || []).map((c) => [c.id, c]));
 
+      // Fetch Recurring Transactions
+      const { data: recurringData, error: recurringError } = await supabase
+        .from("recurring_transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("active", true);
+
+      if (recurringError) throw recurringError;
+      const recurringTransactions = (recurringData ||
+        []) as unknown as RecurringTransaction[];
+
+      // Fetch Accounts (Assets)
+      const { data: accountsData, error: accountsError } = await supabase
+        .from("finance_accounts")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (accountsError) throw accountsError;
+      const accounts = (accountsData || []) as Account[];
+
+      // Fetch Liabilities
+      const { data: liabilitiesData, error: liabilitiesError } = await supabase
+        .from("liabilities")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (liabilitiesError) throw liabilitiesError;
+      const liabilities = (liabilitiesData || []) as Liability[];
+
       // Filter for expenses only for spending analysis
       const expenseTransactions = allTransactions.filter(
         (t) => t.type === "expense",
@@ -699,6 +729,50 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
         0,
       );
 
+      // --- New Calculations ---
+
+      // Recurring Expenses
+      const recurringExpensesList = recurringTransactions.filter(
+        (t) => t.type === "expense",
+      );
+      const recurringTotal = recurringExpensesList.reduce((sum, t) => {
+        // Normalize to monthly amount for consistency
+        let monthlyAmount = t.amount;
+        if (t.interval === "daily") monthlyAmount = t.amount * 30;
+        if (t.interval === "weekly") monthlyAmount = t.amount * 4;
+        if (t.interval === "yearly") monthlyAmount = t.amount / 12;
+        return sum + monthlyAmount;
+      }, 0);
+
+      // Net Worth
+      const totalAssets = accounts.reduce((sum, a) => sum + a.balance, 0);
+      const totalLiabilities = liabilities.reduce(
+        (sum, l) => sum + l.amount,
+        0,
+      );
+
+      // Spending Distribution (Fixed vs Variable)
+      // We consider transactions linked to a recurring rule as "Fixed"
+      const fixedSpending = expenseTransactions
+        .filter((t) => t.is_recurring || t.recurring_id)
+        .reduce((sum, t) => sum + t.amount, 0);
+      const variableSpending = totalSpent - fixedSpending;
+
+      // Asset Allocation
+      const assetAllocationMap = new Map<string, number>();
+      accounts.forEach((account) => {
+        const current = assetAllocationMap.get(account.type) || 0;
+        assetAllocationMap.set(account.type, current + account.balance);
+      });
+
+      const assetAllocation = Array.from(assetAllocationMap.entries())
+        .map(([type, amount]) => ({
+          type: type.charAt(0).toUpperCase() + type.slice(1).replace("_", " "),
+          amount,
+          percentage: totalAssets > 0 ? (amount / totalAssets) * 100 : 0,
+        }))
+        .sort((a, b) => b.amount - a.amount);
+
       return {
         totalSpent,
         transactionCount,
@@ -711,6 +785,20 @@ export const useAnalyticsQuery = (startDate: string, endDate: string) => {
           actual: budgetedActual,
           standalone: standaloneActual,
         },
+        recurringExpenses: {
+          total: recurringTotal,
+          count: recurringExpensesList.length,
+        },
+        netWorth: {
+          assets: totalAssets,
+          liabilities: totalLiabilities,
+          total: totalAssets - totalLiabilities,
+        },
+        spendingDistribution: {
+          fixed: fixedSpending,
+          variable: variableSpending,
+        },
+        assetAllocation,
       };
     },
     enabled: !!user?.id && !!startDate && !!endDate,
