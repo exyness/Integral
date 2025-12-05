@@ -11,7 +11,7 @@ import {
   Search,
   Star,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
 import { toast } from "sonner";
@@ -51,6 +51,26 @@ const findByShortId = <T extends { id: string }>(
 ): T | undefined => {
   return items.find((item) => item.id.startsWith(shortId));
 };
+
+// Define VirtuosoGrid List component outside the main component to prevent re-renders
+const NotesVirtuosoGridList = forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>((props, ref) => (
+  <div
+    {...props}
+    ref={ref}
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gap: "0.75rem",
+      ...(props.style || {}),
+    }}
+  >
+    {props.children}
+  </div>
+));
+NotesVirtuosoGridList.displayName = "NotesVirtuosoGridList";
 
 export const Notes: React.FC = () => {
   const { isDark, isHalloweenMode } = useTheme();
@@ -1165,24 +1185,7 @@ export const Notes: React.FC = () => {
                 style={{ height: "100%" }}
                 totalCount={filteredNotes.length}
                 components={{
-                  List: React.forwardRef<
-                    HTMLDivElement,
-                    React.HTMLAttributes<HTMLDivElement>
-                  >((props, ref) => (
-                    <div
-                      {...props}
-                      ref={ref}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fill, minmax(280px, 1fr))",
-                        gap: "0.75rem",
-                        ...(props.style || {}),
-                      }}
-                    >
-                      {props.children}
-                    </div>
-                  )),
+                  List: NotesVirtuosoGridList,
                 }}
                 itemContent={(index) => {
                   const note = filteredNotes[index];

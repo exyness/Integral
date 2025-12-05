@@ -58,6 +58,31 @@ import {
 
 type TabType = "accounts" | "activity" | "calendar";
 
+// Define Virtuoso components outside the main component to prevent re-renders
+const VirtuosoGridList = forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ style, children, ...props }, ref) => (
+  <div
+    ref={ref}
+    {...props}
+    style={style}
+    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-3"
+  >
+    {children}
+  </div>
+));
+VirtuosoGridList.displayName = "VirtuosoGridList";
+
+const VirtuosoGridItem: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
+  children,
+  ...props
+}) => (
+  <div {...props} className="min-w-0">
+    {children}
+  </div>
+);
+
 export const Accounts: React.FC = () => {
   const { isDark, isHalloweenMode } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1196,24 +1221,8 @@ export const Accounts: React.FC = () => {
                   style={{ height: "100%" }}
                   data={filteredAccounts}
                   components={{
-                    List: forwardRef<
-                      HTMLDivElement,
-                      React.HTMLAttributes<HTMLDivElement>
-                    >(({ style, children, ...props }, ref) => (
-                      <div
-                        ref={ref}
-                        {...props}
-                        style={style}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-3"
-                      >
-                        {children}
-                      </div>
-                    )),
-                    Item: ({ children, ...props }) => (
-                      <div {...props} className="min-w-0">
-                        {children}
-                      </div>
-                    ),
+                    List: VirtuosoGridList,
+                    Item: VirtuosoGridItem,
                   }}
                   itemContent={(index, account) => (
                     <motion.div
