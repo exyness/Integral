@@ -207,7 +207,7 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ tasks }) => {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
       filtered = filtered.filter((entry) => {
-        const entryDate = new Date(entry.created_at);
+        const entryDate = new Date(entry.start_time);
         switch (filterPeriod) {
           case "today":
             return entryDate >= startOfToday;
