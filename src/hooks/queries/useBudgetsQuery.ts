@@ -20,7 +20,7 @@ export const QUERY_KEYS = {
   BUDGETS: "budgets",
   BUDGET_TRANSACTIONS: "budget-transactions",
   ANALYTICS: "analytics",
-  ACCOUNTS: "accounts",
+  ACCOUNTS: "finance_accounts",
   RECURRING_TRANSACTIONS: "recurring-transactions",
   CATEGORIES: "categories",
 } as const;
@@ -54,7 +54,8 @@ export const useBudgetsQuery = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return (data || []) as Budget[];
+      if (error) throw error;
+      return data as Budget[];
     },
     enabled: !!user?.id,
     staleTime: QUERY_CONFIG.STALE_TIME,
@@ -266,7 +267,8 @@ export const useBudgetTransactionsQuery = (budgetId?: string) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      return (data || []) as BudgetTransaction[];
+      if (error) throw error;
+      return data as BudgetTransaction[];
     },
     enabled: !!user?.id,
     staleTime: QUERY_CONFIG.STALE_TIME,
@@ -446,7 +448,7 @@ export const useUpdateTransaction = () => {
 
       return data as BudgetTransaction;
     },
-    onSuccess: (updatedTransaction) => {
+    onSuccess: (updatedTransaction, { updates }) => {
       queryClient.setQueryData(
         [QUERY_KEYS.BUDGET_TRANSACTIONS, user?.id],
         (oldData: BudgetTransaction[] = []) =>
@@ -523,7 +525,7 @@ export const useDeleteTransaction = () => {
         if (budgetError) throw budgetError;
       }
     },
-    onSuccess: (_, { id }) => {
+    onSuccess: (_, { id, budgetId, amount }) => {
       queryClient.setQueryData(
         [QUERY_KEYS.BUDGET_TRANSACTIONS, user?.id],
         (oldData: BudgetTransaction[] = []) =>
@@ -733,7 +735,8 @@ export const useAccountsQuery = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return (data || []) as Account[];
+      if (error) throw error;
+      return data as Account[];
     },
     enabled: !!user?.id,
     staleTime: QUERY_CONFIG.STALE_TIME,
@@ -897,7 +900,8 @@ export const useRecurringTransactionsQuery = () => {
         .order("next_run_date", { ascending: true });
 
       if (error) throw error;
-      return (data || []) as unknown as RecurringTransaction[];
+      if (error) throw error;
+      return data as unknown as RecurringTransaction[];
     },
     enabled: !!user,
   });
@@ -926,6 +930,7 @@ export const useCreateRecurringTransaction = () => {
         .select()
         .single();
 
+      if (error) throw error;
       if (error) throw error;
       return data as unknown as RecurringTransaction;
     },
@@ -1008,6 +1013,7 @@ export const useUpdateRecurringTransaction = () => {
         .select()
         .single();
 
+      if (error) throw error;
       if (error) throw error;
       return data as unknown as RecurringTransaction;
     },
@@ -1243,7 +1249,8 @@ export const useCategoriesQuery = () => {
         .order("name");
 
       if (error) throw error;
-      return (data || []) as unknown as Category[];
+      if (error) throw error;
+      return data as unknown as Category[];
     },
     enabled: !!user?.id,
     staleTime: QUERY_CONFIG.STALE_TIME,
