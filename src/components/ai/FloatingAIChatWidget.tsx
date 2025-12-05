@@ -66,7 +66,8 @@ export const FloatingAIChatWidget: React.FC = () => {
   const [mentionFilter, setMentionFilter] = useState("");
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const mentionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const handleClearChat = () => {
@@ -1485,9 +1486,20 @@ export const FloatingAIChatWidget: React.FC = () => {
     ]);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setInputValue(value);
+
+    // Auto-resize textarea
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = `${Math.min(inputRef.current.scrollHeight, 120)}px`;
+
+      // Sync overlay scroll with textarea scroll
+      if (overlayRef.current) {
+        overlayRef.current.scrollTop = inputRef.current.scrollTop;
+      }
+    }
 
     // Check if user is typing @ mention
     const lastAtIndex = value.lastIndexOf("@");
@@ -1504,6 +1516,13 @@ export const FloatingAIChatWidget: React.FC = () => {
       setSelectedMentionIndex(0);
     } else {
       setShowMentions(false);
+    }
+  };
+
+  // Sync scroll when textarea is scrolled
+  const handleTextareaScroll = () => {
+    if (inputRef.current && overlayRef.current) {
+      overlayRef.current.scrollTop = inputRef.current.scrollTop;
     }
   };
 
@@ -1555,6 +1574,10 @@ export const FloatingAIChatWidget: React.FC = () => {
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+      // Reset height after sending
+      if (inputRef.current) {
+        inputRef.current.style.height = "auto";
+      }
     }
   };
 
@@ -1955,7 +1978,8 @@ export const FloatingAIChatWidget: React.FC = () => {
                     <div className="relative flex items-center">
                       {/* Styled text overlay for bold @ mentions */}
                       <div
-                        className={`absolute left-4 top-2.5 pointer-events-none text-sm whitespace-pre ${
+                        ref={overlayRef}
+                        className={`absolute left-4 right-10 top-2.5 pointer-events-none text-sm whitespace-pre-wrap break-words overflow-y-auto custom-scrollbar ${
                           isHalloweenMode
                             ? "text-[#60c9b6]"
                             : isDark
@@ -1963,6 +1987,13 @@ export const FloatingAIChatWidget: React.FC = () => {
                               : "text-slate-800"
                         }`}
                         aria-hidden="true"
+                        style={{
+                          minHeight: "20px",
+                          maxHeight: "115px",
+                          paddingBottom: "10px",
+                          scrollbarWidth: "none",
+                          msOverflowStyle: "none",
+                        }}
                       >
                         {inputValue.split(/(@\w+)/g).map((part, i) =>
                           part.startsWith("@") ? (
@@ -1976,32 +2007,43 @@ export const FloatingAIChatWidget: React.FC = () => {
                             <span key={i}>{part}</span>
                           ),
                         )}
+                        {/* Add invisible character to maintain height for trailing newlines */}
+                        {inputValue.endsWith("\n") && (
+                          <span className="opacity-0">.</span>
+                        )}
                       </div>
-                      <input
+                      <textarea
                         ref={inputRef}
-                        type="text"
                         value={inputValue}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
+                        onScroll={handleTextareaScroll}
                         placeholder={getPlaceholder()}
-                        className={`w-full pl-4 pr-10 py-2.5 rounded-xl text-sm outline-none transition-all ${
+                        rows={1}
+                        className={`w-full pl-4 pr-10 py-2.5 rounded-xl text-sm outline-none transition-all resize-none overflow-y-auto custom-scrollbar ${
                           isHalloweenMode
-                            ? "bg-[#1a1f26] placeholder:text-[#60c9b6]/40 focus:ring-2 focus:ring-[#60c9b6]/50 border border-[#60c9b6]/20"
+                            ? "bg-[#1a1f26] placeholder:text-[#60c9b6]/40 focus:ring-2 focus:ring-[#60c9b6]/50 border border-[#60c9b6]/20 selection:bg-[#60c9b6]/30"
                             : isDark
-                              ? "bg-[#1e1e28] placeholder:text-gray-500 focus:ring-2 focus:ring-purple-400/50 border border-purple-400/20"
-                              : "bg-slate-50 placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/20"
-                        } ${inputValue ? "text-transparent caret-current" : isHalloweenMode ? "text-[#60c9b6]" : isDark ? "text-gray-200" : "text-slate-800"}`}
-                        style={
+                              ? "bg-[#1e1e28] placeholder:text-gray-500 focus:ring-2 focus:ring-purple-400/50 border border-purple-400/20 selection:bg-purple-400/30"
+                              : "bg-slate-50 placeholder:text-slate-400 focus:ring-2 focus:ring-purple-500/20 selection:bg-purple-500/30"
+                        } ${
                           inputValue
-                            ? {
-                                caretColor: isHalloweenMode
-                                  ? "#60c9b6"
-                                  : isDark
-                                    ? "#e5e7eb"
-                                    : "#1e293b",
-                              }
-                            : undefined
-                        }
+                            ? "text-transparent caret-current selection:text-transparent"
+                            : isHalloweenMode
+                              ? "text-[#60c9b6]"
+                              : isDark
+                                ? "text-gray-200"
+                                : "text-slate-800"
+                        }`}
+                        style={{
+                          caretColor: isHalloweenMode
+                            ? "#60c9b6"
+                            : isDark
+                              ? "#e5e7eb"
+                              : "#1e293b",
+                          minHeight: "42px",
+                          maxHeight: "120px",
+                        }}
                       />
                       <button
                         onClick={handleSendMessage}
