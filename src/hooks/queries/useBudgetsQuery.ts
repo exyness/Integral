@@ -533,6 +533,10 @@ export const useDeleteTransaction = () => {
       );
 
       queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.BUDGET_TRANSACTIONS, user?.id],
+      });
+
+      queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.BUDGETS, user?.id],
       });
 
