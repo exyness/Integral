@@ -5,7 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Budget } from "@/types/budget";
 
 export type TransactionTypeFilter = "all" | "budgeted" | "quick";
-export type DateRangeFilter = "all" | "week" | "month" | "year";
+export type DateRangeFilter = "all" | "today" | "week" | "month" | "year";
 
 interface TransactionFiltersProps {
   searchTerm: string;
@@ -46,6 +46,7 @@ export const TransactionFilters: React.FC<TransactionFiltersProps> = ({
 
   const dateRangeOptions: DropdownOption[] = [
     { value: "all", label: "All Time" },
+    { value: "today", label: "Today" },
     { value: "week", label: "Last Week" },
     { value: "month", label: "Last Month" },
     { value: "year", label: "Last Year" },

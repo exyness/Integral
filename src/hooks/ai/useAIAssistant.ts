@@ -73,6 +73,8 @@ export const useAIAssistant = () => {
       }
       return "create_goal";
     }
+    if (lowerText.startsWith("@contribute") || lowerText.startsWith("@deposit"))
+      return "contribute_goal";
     if (lowerText.startsWith("@liability") || lowerText.startsWith("@debt"))
       return "create_liability";
     if (lowerText.startsWith("@transfer")) return "transfer_funds";
@@ -344,7 +346,8 @@ Rules:
 Examples:
 - "add 5000 to vacation goal from savings" -> {"goal_name": "vacation", "amount": 5000, "from_account": "savings"}
 - "contribute 2000 to emergency fund" -> {"goal_name": "emergency", "amount": 2000, "from_account": null}
-- "deposit 1000 to laptop from checking" -> {"goal_name": "laptop", "amount": 1000, "from_account": "checking"}`;
+- "deposit 1000 to laptop from checking" -> {"goal_name": "laptop", "amount": 1000, "from_account": "checking"}
+- "500 to vacation" -> {"goal_name": "vacation", "amount": 500, "from_account": null}`;
         const result = await ai.models.generateContent({
           model: "gemini-flash-lite-latest",
           contents: paramPrompt,

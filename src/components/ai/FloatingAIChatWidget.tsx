@@ -107,6 +107,11 @@ export const FloatingAIChatWidget: React.FC = () => {
     },
     { key: "@recurring", label: "Recurring", example: "Netflix $15 monthly" },
     { key: "@account", label: "Account", example: "Save Netflix credentials" },
+    {
+      key: "@contribute",
+      label: "Contribute to Goal",
+      example: "Add $500 to Vacation goal",
+    },
   ];
 
   // Get dynamic placeholder based on route

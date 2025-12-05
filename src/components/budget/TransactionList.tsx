@@ -56,9 +56,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const [transactionType, setTransactionType] = useState<
     "all" | "budgeted" | "quick"
   >("all");
-  const [dateRange, setDateRange] = useState<"all" | "week" | "month" | "year">(
-    "all",
-  );
+  const [dateRange, setDateRange] = useState<
+    "all" | "today" | "week" | "month" | "year"
+  >("all");
   const [selectedBudgets, setSelectedBudgets] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 

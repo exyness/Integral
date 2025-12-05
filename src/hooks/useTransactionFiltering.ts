@@ -62,6 +62,9 @@ export const useTransactionFiltering = ({
       const filterDate = new Date();
 
       switch (dateRange) {
+        case "today":
+          filterDate.setHours(0, 0, 0, 0);
+          break;
         case "week":
           filterDate.setDate(now.getDate() - 7);
           break;
