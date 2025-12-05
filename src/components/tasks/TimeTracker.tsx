@@ -1409,7 +1409,7 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ tasks }) => {
                                   setEditingEntry(entry.id);
                                   setEditDescription(entry.description || "");
                                 }}
-                                className={`p-1.5 rounded transition-colors opacity-0 group-hover:opacity-100 ${
+                                className={`p-1.5 rounded transition-colors cursor-pointer opacity-0 group-hover:opacity-100 ${
                                   isHalloweenMode
                                     ? "hover:bg-[rgba(96,201,182,0.15)] text-[#60c9b6]"
                                     : isDark
@@ -1441,7 +1441,7 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ tasks }) => {
                                     duration: entry.duration_seconds || 0,
                                   });
                                 }}
-                                className="p-1.5 bg-[rgba(239,68,68,0.1)] hover:bg-[rgba(239,68,68,0.2)] rounded transition-colors opacity-0 group-hover:opacity-100"
+                                className="p-1.5 bg-[rgba(239,68,68,0.1)] hover:bg-[rgba(239,68,68,0.2)] rounded transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
                                 title="Delete session"
                               >
                                 <Trash2 className="w-4 h-4 text-[#EF4444]" />
@@ -1449,6 +1449,57 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ tasks }) => {
                             )}
                           </div>
                         </div>
+
+                        {/* Edit Description Section - Desktop (renders below the row) */}
+                        {isEditing && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="hidden md:block mt-3 pt-3 border-t border-[rgba(139,92,246,0.2)]"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="text"
+                                value={editDescription}
+                                onChange={(e) =>
+                                  setEditDescription(e.target.value)
+                                }
+                                placeholder="Add description..."
+                                className={`text-sm h-9 flex-1 ${
+                                  isHalloweenMode
+                                    ? "bg-[rgba(96,201,182,0.1)] border-[rgba(96,201,182,0.2)] text-[#60c9b6] placeholder-[#60c9b6]/50 focus:border-[rgba(96,201,182,0.5)]! focus:ring-[rgba(96,201,182,0.2)]! focus:ring-1!"
+                                    : ""
+                                }`}
+                                autoFocus
+                              />
+                              <button
+                                onClick={() =>
+                                  handleUpdateDescription(
+                                    entry.id,
+                                    editDescription,
+                                  )
+                                }
+                                className={`p-2 rounded-lg transition-colors shrink-0 cursor-pointer ${
+                                  isHalloweenMode
+                                    ? "bg-[rgba(96,201,182,0.2)] text-[#60c9b6] hover:bg-[rgba(96,201,182,0.3)]"
+                                    : "bg-[rgba(16,185,129,0.2)] text-[#10B981] hover:bg-[rgba(16,185,129,0.3)]"
+                                }`}
+                              >
+                                <Save className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingEntry(null);
+                                  setEditDescription("");
+                                }}
+                                className="p-2 rounded-lg bg-[rgba(239,68,68,0.2)] text-[#EF4444] hover:bg-[rgba(239,68,68,0.3)] transition-colors shrink-0 cursor-pointer"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </motion.div>
+                        )}
                       </motion.div>
                     </div>
                   );
