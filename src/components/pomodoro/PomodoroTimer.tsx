@@ -412,13 +412,18 @@ export const PomodoroTimer: React.FC<PomodoroTimerProps> = ({
   ]);
 
   const progress = () => {
-    const totalDuration =
-      mode === "work"
+    // Use custom duration if enabled, otherwise use settings based on mode
+    const totalDuration = showCustomTimer
+      ? customDuration * 60
+      : mode === "work"
         ? settings.work_duration * 60
         : mode === "short_break"
           ? settings.short_break_duration * 60
           : settings.long_break_duration * 60;
-    return ((totalDuration - timeLeft) / totalDuration) * 100;
+
+    // Calculate elapsed time as percentage (0% at start, 100% at end)
+    const elapsed = totalDuration - timeLeft;
+    return Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
   };
 
   const config = getModeConfig();
