@@ -70,32 +70,36 @@ Your global command center for managing your entire digital life with natural la
 - **Natural Language**: Just say "Remind me to buy milk tomorrow" or "Spent $50 on groceries" and let AI handle the rest.
 
 ### Dashboard
-Unified hub with AI-driven insights and visual analytics across all productivity modules.
+
+Central hub with unified overview of all your productivity metrics. See task completion rates, time tracking summaries, recent notes, journal entries, and budget snapshots in one place with visual analytics and quick actions.
 
 ### Tasks
-**Smart Prioritization** and **Zombie Task Resurrection** to manage your workflow effectively with project-based organization.
+
+Project-based task management with Kanban boards, priorities, due dates, and custom tags. Organize work by projects, visualize workflow with drag-and-drop boards, track completion trends, and view detailed analytics. **RAG-powered search** automatically indexes all tasks, letting you find relevant work using natural language queries. Calendar integration shows deadlines at a glance.
 
 ### Notes
-**AI Semantic Search** to chat with your second brain and find connections instantly using RAG technology.
+
+Rich text editor powered by Lexical with markdown support, code blocks, tables, and lists. Organize notes into folders, pin important ones, mark favorites, and use instant search. **AI Semantic Search with RAG** lets you chat with your notes—ask questions in natural language and discover connections across your entire knowledge base using vector embeddings.
 
 ### Time Tracking
-**AI Focus Insights** and smart timers that adapt to your deep work patterns with persistent floating widgets.
+
+Activity logging with start/stop timers for different tasks. Track time spent on activities, add session notes, and review comprehensive history with visual breakdowns. Persistent floating timer widget stays visible across all pages without interrupting your flow.
 
 ### Pomodoro
-**Smart Pomodoro** sessions with flow state analytics and productivity tracking for optimal focus management.
+
+Customizable focus timer with work/break intervals. Set custom durations for focus sessions and breaks, track completed sessions, add notes about what you accomplished, and view your focus history. Helps maintain concentration and prevent burnout.
 
 ### Journal
-**RAG Vector Search** to connect daily reflections with past entries and insights for meaningful self-discovery.
 
-### Budget
-**Smart Budget Management** with visual icons, category tracking, recurring transactions, and RAG-powered expense insights.
+Daily reflection with calendar navigation and project tagging. Write entries, tag them with projects or activities, and browse past reflections using the calendar view. **RAG Vector Search** lets you query your journal history with natural language—ask "when did I last feel this way?" or "what helped me overcome similar challenges?" and get relevant entries using semantic similarity.
+
+### Finance Management
+
+Multi-currency financial tracking with visual category icons. Track income and expenses, set budgets for categories, manage recurring transactions, and monitor assets & liabilities. View spending trends with interactive charts, track net worth, and analyze financial health across multiple accounts. **RAG-powered insights** automatically index all transactions, goals, and liabilities—ask questions like "how much did I spend on dining last month?" in natural language.
 
 ### Accounts
-**Secure AI Vault** with intelligent activity monitoring and usage analytics for credential management.
 
-## Technology Stack
-
-Frontend powered by React 19.2, TypeScript 5.9, and Vite 7.2 for lightning-fast builds with the latest React features. AI capabilities through Google Gemini Flash and Embedding 001 enable RAG, vector search, semantic analysis, and content generation. Stunning visuals with Three.js, WebGL, and Framer Motion deliver Liquid Ether fluid simulations and smooth animations. Modern styling via Tailwind CSS 4.1 with glass morphism aesthetics. Backend built on Supabase providing authentication, PostgreSQL database with pgvector for embeddings, and real-time sync with row-level security. Rich text editing powered by Lexical Editor 0.38 with extensible plugins. State management handled by TanStack Query v5 and React Context for server state sync and optimistic updates.
+Secure credential vault for passwords and sensitive information. Store account details with encryption, organize into folders, track usage history, and monitor when credentials were last accessed. Usage analytics show access patterns and help maintain security hygiene.
 
 ## Quick Start
 
